@@ -1,0 +1,108 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="inc\buffer\buffer.h">
+      <Filter>inc\buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\macro\macro.h">
+      <Filter>inc\macro</Filter>
+    </ClInclude>
+    <ClInclude Include="framework.h">
+      <Filter>prv</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>prv</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\thread\thread.h" />
+    <ClInclude Include="inc\logger\ELoggerVerbosity.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\thread\thread.cpp">
+      <Filter>src\thread</Filter>
+    </ClCompile>
+    <ClCompile Include="src\buffer\buffer.cpp">
+      <Filter>src\buffer</Filter>
+    </ClCompile>
+    <ClCompile Include="lib.cpp">
+      <Filter>prv</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>prv</Filter>
+    </ClCompile>
+    <ClCompile Include="inc\logger\ILogger.h">
+      <Filter>inc\logger</Filter>
+    </ClCompile>
+    <ClCompile Include="inc\logger\ConsoleLogger.h">
+      <Filter>inc\logger</Filter>
+    </ClCompile>
+    <ClCompile Include="src\logger\ConsoleLogger.cpp">
+      <Filter>src\thread</Filter>
+    </ClCompile>
+    <ClCompile Include="inc\logger\LoggerOptions.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="inc">
+      <UniqueIdentifier>{4b3729c1-fcd5-4762-93cb-d37b991c03de}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{495b7e92-b102-4931-9096-28d752e5f557}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="inc\buffer">
+      <UniqueIdentifier>{93c0edaa-708f-4630-a6e3-bfba9ff00bb2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="inc\coroutine">
+      <UniqueIdentifier>{b23eccfd-9fc7-4400-acab-ff8072af7ebe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="inc\error">
+      <UniqueIdentifier>{a2df3a8a-18a5-4712-8f21-951be304d9aa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="inc\macro">
+      <UniqueIdentifier>{f1a0f349-dc1c-42ae-99a8-a7ad017a6b81}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="inc\memory">
+      <UniqueIdentifier>{c249de88-28f5-433e-ac6c-ce3ea3eef00f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="inc\metrics">
+      <UniqueIdentifier>{46d49bbb-c963-414f-b082-37d3fc5c78de}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="inc\thread">
+      <UniqueIdentifier>{38ce1621-d0ff-44eb-acd0-c87db3ea39d4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="inc\system">
+      <UniqueIdentifier>{e3a2ecee-e08a-4733-a89c-a8216381d00e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\buffer">
+      <UniqueIdentifier>{bf187901-9809-455c-a4cf-2715513535f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\coroutine">
+      <UniqueIdentifier>{b24839da-1127-4610-ace4-47b5faac6ba5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\error">
+      <UniqueIdentifier>{5694680b-6153-4e0e-af26-d2c03ecef028}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\memory">
+      <UniqueIdentifier>{272770c4-7ab6-4590-836b-8684b34ab04b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\metrics">
+      <UniqueIdentifier>{09b3f1b6-37ec-4ff6-b1a8-383937670eaf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\system">
+      <UniqueIdentifier>{1edeed7a-6116-4c05-92b0-c1e4f5268727}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\thread">
+      <UniqueIdentifier>{5abf4701-e486-4651-8b57-451d5f2f2dbd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prv">
+      <UniqueIdentifier>{765ba44e-158e-48b5-a7f1-9258fbb24456}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\logger">
+      <UniqueIdentifier>{87aff79c-e2b6-48b4-acc7-e8b5737c2a85}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="inc\logger">
+      <UniqueIdentifier>{f630316d-0ab1-4250-bdc3-e115ee14384f}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="cpp.hint" />
+  </ItemGroup>
+</Project>

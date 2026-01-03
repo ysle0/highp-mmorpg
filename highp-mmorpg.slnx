@@ -1,0 +1,12 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/echo/">
+    <Project Path="echo-client/echo-client.vcxproj" Id="3fd40365-5fc7-4ede-a1ff-f7a2457407a9" />
+    <Project Path="echo/echo-server/echo-server.vcxproj" Id="819c46db-cc34-4102-90c2-d6359b9b3e94" />
+  </Folder>
+  <Project Path="lib/lib.vcxproj" Id="823faac2-5c85-4820-900b-ea98f10c08b4" />
+  <Project Path="network/network.vcxproj" Id="21d4ce33-bb5e-4f0e-95e1-ff7d89e48782" />
+</Solution>
