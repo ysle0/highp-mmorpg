@@ -24,12 +24,6 @@
     <ClInclude Include="Result.hpp">
       <Filter>inc\functional</Filter>
     </ClInclude>
-    <ClInclude Include="IConfig.h">
-      <Filter>inc\config</Filter>
-    </ClInclude>
-    <ClInclude Include="ConfigParser.h">
-      <Filter>inc\config</Filter>
-    </ClInclude>
     <ClInclude Include="compileTime\Config.h">
       <Filter>inc\config\compileTime</Filter>
     </ClInclude>

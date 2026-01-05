@@ -140,7 +140,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="ConfigParser.h" />
     <ClInclude Include="compileTime\Config.h" />
     <ClInclude Include="compileTime\StringUtils.h" />
     <ClInclude Include="compileTime\TomlEntry.h" />
@@ -151,7 +150,6 @@
     <ClInclude Include="runTime\TomlParser.h" />
     <ClInclude Include="ELoggerVerbosity.h" />
     <ClInclude Include="framework.h" />
-    <ClInclude Include="IConfig.h" />
     <ClInclude Include="ILogger.h" />
     <ClInclude Include="IocpError.h" />
     <ClInclude Include="Logger.hpp" />

@@ -29,12 +29,6 @@
     <ProjectReference Include="..\..\network\network.vcxproj">
       <Project>{dc3969f5-be2d-46ff-a38f-1d4223bd9b8d}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\lib\lib.vcxproj">
-      <Project>{823faac2-5c85-4820-900b-ea98f10c08b4}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\network\network.vcxproj">
-      <Project>{dc3969f5-be2d-46ff-a38f-1d4223bd9b8d}</Project>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EchoClient.h" />
