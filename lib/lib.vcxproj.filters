@@ -1,44 +1,69 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClInclude Include="inc\buffer\buffer.h">
-      <Filter>inc\buffer</Filter>
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="framework.h" />
+    <ClInclude Include="ELoggerVerbosity.h">
+      <Filter>inc\logger</Filter>
     </ClInclude>
-    <ClInclude Include="inc\macro\macro.h">
+    <ClInclude Include="ILogger.h">
+      <Filter>inc\logger</Filter>
+    </ClInclude>
+    <ClInclude Include="LoggerOptions.h">
+      <Filter>inc\logger</Filter>
+    </ClInclude>
+    <ClInclude Include="macro.h">
       <Filter>inc\macro</Filter>
     </ClInclude>
-    <ClInclude Include="framework.h">
-      <Filter>prv</Filter>
+    <ClInclude Include="TextLogger.h">
+      <Filter>inc\logger</Filter>
     </ClInclude>
-    <ClInclude Include="pch.h">
-      <Filter>prv</Filter>
+    <ClInclude Include="IocpError.h">
+      <Filter>inc\error\iocp</Filter>
     </ClInclude>
-    <ClInclude Include="inc\thread\thread.h" />
-    <ClInclude Include="inc\logger\ELoggerVerbosity.h" />
+    <ClInclude Include="Result.hpp">
+      <Filter>inc\functional</Filter>
+    </ClInclude>
+    <ClInclude Include="IConfig.h">
+      <Filter>inc\config</Filter>
+    </ClInclude>
+    <ClInclude Include="ConfigParser.h">
+      <Filter>inc\config</Filter>
+    </ClInclude>
+    <ClInclude Include="compileTime\Config.h">
+      <Filter>inc\config\compileTime</Filter>
+    </ClInclude>
+    <ClInclude Include="compileTime\StringUtils.h">
+      <Filter>inc\config\compileTime</Filter>
+    </ClInclude>
+    <ClInclude Include="compileTime\TomlEntry.h">
+      <Filter>inc\config\compileTime</Filter>
+    </ClInclude>
+    <ClInclude Include="compileTime\TomlParser.h">
+      <Filter>inc\config\compileTime</Filter>
+    </ClInclude>
+    <ClInclude Include="runTime\Config.h">
+      <Filter>inc\config\runTime</Filter>
+    </ClInclude>
+    <ClInclude Include="runTime\StringUtils.h">
+      <Filter>inc\config\runTime</Filter>
+    </ClInclude>
+    <ClInclude Include="runTime\TomlEntry.h">
+      <Filter>inc\config\runTime</Filter>
+    </ClInclude>
+    <ClInclude Include="runTime\TomlParser.h">
+      <Filter>inc\config\runTime</Filter>
+    </ClInclude>
+    <ClInclude Include="Logger.hpp">
+      <Filter>inc\logger</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\thread\thread.cpp">
-      <Filter>src\thread</Filter>
+    <ClCompile Include="lib.cpp" />
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="TextLogger.cpp">
+      <Filter>src\logger</Filter>
     </ClCompile>
-    <ClCompile Include="src\buffer\buffer.cpp">
-      <Filter>src\buffer</Filter>
-    </ClCompile>
-    <ClCompile Include="lib.cpp">
-      <Filter>prv</Filter>
-    </ClCompile>
-    <ClCompile Include="pch.cpp">
-      <Filter>prv</Filter>
-    </ClCompile>
-    <ClCompile Include="inc\logger\ILogger.h">
-      <Filter>inc\logger</Filter>
-    </ClCompile>
-    <ClCompile Include="inc\logger\ConsoleLogger.h">
-      <Filter>inc\logger</Filter>
-    </ClCompile>
-    <ClCompile Include="src\logger\ConsoleLogger.cpp">
-      <Filter>src\thread</Filter>
-    </ClCompile>
-    <ClCompile Include="inc\logger\LoggerOptions.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="inc">
@@ -92,17 +117,26 @@
     <Filter Include="src\thread">
       <UniqueIdentifier>{5abf4701-e486-4651-8b57-451d5f2f2dbd}</UniqueIdentifier>
     </Filter>
-    <Filter Include="prv">
-      <UniqueIdentifier>{765ba44e-158e-48b5-a7f1-9258fbb24456}</UniqueIdentifier>
-    </Filter>
     <Filter Include="src\logger">
       <UniqueIdentifier>{87aff79c-e2b6-48b4-acc7-e8b5737c2a85}</UniqueIdentifier>
     </Filter>
     <Filter Include="inc\logger">
       <UniqueIdentifier>{f630316d-0ab1-4250-bdc3-e115ee14384f}</UniqueIdentifier>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="cpp.hint" />
+    <Filter Include="inc\config">
+      <UniqueIdentifier>{88da3c3c-2856-452c-80fe-6fd2fc8c614c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="inc\error\iocp">
+      <UniqueIdentifier>{439ceb3f-1934-4c1f-a872-5df3929a37cf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="inc\functional">
+      <UniqueIdentifier>{27cac9aa-1fb1-49d6-bce2-9fa5667ac952}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="inc\config\compileTime">
+      <UniqueIdentifier>{a1b2c3d4-e5f6-7890-abcd-ef1234567890}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="inc\config\runTime">
+      <UniqueIdentifier>{b2c3d4e5-f6a7-8901-bcde-f23456789012}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>

@@ -1,9 +1,24 @@
-// echo-server.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
-
 #include <iostream>
+#include <TextLogger.h>
+#include "EchoServer.h"
 
-int main()
-{
-    std::cout << "Hello World!\n";
+using highp::lib::logger::Logger;
+using highp::lib::logger::TextLogger;
+using highp::lib::error::EIocpErrorHelper;
+using highp::echo::server::EchoServer;
+
+int main() {
+	auto logger = Logger::Default<TextLogger>();
+	EchoServer es(logger);
+
+	if (auto res = es.Start(); res.IsErr()) {
+		logger->Error(EIocpErrorHelper::ToString(res.Err()));
+		return -1;
+	}
+
+	logger->Info("Press Enter to stop the server...");
+	std::cin.get();
+
+	es.Stop();
+	return 0;
 }
