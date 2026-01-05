@@ -9,9 +9,7 @@
 #include <string_view>
 #include <thread>
 #include <utility>
-#include <Windows.h>
 #include <WinSock2.h>
-#include <ws2def.h>
 #include <WS2tcpip.h>
 #include "Client.h"
 #include "Config.h"

@@ -4,7 +4,7 @@
     <Platform Name="x86" />
   </Configurations>
   <Folder Name="/echo/">
-    <Project Path="echo-client/echo-client.vcxproj" Id="3fd40365-5fc7-4ede-a1ff-f7a2457407a9" />
+    <Project Path="echo/echo-client/echo-client.vcxproj" Id="3fd40365-5fc7-4ede-a1ff-f7a2457407a9" />
     <Project Path="echo/echo-server/echo-server.vcxproj" Id="819c46db-cc34-4102-90c2-d6359b9b3e94" />
   </Folder>
   <Folder Name="/scripts/">

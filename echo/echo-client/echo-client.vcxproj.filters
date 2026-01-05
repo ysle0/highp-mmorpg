@@ -8,4 +8,17 @@
       <UniqueIdentifier>{f2fc0cc8-d7df-4bcb-987d-cdcd007116b6}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="EchoClient.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="EchoClient.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+  </ItemGroup>
 </Project>
