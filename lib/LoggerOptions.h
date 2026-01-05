@@ -4,7 +4,7 @@
 
 class ILoggerOptions
 {
-	CDTOR_INTERFACE(ILoggerOptions)
+	INIT_INTERFACE(ILoggerOptions)
 
 };
 
@@ -16,4 +16,5 @@ class TextLoggerOptions
 
 class StructuredLoggerOptions
 {
+
 };
