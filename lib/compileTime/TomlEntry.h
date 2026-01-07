@@ -1,7 +1,7 @@
 #pragma once
 #include <string_view>
 
-namespace highp::lib::config::compileTime {
+namespace highp::config {
 
 enum class TomlValueType {
 	String,
@@ -9,7 +9,7 @@ enum class TomlValueType {
 	Boolean,
 };
 
-struct TomlEntry {
+struct CompileTimeTomlEntry {
 	std::string_view section;   // e.g., "server"
 	std::string_view key;       // e.g., "port"
 	std::string_view value;     // raw string value
@@ -52,4 +52,4 @@ struct TomlEntry {
 	}
 };
 
-} // namespace highp::lib::config::compileTime
+} // namespace highp::config

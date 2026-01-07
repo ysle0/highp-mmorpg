@@ -6,7 +6,7 @@
 #include <thread>
 #include <Windows.h>
 
-namespace highp::echo::server {
+namespace highp::echo_srv {
 // =============================================================================
 // Runtime Config
 // =============================================================================
@@ -26,7 +26,7 @@ struct RuntimeCfg {
 
 	// Load from file with validation
 	static RuntimeCfg FromFile(const std::filesystem::path& path) {
-		auto cfg = highp::lib::config::runTime::Config::FromFile(path);
+		auto cfg = highp::config::Config::FromFile(path);
 		if (!cfg.has_value()) {
 			throw std::runtime_error("Failed to load config file: " + path.string());
 		}
@@ -34,7 +34,7 @@ struct RuntimeCfg {
 	}
 
 	// Load from Config object
-	static RuntimeCfg FromCfg(const highp::lib::config::runTime::Config& cfg) {
+	static RuntimeCfg FromCfg(const highp::config::Config& cfg) {
 		INT threadCount = cfg.Int("thread.worker_count", Defaults::workerThreadCount, "SERVER_WORKER_COUNT");
 		if (threadCount <= 0) {
 			threadCount = static_cast<INT>(std::thread::hardware_concurrency());
@@ -82,4 +82,4 @@ private:
 		}
 	}
 };
-} // namespace highp::echo::server
+} // namespace highp::echo_srv

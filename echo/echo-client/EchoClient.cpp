@@ -1,7 +1,7 @@
 #include <Logger.hpp>
 #include "EchoClient.h"
 
-namespace highp::echo::client {
+namespace highp::echo_cli {
 bool EchoClient::Connect(const char* ipAddress, unsigned short port) {
 	WSADATA wsaData;
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
@@ -72,4 +72,4 @@ void EchoClient::Send(std::string_view message) {
 		_logger->Error("Recv failed. error: {}", WSAGetLastError());
 	}
 }
-};
+}

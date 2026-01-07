@@ -2,7 +2,7 @@
 
 #include "Result.hpp"
 
-namespace highp::lib::error {
+namespace highp::err {
 enum class EIocpError {
 	UnknownError = 0,
 
@@ -25,7 +25,7 @@ enum class EIocpError {
 	CreateAccepterThreadFailed,
 };
 
-using IocpResult = highp::lib::functional::Result<EIocpError>;
+using IocpResult = highp::func::Result<EIocpError>;
 
 class EIocpErrorHelper {
 public:

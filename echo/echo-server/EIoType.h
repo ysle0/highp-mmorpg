@@ -1,6 +1,6 @@
 #pragma once
 
-namespace highp::echo::server
+namespace highp::echo_srv
 {
 enum class EIoType
 {

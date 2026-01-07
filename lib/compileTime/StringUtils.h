@@ -3,9 +3,9 @@
 #include <optional>
 #include <string_view>
 
-namespace highp::lib::config::compileTime {
+namespace highp::config {
 
-struct StringUtils {
+struct CompileTimeStringUtils {
 	static constexpr bool IsWhitespace(char c) noexcept {
 		return c == ' ' || c == '\t' || c == '\r' || c == '\n';
 	}
@@ -140,4 +140,4 @@ struct StringUtils {
 	}
 };
 
-} // namespace highp::lib::config::compileTime
+} // namespace highp::config

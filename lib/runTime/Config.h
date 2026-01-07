@@ -9,7 +9,7 @@
 #include <string_view>
 #include "TomlParser.h"
 
-namespace highp::lib::config::runTime {
+namespace highp::config {
 
 // Runtime config accessor
 // Usage:
@@ -147,4 +147,4 @@ private:
 	}
 };
 
-} // namespace highp::lib::config::runTime
+} // namespace highp::config

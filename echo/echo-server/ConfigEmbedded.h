@@ -2,7 +2,7 @@
 // Auto-generated from: echo\echo-server\config.compile.toml
 // Do not edit manually. Run embed_config.ps1 to regenerate.
 
-namespace highp::echo::server::config
+namespace highp::echo_srv
 {
 
 inline constexpr const char* ECHO_SERVER_CONFIG = R"TOML(
@@ -17,4 +17,4 @@ buffer_size = 4096
 client_ip_buffer_size = 32
 )TOML";
 
-} // namespace highp::echo::server::config
+} // namespace highp::echo_srv

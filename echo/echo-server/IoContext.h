@@ -5,7 +5,7 @@
 #include "Const.h"
 #include "EIoType.h"
 
-namespace highp::echo::server {
+namespace highp::echo_srv {
 struct IoContext {
 	// WSAOVERLAPPED must be first for correct casting to LPWSAOVERLAPPED
 	WSAOVERLAPPED overlapped;

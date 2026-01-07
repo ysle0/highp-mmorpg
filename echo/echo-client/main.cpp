@@ -6,9 +6,9 @@
 
 using namespace std::chrono_literals;
 
-using highp::lib::logger::Logger;
-using highp::lib::logger::TextLogger;
-using highp::echo::client::EchoClient;
+using highp::log::Logger;
+using highp::log::TextLogger;
+using highp::echo_cli::EchoClient;
 
 int main() {
 	auto logger = Logger::Default<TextLogger>();

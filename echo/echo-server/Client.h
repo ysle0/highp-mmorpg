@@ -5,7 +5,7 @@
 #include <memory>
 #include "IoContext.h"
 
-namespace highp::echo::server {
+namespace highp::echo_srv {
 struct Client : public std::enable_shared_from_this<Client> {
 	Client();
 	void Close(bool isFireAndForget);

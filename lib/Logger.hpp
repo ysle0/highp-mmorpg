@@ -10,7 +10,7 @@
 // TODO: #1 logger options 추가.
 // TODO: #2 logger port (console, file, OTEL ...) 추가
 // TODO: #3 logger format (text, json, ...) 추가
-namespace highp::lib::logger {
+namespace highp::log {
 class Logger {
 	std::unique_ptr<ILogger> _impl;
 

@@ -2,14 +2,9 @@
 
 #include <string>
 #include <string_view>
+#include "../compileTime/TomlEntry.h"  // for TomlValueType
 
-namespace highp::lib::config::runTime {
-
-enum class TomlValueType {
-	String,
-	Integer,
-	Boolean,
-};
+namespace highp::config {
 
 struct TomlEntry {
 	std::string section;
@@ -33,4 +28,4 @@ struct TomlEntry {
 	}
 };
 
-} // namespace highp::lib::config::runTime
+} // namespace highp::config

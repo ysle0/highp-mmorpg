@@ -18,9 +18,9 @@
 #include "EIoType.h"
 #include "IoContext.h"
 
-namespace highp::echo::server {
-using namespace highp::lib::error;
-using namespace highp::lib::logger;
+namespace highp::echo_srv {
+using namespace highp::err;
+using namespace highp::log;
 
 EchoServer::~EchoServer() {
 	WSACleanup();
@@ -102,12 +102,12 @@ IocpResult EchoServer::Start() {
 	}
 
 	// 6. Populate clients
-	for (UINT i = 0; i < _config.maxClients; i++) {
+	for (auto i = 0; i < _config.maxClients; i++) {
 		_clients.emplace_back(std::make_shared<Client>());
 	}
 
 	// 7. Create worker threads
-	for (int i = 0; i < _config.workerThreadCount; i++) {
+	for (auto i = 0; i < _config.workerThreadCount; i++) {
 		_workerThreads.emplace_back([this](std::stop_token st) {
 			WorkerLoop(st);
 		});

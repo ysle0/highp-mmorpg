@@ -5,7 +5,7 @@
 
 #include "macro.h"
 
-namespace highp::lib::logger {
+namespace highp::log {
 class ILogger {
 public:
 	virtual ~ILogger() = default;
@@ -15,4 +15,4 @@ public:
 	virtual void Error(std::string_view) PURE;
 	virtual void Exception(std::string_view, std::exception const&) PURE;
 };
-};
+}

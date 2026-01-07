@@ -4,14 +4,14 @@
 #include "StringUtils.h"
 #include "TomlEntry.h"
 
-namespace highp::lib::config::compileTime {
+namespace highp::config {
 
 template<size_t MaxEntries>
-struct TomlParseResult {
-	std::array<TomlEntry, MaxEntries> entries{};
+struct CompileTimeTomlParseResult {
+	std::array<CompileTimeTomlEntry, MaxEntries> entries{};
 	size_t count = 0;
 
-	constexpr bool Add(TomlEntry entry) noexcept {
+	constexpr bool Add(CompileTimeTomlEntry entry) noexcept {
 		if (count >= MaxEntries) return false;
 		entries[count++] = entry;
 		return true;
@@ -20,7 +20,7 @@ struct TomlParseResult {
 	constexpr std::optional<std::string_view> FindString(std::string_view fullKey) const noexcept {
 		for (size_t i = 0; i < count; ++i) {
 			if (entries[i].MatchesFullKey(fullKey)) {
-				return StringUtils::Unquote(entries[i].value);
+				return CompileTimeStringUtils::Unquote(entries[i].value);
 			}
 		}
 		return std::nullopt;
@@ -29,7 +29,7 @@ struct TomlParseResult {
 	constexpr std::optional<int> FindInt(std::string_view fullKey) const noexcept {
 		for (size_t i = 0; i < count; ++i) {
 			if (entries[i].MatchesFullKey(fullKey)) {
-				return StringUtils::ParseInt(entries[i].value);
+				return CompileTimeStringUtils::ParseInt(entries[i].value);
 			}
 		}
 		return std::nullopt;
@@ -38,7 +38,7 @@ struct TomlParseResult {
 	constexpr std::optional<long> FindLong(std::string_view fullKey) const noexcept {
 		for (size_t i = 0; i < count; ++i) {
 			if (entries[i].MatchesFullKey(fullKey)) {
-				return StringUtils::ParseLong(entries[i].value);
+				return CompileTimeStringUtils::ParseLong(entries[i].value);
 			}
 		}
 		return std::nullopt;
@@ -47,7 +47,7 @@ struct TomlParseResult {
 	constexpr std::optional<bool> FindBool(std::string_view fullKey) const noexcept {
 		for (size_t i = 0; i < count; ++i) {
 			if (entries[i].MatchesFullKey(fullKey)) {
-				return StringUtils::ParseBool(entries[i].value);
+				return CompileTimeStringUtils::ParseBool(entries[i].value);
 			}
 		}
 		return std::nullopt;
@@ -55,9 +55,9 @@ struct TomlParseResult {
 };
 
 template<size_t MaxEntries = 64>
-struct TomlParser {
-	static consteval TomlParseResult<MaxEntries> Parse(std::string_view content) noexcept {
-		TomlParseResult<MaxEntries> res{};
+struct CompileTimeTomlParser {
+	static consteval CompileTimeTomlParseResult<MaxEntries> Parse(std::string_view content) noexcept {
+		CompileTimeTomlParseResult<MaxEntries> res{};
 		std::string_view currentSection{};
 
 		size_t lineStart = 0;
@@ -75,7 +75,7 @@ struct TomlParser {
 			}
 
 			std::string_view line = content.substr(lineStart, actualEnd - lineStart);
-			line = StringUtils::Trim(line);
+			line = CompileTimeStringUtils::Trim(line);
 
 			// Skip empty lines and comments
 			if (!line.empty() && line[0] != '#') {
@@ -103,36 +103,36 @@ private:
 		if (line.size() < 3) return {};
 		if (line.front() != '[') return {};
 
-		auto closeBracket = StringUtils::Find(line, ']');
+		auto closeBracket = CompileTimeStringUtils::Find(line, ']');
 		if (!closeBracket.has_value()) return {};
 
-		return StringUtils::Trim(line.substr(1, closeBracket.value() - 1));
+		return CompileTimeStringUtils::Trim(line.substr(1, closeBracket.value() - 1));
 	}
 
-	static constexpr std::optional<TomlEntry> ParseKeyValue(
+	static constexpr std::optional<CompileTimeTomlEntry> ParseKeyValue(
 		std::string_view line,
 		std::string_view currentSection) noexcept {
-		auto eqPos = StringUtils::Find(line, '=');
+		auto eqPos = CompileTimeStringUtils::Find(line, '=');
 		if (!eqPos.has_value()) return std::nullopt;
 
-		std::string_view key = StringUtils::Trim(line.substr(0, eqPos.value()));
-		std::string_view value = StringUtils::Trim(line.substr(eqPos.value() + 1));
+		std::string_view key = CompileTimeStringUtils::Trim(line.substr(0, eqPos.value()));
+		std::string_view value = CompileTimeStringUtils::Trim(line.substr(eqPos.value() + 1));
 
 		// Remove inline comments
-		auto commentPos = StringUtils::Find(value, '#');
+		auto commentPos = CompileTimeStringUtils::Find(value, '#');
 		if (commentPos.has_value()) {
-			value = StringUtils::Trim(value.substr(0, commentPos.value()));
+			value = CompileTimeStringUtils::Trim(value.substr(0, commentPos.value()));
 		}
 
 		// Determine type
 		TomlValueType type = TomlValueType::String;
-		if (StringUtils::Equals(value, "true") || StringUtils::Equals(value, "false")) {
+		if (CompileTimeStringUtils::Equals(value, "true") || CompileTimeStringUtils::Equals(value, "false")) {
 			type = TomlValueType::Boolean;
-		} else if (!value.empty() && (StringUtils::IsDigit(value[0]) || value[0] == '-' || value[0] == '+')) {
+		} else if (!value.empty() && (CompileTimeStringUtils::IsDigit(value[0]) || value[0] == '-' || value[0] == '+')) {
 			type = TomlValueType::Integer;
 		}
 
-		return TomlEntry{
+		return CompileTimeTomlEntry{
 			.section = currentSection,
 			.key = key,
 			.value = value,
@@ -141,4 +141,4 @@ private:
 	}
 };
 
-}; // namespace highp::lib::config::compileTime
+} // namespace highp::config

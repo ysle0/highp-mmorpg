@@ -6,12 +6,12 @@
 #include <WinSock2.h>
 
 // fwddecl
-namespace highp::lib::logger {
+namespace highp::log {
 class Logger;
-};
+}
 
-namespace highp::echo::client {
-using highp::lib::logger::Logger;
+namespace highp::echo_cli {
+using highp::log::Logger;
 
 class EchoClient final {
 public:
@@ -27,4 +27,4 @@ private:
 	std::shared_ptr<Logger> _logger;
 	SOCKET _serverSocket = INVALID_SOCKET;
 };
-};
+}

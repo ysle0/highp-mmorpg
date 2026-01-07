@@ -7,7 +7,7 @@
 #include "StringUtils.h"
 #include "TomlEntry.h"
 
-namespace highp::lib::config::runTime {
+namespace highp::config {
 
 struct TomlParseResult {
 	std::vector<TomlEntry> entries;
@@ -142,4 +142,4 @@ private:
 	}
 };
 
-} // namespace highp::lib::config::runTime
+} // namespace highp::config

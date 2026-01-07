@@ -2,7 +2,7 @@
 
 #include "ILogger.h"
 
-namespace highp::lib::logger {
+namespace highp::log {
 class TextLogger : public ILogger {
 public:
 	TextLogger() = default;

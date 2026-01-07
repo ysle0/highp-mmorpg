@@ -1,6 +1,6 @@
 #pragma once
 
-namespace highp::lib::functional
+namespace highp::func
 {
 template <typename T>
 class [[nodiscard]] Result

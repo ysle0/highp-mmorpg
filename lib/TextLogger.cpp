@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-namespace highp::lib::logger
+namespace highp::log
 {
 void TextLogger::Info(std::string_view msg)
 {

@@ -1,24 +1,24 @@
 #pragma once
 #include "TomlParser.h"
 
-namespace highp::lib::config::compileTime {
+namespace highp::config {
 
 // Compile-time config accessor
 // Usage:
-//   constexpr auto config = Config<>::From(TOML_CONTENT);
+//   constexpr auto config = CompileTimeConfig<>::From(TOML_CONTENT);
 //   constexpr int port = config.Int("server.port", 8080);
 //
 template<size_t MaxEntries = 64>
-class Config {
+class CompileTimeConfig {
 public:
-	using ParseResult = TomlParseResult<MaxEntries>;
+	using ParseResult = CompileTimeTomlParseResult<MaxEntries>;
 
-	constexpr Config() = default;
-	constexpr explicit Config(ParseResult result) : _result(result) {}
+	constexpr CompileTimeConfig() = default;
+	constexpr explicit CompileTimeConfig(ParseResult result) : _result(result) {}
 
 	// Factory method - parse TOML content at compile time
-	static consteval Config From(std::string_view tomlContent) noexcept {
-		return Config(TomlParser<MaxEntries>::Parse(tomlContent));
+	static consteval CompileTimeConfig From(std::string_view tomlContent) noexcept {
+		return CompileTimeConfig(CompileTimeTomlParser<MaxEntries>::Parse(tomlContent));
 	}
 
 	// Accessors with default values
@@ -60,6 +60,6 @@ private:
 
 // Convenience macro for defining config from embedded TOML
 #define DEFINE_CONSTEXPR_CONFIG(name, tomlContent) \
-	inline constexpr auto name = ::highp::lib::config::compileTime::Config<>::From(tomlContent)
+	inline constexpr auto name = ::highp::config::CompileTimeConfig<>::From(tomlContent)
 
-} // namespace highp::lib::config::compileTime
+} // namespace highp::config

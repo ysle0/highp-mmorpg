@@ -2,10 +2,10 @@
 #include <TextLogger.h>
 #include "EchoServer.h"
 
-using highp::lib::logger::Logger;
-using highp::lib::logger::TextLogger;
-using highp::lib::error::EIocpErrorHelper;
-using highp::echo::server::EchoServer;
+using highp::log::Logger;
+using highp::log::TextLogger;
+using highp::err::EIocpErrorHelper;
+using highp::echo_srv::EchoServer;
 
 int main() {
 	auto logger = Logger::Default<TextLogger>();

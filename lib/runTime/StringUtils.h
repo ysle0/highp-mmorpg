@@ -4,7 +4,7 @@
 #include <string>
 #include <string_view>
 
-namespace highp::lib::config::runTime {
+namespace highp::config {
 
 struct StringUtils {
 	static bool IsWhitespace(char c) noexcept {
@@ -117,4 +117,4 @@ struct StringUtils {
 	}
 };
 
-} // namespace highp::lib::config::runTime::detail
+} // namespace highp::config

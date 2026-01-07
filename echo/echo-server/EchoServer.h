@@ -13,9 +13,9 @@
 #include "Config.h"
 #include "Const.h"
 
-namespace highp::echo::server {
-using highp::lib::error::IocpResult;
-using highp::lib::logger::Logger;
+namespace highp::echo_srv {
+using highp::err::IocpResult;
+using highp::log::Logger;
 
 class EchoServer final {
 public:

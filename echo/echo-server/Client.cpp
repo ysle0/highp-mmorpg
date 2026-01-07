@@ -1,6 +1,6 @@
 #include "Client.h"
 
-namespace highp::echo::server {
+namespace highp::echo_srv {
 Client::Client() {
 	ZeroMemory(&recvOverlapped, sizeof(IoContext));
 	ZeroMemory(&sendOverlapped, sizeof(IoContext));
