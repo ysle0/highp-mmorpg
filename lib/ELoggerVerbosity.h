@@ -1,6 +1,6 @@
 #pragma once
 
-namespace highp::lib::logger
+namespace highp::log
 {
 enum class ELoggerVerbosity
 {

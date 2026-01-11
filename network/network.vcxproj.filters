@@ -1,24 +1,19 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClInclude Include="prv\pch.h" />
-    <ClInclude Include="prv\framework.h" />
-    <ClInclude Include="inc\ISession.h">
-      <Filter>inc</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="src\pch.cpp" />
-    <ClCompile Include="prv\network.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
     <Filter Include="inc">
-      <UniqueIdentifier>{ed9382c5-58ef-4a91-b838-7e91b71d61f5}</UniqueIdentifier>
+      <UniqueIdentifier>{49630e65-3cbb-4f49-9d1e-4ae9dc7a3425}</UniqueIdentifier>
     </Filter>
     <Filter Include="src">
-      <UniqueIdentifier>{3e26602e-a851-4013-9c9c-5f687bb4bd59}</UniqueIdentifier>
+      <UniqueIdentifier>{168ef7d2-71c8-48bd-b6b0-56e28d9fd976}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="framework.h" />
+    <ClInclude Include="pch.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="network.cpp" />
+    <ClCompile Include="pch.cpp" />
   </ItemGroup>
 </Project>

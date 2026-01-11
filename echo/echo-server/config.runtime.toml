@@ -1,0 +1,11 @@
+# Echo Server Runtime Configuration
+# These values can be changed without recompilation.
+# Environment variables override: SERVER_PORT, SERVER_MAX_CLIENTS, etc.
+
+[server]
+port = 8080
+max_clients = 1000
+backlog = 10
+
+[thread]
+worker_count = -1
