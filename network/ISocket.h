@@ -2,9 +2,10 @@
 #include <macro.h>
 #include <Result.hpp>
 #include <SocketError.h>
+#include "NetworkTransport.hpp"
 
 namespace highp::network {
-class NetworkTransport;
+struct Client;
 
 class ISocket {
 public:

@@ -20,9 +20,6 @@ ISocket::Res AsyncSocket::Listen(int backlog) {
 	return Res::Ok();
 }
 
-ISocket::Res AsyncSocket::Accept(std::shared_ptr<ISocket>) {
-	return Res::Ok();
-}
 ISocket::Res AsyncSocket::Cleanup() {
 	return Res::Ok();
 }

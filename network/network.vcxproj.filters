@@ -46,6 +46,12 @@
     <Filter Include="inc\io\windows">
       <UniqueIdentifier>{2057b025-9bb1-4309-b369-0a3c79469ff0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="inc\acceptor">
+      <UniqueIdentifier>{6674d332-3f4e-43b6-afa4-cde087783245}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\acceptor">
+      <UniqueIdentifier>{bf7b7f97-7714-4361-aa1a-4a2ae136105d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h" />
@@ -83,14 +89,17 @@
     <ClInclude Include="OverlappedExt.h">
       <Filter>inc\client\windows</Filter>
     </ClInclude>
-    <ClInclude Include="AsyncAcceptor.h">
-      <Filter>inc\socket</Filter>
-    </ClInclude>
     <ClInclude Include="IoCompletionPort.h">
       <Filter>inc\io\windows</Filter>
     </ClInclude>
     <ClInclude Include="OverlappedEx.h">
       <Filter>inc\client\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="IAsyncAcceptor.h">
+      <Filter>inc\acceptor</Filter>
+    </ClInclude>
+    <ClInclude Include="WindowAsyncAcceptor.h">
+      <Filter>inc\acceptor</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -105,12 +114,13 @@
     <ClCompile Include="Client.cpp">
       <Filter>src\client\windows</Filter>
     </ClCompile>
-    <ClCompile Include="AsyncAcceptor.cpp">
-      <Filter>src\socket</Filter>
-    </ClCompile>
     <ClCompile Include="IoCompletionPort.cpp">
       <Filter>src\io\windows</Filter>
     </ClCompile>
+    <ClCompile Include="WindowsAsyncAcceptor.cpp">
+      <Filter>src\acceptor</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowAsyncAcceptor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="config.compile.toml" />

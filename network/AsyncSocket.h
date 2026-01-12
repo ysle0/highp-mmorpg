@@ -1,5 +1,6 @@
 #pragma once
 #include "ISocket.h"
+#include <Logger.hpp>
 
 namespace highp::network {
 class AsyncSocket :
@@ -14,7 +15,7 @@ public:
 	ISocket::Res CreateSocket(NetworkTransport) override;
 	ISocket::Res Bind(unsigned short port) override;
 	ISocket::Res Listen(int backlog) override;
-	ISocket::Res Accept(SocketHandle) override;
+	//ISocket::Res Accept(SocketHandle) override;
 	ISocket::Res Cleanup() override;
 
 	SocketHandle GetSocketHandle() const {

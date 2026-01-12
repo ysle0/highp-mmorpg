@@ -7,11 +7,12 @@ IoCompletionPort::IoCompletionPort(RuntimeCfg runtimeCfg) : _runtimeCfg(runtimeC
 IoCompletionPort::Res IoCompletionPort::Initialize(SocketHandle clientSocket) {
 	CreateIoCompletionPort(
 		INVALID_HANDLE_VALUE,
-		nullptr,
+		NULL,
+		NULL,
 		_runtimeCfg.workerThreadCount
 	);
 
-		return Res::Ok();
+	return Res::Ok();
 }
 
 IoCompletionPort::Res IoCompletionPort::PostAccept() {
@@ -22,7 +23,10 @@ IoCompletionPort::Res IoCompletionPort::PostAccepts(int repeat) {
 	return Res::Ok();
 }
 
-IoCompletionPort::Res IoCompletionPort::OnAcceptComplete(int bytesTransferred, std::vector<std::byte> bytes) {
+IoCompletionPort::Res IoCompletionPort::OnAcceptComplete(
+	int bytesTransferred,
+	std::span<char> recvBuffer
+) {
 	return Res::Ok();
 }
 

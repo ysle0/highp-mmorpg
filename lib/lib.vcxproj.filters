@@ -48,15 +48,6 @@
     <ClInclude Include="Logger.hpp">
       <Filter>inc\logger</Filter>
     </ClInclude>
-    <ClInclude Include="ThreadManager.h">
-      <Filter>inc\thread</Filter>
-    </ClInclude>
-    <ClInclude Include="TLS.h">
-      <Filter>inc\thread</Filter>
-    </ClInclude>
-    <ClInclude Include="Crash.h">
-      <Filter>inc\system</Filter>
-    </ClInclude>
     <ClInclude Include="IocpError.h">
       <Filter>inc\error</Filter>
     </ClInclude>
@@ -72,15 +63,6 @@
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="TextLogger.cpp">
       <Filter>src\logger</Filter>
-    </ClCompile>
-    <ClCompile Include="ThreadManager.cpp">
-      <Filter>src\thread</Filter>
-    </ClCompile>
-    <ClCompile Include="TLS.cpp">
-      <Filter>src\thread</Filter>
-    </ClCompile>
-    <ClCompile Include="Crash.cpp">
-      <Filter>src\system</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

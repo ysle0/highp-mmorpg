@@ -140,17 +140,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="AsyncAcceptor.h" />
+    <ClInclude Include="IAsyncAcceptor.h" />
     <ClInclude Include="AsyncSocket.h" />
     <ClInclude Include="Client.h" />
     <ClInclude Include="ConfigEmbedded.h" />
     <ClInclude Include="Const.h" />
     <ClInclude Include="EIoType.h" />
     <ClInclude Include="IoCompletionPort.h" />
-    <ClInclude Include="OverlappedEx.h" />
     <ClInclude Include="OverlappedExt.h" />
     <ClInclude Include="NetworkUtil.hpp" />
     <ClInclude Include="platform.h" />
+    <ClInclude Include="WindowAsyncAcceptor.h" />
     <ClInclude Include="WindowsAsyncSocket.h" />
     <ClInclude Include="ISocket.h" />
     <ClInclude Include="NetworkTransport.hpp" />
@@ -158,10 +158,10 @@
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AsyncAcceptor.cpp" />
     <ClCompile Include="AsyncSocket.cpp" />
     <ClCompile Include="Client.cpp" />
     <ClCompile Include="IoCompletionPort.cpp" />
+    <ClCompile Include="WindowAsyncAcceptor.cpp" />
     <ClCompile Include="WindowsAsyncSocket.cpp" />
     <ClCompile Include="network.cpp" />
     <ClCompile Include="pch.cpp">

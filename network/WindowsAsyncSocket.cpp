@@ -1,4 +1,6 @@
 ﻿#include "pch.h"
+#include <SocketError.h>
+#include <Errors.hpp>
 #include "WindowsAsyncSocket.h"
 
 namespace highp::network {
@@ -44,7 +46,7 @@ WindowsAsyncSocket::Res WindowsAsyncSocket::Bind(unsigned short port) {
 	};
 	_sockaddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
-	if (bind(_socketHandle, (SOCKADDR*)&addr, sizeof(SOCKADDR_IN)) != 0) {
+	if (bind(_socketHandle, (SOCKADDR*)&_sockaddr, sizeof(SOCKADDR_IN)) != 0) {
 		return err::LogErrorWithResult<err::ESocketError::BindFailed>(_logger);
 	}
 
@@ -68,18 +70,18 @@ WindowsAsyncSocket::Res WindowsAsyncSocket::Accept(SocketHandle clientSocket) {
 	const size_t clientSocketAddrSize = sizeof(_sockaddr) + 16;
 	OVERLAPPED overlapped{};
 
-	if (BOOL result = AcceptEx(
-		_socketHandle, // SocketHandle
-		clientSocket, // must not be connected or bound socket.
-		&addrBuffer, // local address, remote addres (never be NULL).
-		0, // initial data receving buffer on accept.
-		clientSocketAddrSize,
-		clientSocketAddrSize,
-		NULL,
-		reinterpret_cast<LPOVERLAPPED>(&overlapped)
-	); result != 0) {
-		return err::LogErrorWithResult<err::ESocketError::AcceptFailed>(_logger);
-	}
+	//if (BOOL result = AcceptEx(
+	//	_socketHandle, // SocketHandle
+	//	clientSocket, // must not be connected or bound socket.
+	//	&addrBuffer, // local address, remote addres (never be NULL).
+	//	0, // initial data receving buffer on accept.
+	//	clientSocketAddrSize,
+	//	clientSocketAddrSize,
+	//	NULL,
+	//	reinterpret_cast<LPOVERLAPPED>(&overlapped)
+	//); result != 0) {
+	//	return err::LogErrorWithResult<err::ESocketError::AcceptFailed>(_logger);
+	//}
 	return Res::Ok();
 }
 

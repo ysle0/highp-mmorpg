@@ -1,7 +1,8 @@
 #pragma once
 
 #include "platform.h"
-#include "IoContext.h"
+#include <memory>
+#include "OverlappedExt.h"
 
 namespace highp::network {
 struct Client : public std::enable_shared_from_this<Client> {

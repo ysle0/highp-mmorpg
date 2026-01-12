@@ -12,10 +12,10 @@ int main() {
 	auto logger = Logger::Default<TextLogger>();
 	EchoServer es(logger);
 
-	if (auto res = es.Start(); res.HasErr()) {
-		res.LogError(logger);
-		return -1;
-	}
+	// TODO: ISocket implementation needed
+	// if (auto res = es.Start(asyncSocket); res.HasErr()) {
+	// 	return -1;
+	// }
 
 	logger->Info("Press Enter to stop the server...");
 	std::cin.get();

@@ -1,4 +1,6 @@
 #include <Client.h>
+#include <Errors.hpp>
+#include <RuntimeCfg.h>
 #include <Windows.h>
 #include <WS2tcpip.h>
 #include "EchoServer.h"
@@ -13,9 +15,9 @@ EchoServer::~EchoServer() {
 
 EchoServer::EchoServer(std::shared_ptr<Logger> logger)
 	: _logger(logger)
-	, _config(RuntimeCfg::WithDefaults()) {}
+	, _config(network::RuntimeCfg::WithDefaults()) {}
 
-EchoServer::EchoServer(std::shared_ptr<Logger> logger, RuntimeCfg config)
+EchoServer::EchoServer(std::shared_ptr<Logger> logger, network::RuntimeCfg config)
 	: _logger(logger)
 	, _config(std::move(config)) {}
 
@@ -209,7 +211,6 @@ void EchoServer::WorkerLoop(std::stop_token st) {
 					{ ioCtx->buffer, std::size(ioCtx->buffer) },
 					bytesTransferred);
 				if (res.HasErr()) {
-					res.LogError(_logger);
 					this->CloseSocket(clientPtr, true);
 					break;
 				}
@@ -217,7 +218,6 @@ void EchoServer::WorkerLoop(std::stop_token st) {
 				// prepare next recv
 				res = this->Recv(clientPtr);
 				if (res.HasErr()) {
-					res.LogError(_logger);
 					this->CloseSocket(clientPtr, true);
 				}
 			}

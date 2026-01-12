@@ -1,14 +1,14 @@
 #pragma once
+#include <platform.h>
 #include <Const.h>
 #include <IocpError.h>
 #include <ISocket.h>
-#include <platform.h>
 #include <RuntimeCfg.h>
 #include <stop_token>
 #include <thread>
 
 namespace highp::network {
-class Client;
+struct Client;
 }
 
 namespace highp::log {
@@ -47,7 +47,7 @@ private:
 	std::shared_ptr<log::Logger> _logger;
 
 	// networks
-	HANDLE _iocpHandle = InvalidSoocket;
+	HANDLE _iocpHandle;
 	std::vector<std::shared_ptr<network::Client>> _clients;
 	char _socketBuffer[network::Const::socketBufferSize]{ 0, };
 

@@ -8,12 +8,6 @@ enum class ETransport {
 };
 
 #ifdef _WIN32
-using NetworkTransport = WindowsNetworkTransport;
-#elif _LINUX
-using NetworkTransport = LinuxNetworkTransport;
-#endif
-
-#ifdef _WIN32
 
 class WindowsNetworkTransport {
 public:
@@ -46,4 +40,11 @@ private:
 	ETransport _transportType;
 };
 #endif
+
+#ifdef _WIN32
+using NetworkTransport = WindowsNetworkTransport;
+#elif _LINUX
+using NetworkTransport = LinuxNetworkTransport;
+#endif
 }
+

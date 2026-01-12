@@ -1,8 +1,5 @@
 #pragma once
 
-#include <memory>
-#include "Logger.hpp"
-
 namespace highp::fn {
 
 // Primary template: Result<TData, E>
@@ -30,9 +27,6 @@ public:
 	bool HasErr() const { return _hasError; }
 	TData Data() const { return _data; }
 	E Err() const { return _err; }
-	void LogError(std::shared_ptr<log::Logger> logger) {
-		highp::err::LogError(logger);
-	}
 
 private:
 	TData _data;
@@ -59,10 +53,6 @@ public:
 	bool IsOk() const { return !_hasError; }
 	bool HasErr() const { return _hasError; }
 	E Err() const { return _err; }
-
-	void LogError(std::shared_ptr<log::Logger> logger) {
-		highp::err::LogError(logger);
-	}
 
 private:
 	E _err;
