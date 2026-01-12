@@ -4,6 +4,8 @@
 
 [socket]
 buffer_size = 4096
+recv_buffer_size = 4096
+send_buffer_size = 1024
 
 [network]
 client_ip_buffer_size = 32

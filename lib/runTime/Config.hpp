@@ -7,7 +7,8 @@
 #include <sstream>
 #include <string>
 #include <string_view>
-#include "TomlParser.h"
+#include "StringUtils.hpp"
+#include "TomlParser.hpp"
 
 namespace highp::config {
 

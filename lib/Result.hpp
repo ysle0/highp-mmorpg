@@ -1,38 +1,72 @@
 #pragma once
 
-namespace highp::func
-{
-template <typename T>
-class [[nodiscard]] Result
-{
-	T _err;
-	bool _hasError;
+#include <memory>
+#include "Logger.hpp"
+
+namespace highp::fn {
+
+// Primary template: Result<TData, E>
+template <typename TData, typename E>
+class [[nodiscard]] Result final {
+private:
+	Result() : _data{}, _err{}, _hasError(false) {}
+	explicit Result(TData data) : _data(std::move(data)), _err{}, _hasError(false) {}
+	Result(E err, bool) : _data{}, _err(err), _hasError(true) {}
 
 public:
-	static Result<T> Ok;	
-	static Result<T> Err(T err) {
-		return Result<T>(err);
+	static Result Ok() {
+		return Result();
 	}
 
-	bool IsOk() const {
-		return !_hasError;
+	static Result Ok(TData data) {
+		return Result(std::move(data));
 	}
 
-	bool IsErr() const {
-		return _hasError;
+	static Result Err(E err) {
+		return Result(err, true);
 	}
 
-	T Err() const {
-		return _err;
+	bool IsOk() const { return !_hasError; }
+	bool HasErr() const { return _hasError; }
+	TData Data() const { return _data; }
+	E Err() const { return _err; }
+	void LogError(std::shared_ptr<log::Logger> logger) {
+		highp::err::LogError(logger);
 	}
 
 private:
-	Result() : _err{}, _hasError(false) { }
-	explicit Result(T err) : _err(err), _hasError(true) { }
+	TData _data;
+	E _err;
+	bool _hasError;
 };
 
-template <typename T>
-Result<T> Result<T>::Ok = Result<T>();
+// Specialization: Result<void, E> - 데이터 없이 성공/실패만
+template <typename E>
+class [[nodiscard]] Result<void, E> final {
+private:
+	Result() : _err{}, _hasError(false) {}
+	Result(E err, bool) : _err(err), _hasError(true) {}
 
-}
+public:
+	static Result Ok() {
+		return Result();
+	}
 
+	static Result Err(E err) {
+		return Result(err, true);
+	}
+
+	bool IsOk() const { return !_hasError; }
+	bool HasErr() const { return _hasError; }
+	E Err() const { return _err; }
+
+	void LogError(std::shared_ptr<log::Logger> logger) {
+		highp::err::LogError(logger);
+	}
+
+private:
+	E _err;
+	bool _hasError;
+};
+
+} // namespace highp::fn

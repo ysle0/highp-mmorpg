@@ -1,63 +1,62 @@
 #pragma once
-#pragma comment(lib, "ws2_32.lib")
-
-#include <atomic>
+#include <Const.h>
 #include <IocpError.h>
-#include <Logger.hpp>
-#include <memory>
-#include <string_view>
+#include <ISocket.h>
+#include <platform.h>
+#include <RuntimeCfg.h>
+#include <stop_token>
 #include <thread>
-#include <vector>
-#include <WinSock2.h>
-#include "Client.h"
-#include "Config.h"
-#include "Const.h"
+
+namespace highp::network {
+class Client;
+}
+
+namespace highp::log {
+class Logger;
+}
 
 namespace highp::echo_srv {
-using highp::err::IocpResult;
-using highp::log::Logger;
-
 class EchoServer final {
+	using Res = highp::fn::Result<void, highp::err::EIocpError>;
 public:
 	~EchoServer() noexcept;
-	explicit EchoServer(std::shared_ptr<Logger> logger);
-	EchoServer(std::shared_ptr<Logger> logger, RuntimeCfg config);
+	explicit EchoServer(std::shared_ptr<log::Logger> logger);
+	EchoServer(std::shared_ptr<log::Logger> logger, network::RuntimeCfg config);
 
 	/// <summary>
 	/// Start EchoServer with configured values.
 	/// <see href="config.runtime.toml"/>
 	/// </summary>
-	IocpResult Start();
+	Res Start(std::shared_ptr<network::ISocket> asyncSocket);
 
 	void Stop();
 
 private:
-	IocpResult Recv(std::shared_ptr<Client> client);
-	IocpResult Send(std::shared_ptr<Client> client, std::string_view message, ULONG messageLen);
+	Res Recv(std::shared_ptr<network::Client> clientSocket);
+	Res Send(std::shared_ptr<network::Client> clientSocket, std::string_view message, ULONG messageLen);
 
 	void WorkerLoop(std::stop_token st);
-	void AccepterLoop(std::stop_token st);
+	void AccepterLoop(std::shared_ptr<network::ISocket> asyncSocket, std::stop_token st);
 
-	void CloseSocket(std::shared_ptr<Client> client, bool isFireAndForget);
+	void CloseSocket(std::shared_ptr<network::Client> clientSocket, bool isFireAndForget);
 
-	std::shared_ptr<Client> FindClient();
+	std::shared_ptr<network::Client> FindClient();
 
 	// dependency injected
 private:
-	std::shared_ptr<Logger> _logger;
+	std::shared_ptr<log::Logger> _logger;
 
 	// networks
-	SOCKET _listenerSocket = INVALID_SOCKET;
-	HANDLE _iocpHandle = INVALID_HANDLE_VALUE;
-	std::vector<std::shared_ptr<Client>> _clients;
-	char _socketBuffer[Const::socketBufferSize]{ 0, };
+	HANDLE _iocpHandle = InvalidSoocket;
+	std::vector<std::shared_ptr<network::Client>> _clients;
+	char _socketBuffer[network::Const::socketBufferSize]{ 0, };
 
 	// threads
 	std::vector<std::jthread> _workerThreads;
 	std::jthread _accepterThread;
 
 	// config & states
-	RuntimeCfg _config = RuntimeCfg::WithDefaults();
+	network::RuntimeCfg _config = network::RuntimeCfg::WithDefaults();
 	std::atomic_uint _clientCount = 0;
 };
 }

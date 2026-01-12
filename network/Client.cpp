@@ -1,9 +1,9 @@
 #include "Client.h"
 
-namespace highp::echo_srv {
+namespace highp::network {
 Client::Client() {
-	ZeroMemory(&recvOverlapped, sizeof(IoContext));
-	ZeroMemory(&sendOverlapped, sizeof(IoContext));
+	ZeroMemory(&recvOverlapped, sizeof(OverlappedExt));
+	ZeroMemory(&sendOverlapped, sizeof(OverlappedExt));
 }
 
 void Client::Close(bool isFireAndForget) {

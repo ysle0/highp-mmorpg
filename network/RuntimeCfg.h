@@ -1,12 +1,12 @@
 #pragma once
 
 #include <filesystem>
-#include <runTime/Config.h>
+#include <runTime/Config.hpp>
 #include <stdexcept>
 #include <thread>
 #include <Windows.h>
 
-namespace highp::echo_srv {
+namespace highp::network {
 // =============================================================================
 // Runtime Config
 // =============================================================================

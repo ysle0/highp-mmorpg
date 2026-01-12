@@ -140,15 +140,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="compileTime\Config.h" />
-    <ClInclude Include="compileTime\StringUtils.h" />
-    <ClInclude Include="compileTime\TomlEntry.h" />
-    <ClInclude Include="compileTime\TomlParser.h" />
+    <ClInclude Include="compileTime\Config.hpp" />
+    <ClInclude Include="compileTime\StringUtils.hpp" />
+    <ClInclude Include="compileTime\TomlEntry.hpp" />
+    <ClInclude Include="compileTime\TomlParser.hpp" />
     <ClInclude Include="Crash.h" />
-    <ClInclude Include="runTime\Config.h" />
-    <ClInclude Include="runTime\StringUtils.h" />
-    <ClInclude Include="runTime\TomlEntry.h" />
-    <ClInclude Include="runTime\TomlParser.h" />
+    <ClInclude Include="Errors.hpp" />
+    <ClInclude Include="runTime\Config.hpp" />
+    <ClInclude Include="runTime\StringUtils.hpp" />
+    <ClInclude Include="runTime\TomlEntry.hpp" />
+    <ClInclude Include="runTime\TomlParser.hpp" />
     <ClInclude Include="ELoggerVerbosity.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="ILogger.h" />
@@ -161,6 +162,7 @@
     <ClInclude Include="TextLogger.h" />
     <ClInclude Include="ThreadManager.h" />
     <ClInclude Include="TLS.h" />
+    <ClInclude Include="SocketError.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Crash.cpp" />

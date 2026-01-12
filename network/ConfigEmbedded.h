@@ -2,10 +2,8 @@
 // Auto-generated from: echo\echo-server\config.compile.toml
 // Do not edit manually. Run embed_config.ps1 to regenerate.
 
-namespace highp::echo_srv
-{
-
-inline constexpr const char* ECHO_SERVER_CONFIG = R"TOML(
+namespace highp::network {
+inline constexpr const char* NETWORK_CONFIG = R"TOML(
 # Echo Server Compile-time Configuration
 # These values are embedded at compile time for static buffer sizes.
 # See config.runtime.toml for runtime-configurable values.

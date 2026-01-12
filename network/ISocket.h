@@ -1,0 +1,23 @@
+﻿#pragma once
+#include <macro.h>
+#include <Result.hpp>
+#include <SocketError.h>
+
+namespace highp::network {
+class NetworkTransport;
+
+class ISocket {
+public:
+	using Res = highp::fn::Result<void, highp::err::ESocketError>;
+	virtual ~ISocket() = default;
+
+	virtual Res Initialize() PURE;
+	virtual Res CreateSocket(NetworkTransport) PURE;
+	virtual Res Bind(unsigned short port) PURE;
+	virtual Res Listen(int backlog) PURE;
+	virtual Res Accept(SocketHandle clientSocket) PURE;
+	virtual Res Cleanup() PURE;
+	virtual SocketHandle GetSocketHandle() const PURE;
+	virtual Client GetClient() PURE;
+};
+}

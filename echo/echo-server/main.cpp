@@ -1,18 +1,19 @@
 #include <iostream>
+#include <Logger.hpp>
 #include <TextLogger.h>
 #include "EchoServer.h"
 
-using highp::log::Logger;
-using highp::log::TextLogger;
-using highp::err::EIocpErrorHelper;
-using highp::echo_srv::EchoServer;
+using namespace highp::echo_srv;
+
+using Logger = highp::log::Logger;
+using TextLogger = highp::log::TextLogger;
 
 int main() {
 	auto logger = Logger::Default<TextLogger>();
 	EchoServer es(logger);
 
-	if (auto res = es.Start(); res.IsErr()) {
-		logger->Error(EIocpErrorHelper::ToString(res.Err()));
+	if (auto res = es.Start(); res.HasErr()) {
+		res.LogError(logger);
 		return -1;
 	}
 

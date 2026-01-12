@@ -7,13 +7,112 @@
     <Filter Include="src">
       <UniqueIdentifier>{168ef7d2-71c8-48bd-b6b0-56e28d9fd976}</UniqueIdentifier>
     </Filter>
+    <Filter Include="inc\socket">
+      <UniqueIdentifier>{fc0cadad-9020-4c75-a943-95b6b9935dee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\socket">
+      <UniqueIdentifier>{7e767a8b-3ee9-4a40-aeb6-04d4fe13040b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="inc\transport">
+      <UniqueIdentifier>{7509c70b-1807-4f9f-b430-8f1ac7e344d1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="inc\config">
+      <UniqueIdentifier>{4d44fd68-3bca-4ea0-96f0-fc398ee838a4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="inc\util">
+      <UniqueIdentifier>{d299584f-ad09-4aa6-9c0a-d02394a0cbb0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="inc\client">
+      <UniqueIdentifier>{c791ae0a-2321-465b-bffa-9d55268eb9c5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="inc\client\windows">
+      <UniqueIdentifier>{752a6b10-ec6e-4e51-b49a-5a59b3d0e9e5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\client">
+      <UniqueIdentifier>{c93447ee-218b-4fc1-9157-9cf3ea69f1a8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\client\windows">
+      <UniqueIdentifier>{d2df9d3c-060e-4d79-a52e-03f65b580af5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\io">
+      <UniqueIdentifier>{c3da57d1-7e9a-4a31-aed6-a4095bc9999d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\io\windows">
+      <UniqueIdentifier>{22da760b-d92d-4020-90f4-de59b3634c6d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="inc\io">
+      <UniqueIdentifier>{fe0d06ab-ec1b-4e37-b8f8-92b65f538766}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="inc\io\windows">
+      <UniqueIdentifier>{2057b025-9bb1-4309-b369-0a3c79469ff0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="ISocket.h">
+      <Filter>inc\socket</Filter>
+    </ClInclude>
+    <ClInclude Include="WindowsAsyncSocket.h">
+      <Filter>inc\socket</Filter>
+    </ClInclude>
+    <ClInclude Include="AsyncSocket.h">
+      <Filter>inc\socket</Filter>
+    </ClInclude>
+    <ClInclude Include="platform.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="ConfigEmbedded.h">
+      <Filter>inc\config</Filter>
+    </ClInclude>
+    <ClInclude Include="Const.h">
+      <Filter>inc\config</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkTransport.hpp">
+      <Filter>inc\transport</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkUtil.hpp">
+      <Filter>inc\util</Filter>
+    </ClInclude>
+    <ClInclude Include="Client.h">
+      <Filter>inc\client\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="EIoType.h">
+      <Filter>inc\client\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="OverlappedExt.h">
+      <Filter>inc\client\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="AsyncAcceptor.h">
+      <Filter>inc\socket</Filter>
+    </ClInclude>
+    <ClInclude Include="IoCompletionPort.h">
+      <Filter>inc\io\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="OverlappedEx.h">
+      <Filter>inc\client\windows</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="network.cpp" />
     <ClCompile Include="pch.cpp" />
+    <ClCompile Include="WindowsAsyncSocket.cpp">
+      <Filter>src\socket</Filter>
+    </ClCompile>
+    <ClCompile Include="AsyncSocket.cpp">
+      <Filter>src\socket</Filter>
+    </ClCompile>
+    <ClCompile Include="Client.cpp">
+      <Filter>src\client\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="AsyncAcceptor.cpp">
+      <Filter>src\socket</Filter>
+    </ClCompile>
+    <ClCompile Include="IoCompletionPort.cpp">
+      <Filter>src\io\windows</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="config.compile.toml" />
   </ItemGroup>
 </Project>

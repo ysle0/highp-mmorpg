@@ -4,8 +4,8 @@
 #include <string>
 #include <string_view>
 #include <vector>
-#include "StringUtils.h"
-#include "TomlEntry.h"
+#include "StringUtils.hpp"
+#include "TomlEntry.hpp"
 
 namespace highp::config {
 
@@ -126,18 +126,18 @@ private:
 			value = StringUtils::Trim(value.substr(0, commentPos.value()));
 		}
 
-		TomlValueType type = TomlValueType::String;
+		TomlValueType ioType = TomlValueType::String;
 		if (value == "true" || value == "false") {
-			type = TomlValueType::Boolean;
+			ioType = TomlValueType::Boolean;
 		} else if (!value.empty() && (StringUtils::IsDigit(value[0]) || value[0] == '-' || value[0] == '+')) {
-			type = TomlValueType::Integer;
+			ioType = TomlValueType::Integer;
 		}
 
 		return TomlEntry{
 			.section = currentSection,
 			.key = std::string(key),
 			.value = std::string(value),
-			.type = type
+			.ioType = ioType
 		};
 	}
 };

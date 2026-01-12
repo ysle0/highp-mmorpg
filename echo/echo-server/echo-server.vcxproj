@@ -128,21 +128,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Client.cpp" />
     <ClCompile Include="EchoServer.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Client.h" />
     <ClInclude Include="Config.h" />
-    <ClInclude Include="ConfigEmbedded.h" />
-    <ClInclude Include="Const.h" />
-    <ClInclude Include="EIoType.h" />
     <ClInclude Include="EchoServer.h" />
-    <ClInclude Include="IoContext.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="config.compile.toml" />
     <None Include="config.runtime.toml" />
   </ItemGroup>
   <ItemGroup>

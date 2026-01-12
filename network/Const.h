@@ -1,16 +1,16 @@
 #pragma once
 
-#include <compileTime/Config.h>
+#include <compileTime/Config.hpp>
 #include <Windows.h>
 #include "ConfigEmbedded.h"
 
-namespace highp::echo_srv {
+namespace highp::network {
 
 // =============================================================================
 // Compile-time Config
 // =============================================================================
 inline constexpr auto Config = highp::config::CompileTimeConfig<>::From(
-	highp::echo_srv::ECHO_SERVER_CONFIG);
+	highp::network::NETWORK_CONFIG);
 
 struct Const {
 	static constexpr INT socketBufferSize = Config.Int("socket.buffer_size", 4096);

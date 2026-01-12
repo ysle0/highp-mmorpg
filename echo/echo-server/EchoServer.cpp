@@ -1,22 +1,7 @@
-#include <algorithm>
-#include <atomic>
-#include <IocpError.h>
-#include <iterator>
-#include <Logger.hpp>
-#include <memory>
-#include <stop_token>
-#include <string>
-#include <string_view>
-#include <thread>
-#include <utility>
-#include <WinSock2.h>
+#include <Client.h>
+#include <Windows.h>
 #include <WS2tcpip.h>
-#include "Client.h"
-#include "Config.h"
-#include "Const.h"
 #include "EchoServer.h"
-#include "EIoType.h"
-#include "IoContext.h"
 
 namespace highp::echo_srv {
 using namespace highp::err;
@@ -26,84 +11,31 @@ EchoServer::~EchoServer() {
 	WSACleanup();
 }
 
-EchoServer::EchoServer(std::shared_ptr<Logger> loggerImpl)
-	: _logger(std::move(loggerImpl))
+EchoServer::EchoServer(std::shared_ptr<Logger> logger)
+	: _logger(logger)
 	, _config(RuntimeCfg::WithDefaults()) {}
 
-EchoServer::EchoServer(std::shared_ptr<Logger> loggerImpl, RuntimeCfg config)
-	: _logger(std::move(loggerImpl))
+EchoServer::EchoServer(std::shared_ptr<Logger> logger, RuntimeCfg config)
+	: _logger(logger)
 	, _config(std::move(config)) {}
 
-IocpResult EchoServer::Start() {
-	// 1. WSAStartup
-	WSADATA data;
-	if (WSAStartup(MAKEWORD(2, 2), &data) != 0) {
-		_logger->Error("{}: {}",
-			EIocpErrorHelper::ToString(EIocpError::WsaStartupFailed),
-			WSAGetLastError());
-		return IocpResult::Err(EIocpError::WsaStartupFailed);
-	}
-
-	// 2. Create TCP socket
-	_listenerSocket = WSASocket(
-		AF_INET,
-		SOCK_STREAM,
-		IPPROTO_TCP,
-		nullptr,
-		NULL,
-		WSA_FLAG_OVERLAPPED);
-	if (_listenerSocket == INVALID_SOCKET) {
-		_logger->Error("{}: {}",
-			EIocpErrorHelper::ToString(EIocpError::CreateSocketFailed),
-			WSAGetLastError());
-		WSACleanup();
-		return IocpResult::Err(EIocpError::CreateSocketFailed);
-	}
-
-	// 3. Bind
-	SOCKADDR_IN addr{
-		.sin_family = AF_INET,
-		.sin_port = htons(static_cast<u_short>(_config.port)),
-	};
-	addr.sin_addr.s_addr = htonl(INADDR_ANY);
-
-	if (bind(_listenerSocket, (SOCKADDR*)&addr, sizeof(SOCKADDR_IN)) != 0) {
-		_logger->Error("{}: {}",
-			EIocpErrorHelper::ToString(EIocpError::BindFailed),
-			WSAGetLastError());
-		closesocket(_listenerSocket);
-		WSACleanup();
-		return IocpResult::Err(EIocpError::BindFailed);
-	}
-
-	// 4. Listen
-	if (listen(_listenerSocket, _config.backlog) != 0) {
-		_logger->Error("{}: {}",
-			EIocpErrorHelper::ToString(EIocpError::ListenFailed),
-			WSAGetLastError());
-		closesocket(_listenerSocket);
-		WSACleanup();
-		return IocpResult::Err(EIocpError::ListenFailed);
-	}
-
-	// 5. Create a new IOCP handle
+EchoServer::Res EchoServer::Start(
+	std::shared_ptr<highp::network::ISocket> asyncSocket
+) {
+	// 1. Create a new IOCP handle
 	_iocpHandle = CreateIoCompletionPort(
 		INVALID_HANDLE_VALUE,
 		nullptr,
 		NULL,
 		_config.workerThreadCount);
 	if (_iocpHandle == NULL) {
-		_logger->Error("{}: {}",
-			EIocpErrorHelper::ToString(EIocpError::CreateIocpFailed),
-			WSAGetLastError());
-		closesocket(_listenerSocket);
-		WSACleanup();
-		return IocpResult::Err(EIocpError::CreateIocpFailed);
+		asyncSocket->Cleanup();
+		return err::LogErrorWithResult<EIocpError::CreateIocpFailed>(_logger);
 	}
 
 	// 6. Populate clients
 	for (auto i = 0; i < _config.maxClients; i++) {
-		_clients.emplace_back(std::make_shared<Client>());
+		_clients.emplace_back(std::make_shared<highp::network::Client>());
 	}
 
 	// 7. Create worker threads
@@ -115,13 +47,13 @@ IocpResult EchoServer::Start() {
 	_logger->Info("worker threads created. count: {}", _config.workerThreadCount);
 
 	// 8. Create accepter thread
-	_accepterThread = std::jthread([this](std::stop_token st) {
-		AccepterLoop(st);
+	_accepterThread = std::jthread([this, asyncSocket](std::stop_token st) {
+		AccepterLoop(asyncSocket, st);
 	});
 	_logger->Info("accepter thread created.");
 
 	_logger->Info("server started on port {}.", _config.port);
-	return IocpResult::Ok;
+	return Res::Ok();
 }
 
 void EchoServer::Stop() {
@@ -138,84 +70,80 @@ void EchoServer::Stop() {
 
 	// 2. Accepter 스레드 종료
 	// accept()가 블로킹 중이므로 소켓을 먼저 닫아서 깨움
-	closesocket(_listenerSocket);
+	//closesocket(_socket);
 	_accepterThread.request_stop();
 
 	// 3. IOCP 핸들 정리
 	CloseHandle(_iocpHandle);
 }
 
-IocpResult EchoServer::Recv(std::shared_ptr<Client> client) {
-	ZeroMemory(&client->recvOverlapped.overlapped, sizeof(WSAOVERLAPPED));
-	client->recvOverlapped.wsaBuffer.len = Const::socketBufferSize;
-	client->recvOverlapped.wsaBuffer.buf = client->recvOverlapped.buffer;
-	client->recvOverlapped.type = EIoType::Recv;
+EchoServer::Res EchoServer::Recv(std::shared_ptr<highp::network::Client> clientSocket) {
+	ZeroMemory(&clientSocket->recvOverlapped.overlapped, sizeof(WSAOVERLAPPED));
+
+	clientSocket->recvOverlapped.wsaBuffer.buf = clientSocket->recvOverlapped.buffer;
+	clientSocket->recvOverlapped.wsaBuffer.len = network::Const::socketBufferSize;
+	clientSocket->recvOverlapped.ioType = network::EIoType::Recv;
 
 	DWORD flag = 0;
 	DWORD recvNumBytes = 0;
 
 	const int result = WSARecv(
-		client->socket,
-		&(client->recvOverlapped.wsaBuffer),
+		clientSocket->socket,
+		&(clientSocket->recvOverlapped.wsaBuffer),
 		1,
 		&recvNumBytes,
 		&flag,
-		(LPWSAOVERLAPPED)(&client->recvOverlapped),
+		(LPWSAOVERLAPPED)(&clientSocket->recvOverlapped),
 		NULL);
 	if (result == SOCKET_ERROR &&
-		(WSAGetLastError() != ERROR_IO_PENDING)) {
-		_logger->Error("{}: {}",
-			EIocpErrorHelper::ToString(EIocpError::RecvFailed),
-			WSAGetLastError());
-		return IocpResult::Err(EIocpError::RecvFailed);
+		(WSAGetLastError() != ERROR_IO_PENDING)
+		) {
+		return err::LogErrorWithResult<EIocpError::RecvFailed>(_logger);
 	}
 
-	return IocpResult::Ok;
+	return Res::Ok();
 }
 
-IocpResult EchoServer::Send(
-	std::shared_ptr<Client> client,
+EchoServer::Res EchoServer::Send(
+	std::shared_ptr<network::Client> clientSocket,
 	std::string_view message,
 	ULONG messageLen
 ) {
-	ZeroMemory(&client->sendOverlapped.overlapped, sizeof(WSAOVERLAPPED));
+	ZeroMemory(&clientSocket->sendOverlapped.overlapped, sizeof(WSAOVERLAPPED));
 	DWORD recvNumBytes = 0;
-	CopyMemory(client->sendOverlapped.buffer, message.data(), messageLen);
+	CopyMemory(clientSocket->sendOverlapped.buffer, message.data(), messageLen);
 
-	client->sendOverlapped.wsaBuffer.len = messageLen;
-	client->sendOverlapped.wsaBuffer.buf = client->sendOverlapped.buffer;
-	client->sendOverlapped.type = EIoType::Send;
+	clientSocket->sendOverlapped.wsaBuffer.len = messageLen;
+	clientSocket->sendOverlapped.wsaBuffer.buf = clientSocket->sendOverlapped.buffer;
+	clientSocket->sendOverlapped.ioType = network::EIoType::Send;
 
 	const int result = WSASend(
-		client->socket,
-		&client->sendOverlapped.wsaBuffer,
+		clientSocket->socket,
+		&clientSocket->sendOverlapped.wsaBuffer,
 		1,
 		&recvNumBytes,
 		0,
-		(LPWSAOVERLAPPED)(&client->sendOverlapped),
+		(LPWSAOVERLAPPED)(&clientSocket->sendOverlapped),
 		NULL);
 	if (result == SOCKET_ERROR &&
 		WSAGetLastError() != ERROR_IO_PENDING) {
-		_logger->Error("{}: {}",
-			EIocpErrorHelper::ToString(EIocpError::SendFailed),
-			WSAGetLastError());
-		return IocpResult::Err(EIocpError::SendFailed);
+		return err::LogErrorWithResult<EIocpError::SendFailed>(_logger);
 	}
 
-	return IocpResult::Ok;
+	return Res::Ok();
 }
 
 void EchoServer::WorkerLoop(std::stop_token st) {
 	while (!st.stop_requested()) {
 		DWORD bytesTransferred = 0;
-		Client* client = nullptr;
+		network::Client* clientSocket = nullptr;
 		LPOVERLAPPED overlapped = nullptr;
 
 		// Completion Packet 추가 시 까지 sleep...
 		const BOOL ok = GetQueuedCompletionStatus(
 			_iocpHandle,
 			&bytesTransferred,
-			(PULONG_PTR)&client,
+			(PULONG_PTR)&clientSocket,
 			&overlapped,
 			INFINITE);
 
@@ -230,15 +158,13 @@ void EchoServer::WorkerLoop(std::stop_token st) {
 			const bool isIoFailed = overlapped != nullptr;
 			const DWORD err = GetLastError();
 			if (isIoFailed) {
-				_logger->Error("{}: {}",
-					EIocpErrorHelper::ToString(EIocpError::IoFailed),
-					err);
+				err::LogError<EIocpError::IoFailed>(_logger);
 				continue;
 			}
 
 			// IOCP internal error handling.
 			_logger->Error("{}: {}",
-				EIocpErrorHelper::ToString(EIocpError::IocpInternalError),
+				err::FromIocpErrorToString<EIocpError::IocpInternalError>(),
 				err);
 
 			if (err == WAIT_TIMEOUT) {
@@ -250,24 +176,24 @@ void EchoServer::WorkerLoop(std::stop_token st) {
 		}
 
 		// Stop()에서 보낸 종료 신호 처리
-		if (client == nullptr && overlapped == nullptr) {
+		if (clientSocket == nullptr && overlapped == nullptr) {
 			break;
 		}
 
 		// 클라이언트 graceful disconnect 처리
 		if (bytesTransferred == 0) {
-			auto clientPtr = client->shared_from_this();
+			auto clientPtr = clientSocket->shared_from_this();
 			_logger->Info("[Graceful Disconnect] Socket #{} is disconnected from the server (this)",
 				clientPtr->socket);
 			this->CloseSocket(clientPtr, true);
 			continue;
 		}
 
-		auto clientPtr = client->shared_from_this();
+		auto clientPtr = clientSocket->shared_from_this();
 
-		auto ioCtx = (IoContext*)overlapped;
-		switch (ioCtx->type) {
-			case EIoType::Recv:
+		auto ioCtx = (network::OverlappedExt*)overlapped;
+		switch (ioCtx->ioType) {
+			case network::EIoType::Recv:
 			{
 				ioCtx->buffer[bytesTransferred] = NULL;
 
@@ -282,26 +208,22 @@ void EchoServer::WorkerLoop(std::stop_token st) {
 					clientPtr,
 					{ ioCtx->buffer, std::size(ioCtx->buffer) },
 					bytesTransferred);
-				if (res.IsErr()) {
-					_logger->Error("{}: {}",
-						EIocpErrorHelper::ToString(res.Err()),
-						WSAGetLastError());
+				if (res.HasErr()) {
+					res.LogError(_logger);
 					this->CloseSocket(clientPtr, true);
 					break;
 				}
 
 				// prepare next recv
 				res = this->Recv(clientPtr);
-				if (res.IsErr()) {
-					_logger->Error("{}: {}",
-						EIocpErrorHelper::ToString(res.Err()),
-						WSAGetLastError());
+				if (res.HasErr()) {
+					res.LogError(_logger);
 					this->CloseSocket(clientPtr, true);
 				}
 			}
 			break;
 
-			case EIoType::Send:
+			case network::EIoType::Send:
 			{
 				_logger->Info("[Send] socket #{}, bytesTransferred: {}",
 					(int)clientPtr->socket,
@@ -312,7 +234,7 @@ void EchoServer::WorkerLoop(std::stop_token st) {
 			default:
 			{
 				_logger->Error("{}, socket #{}, bytesTransferred: {}",
-					EIocpErrorHelper::ToString(EIocpError::UnknownError),
+					err::FromIocpErrorToString<EIocpError::UnknownError>(),
 					(int)clientPtr->socket,
 					bytesTransferred);
 			}
@@ -321,65 +243,65 @@ void EchoServer::WorkerLoop(std::stop_token st) {
 	}
 }
 
-void EchoServer::AccepterLoop(std::stop_token st) {
+void EchoServer::AccepterLoop(std::shared_ptr<highp::network::ISocket> asyncSocket, std::stop_token st) {
 	SOCKADDR_IN clientAddr{};
 	int addrLen = sizeof(SOCKADDR_IN);
 
 	while (!st.stop_requested()) {
-		auto client = this->FindClient();
-		if (!client) {
+		auto clientSocket = this->FindClient();
+		if (!clientSocket) {
 			_logger->Error("Client Full!");
 			return;
 		}
 
-		client->socket = accept(
-			_listenerSocket,
-			(SOCKADDR*)&clientAddr,
-			&addrLen);
-		if (client->socket == INVALID_SOCKET) {
-			_logger->Error("{}: {}",
-				EIocpErrorHelper::ToString(EIocpError::AcceptFailed),
-				WSAGetLastError());
+		if (auto res = asyncSocket->Accept(clientSocket->socket); res.HasErr()) {
+			err::LogError<EIocpError::AcceptThreadFailed>(_logger);
 			continue;
 		}
 
-		// Associate client socket with IOCP
+
+		//clientSocket->socket = accept(
+		//	asyncSocket->GetSocket(),
+		//	(SOCKADDR*)&clientAddr,
+		//	&addrLen);
+		//if (clientSocket->socket == INVALID_SOCKET) {
+		//}
+
+		// Associate clientSocket socket with IOCP
 		HANDLE iocpConnHandle = CreateIoCompletionPort(
-			(HANDLE)client->socket,
+			(HANDLE)clientSocket->socket,
 			_iocpHandle,
-			(ULONG_PTR)(client.get()),
+			(ULONG_PTR)(clientSocket.get()),
 			0);
 		if (iocpConnHandle == NULL || iocpConnHandle != _iocpHandle) {
-			_logger->Error("{}: {}",
-				EIocpErrorHelper::ToString(EIocpError::CreateIocpFailed),
-				WSAGetLastError());
+			err::LogError<EIocpError::CreateIocpFailed>(_logger);
 			continue;
 		}
 
-		if (auto res = this->Recv(client); res.IsErr()) {
-			_logger->Error("error propated. error: {}",
-				EIocpErrorHelper::ToString(res.Err()));
+		if (auto res = this->Recv(clientSocket); res.HasErr()) {
+			//_logger->Error("error propated. error: {}",
+			//	EIocpErrorHelper::FromIocpErrorToString(res.Err()));
 			return;
 		}
 
-		char clientIp[Const::clientIpBufferSize]{ 0, };
+		char clientIp[network::Const::clientIpBufferSize]{ 0, };
 		inet_ntop(
 			AF_INET,
 			&clientAddr.sin_addr,
 			clientIp,
-			Const::clientIpBufferSize - 1);
-		_logger->Info("Client connected. socket: {}", (int)client->socket);
+			network::Const::clientIpBufferSize - 1);
+		_logger->Info("Client connected. socket: {}", (int)clientSocket->socket);
 
 		_clientCount++;
 	}
 }
 
-void EchoServer::CloseSocket(std::shared_ptr<Client> client, bool isFireAndForget) {
-	client->Close(isFireAndForget);
+void EchoServer::CloseSocket(std::shared_ptr<network::Client> clientSocket, bool isFireAndForget) {
+	clientSocket->Close(isFireAndForget);
 }
 
-std::shared_ptr<Client> EchoServer::FindClient() {
-	auto found = std::find_if(_clients.begin(), _clients.end(), [](std::shared_ptr<Client> const& c) {
+std::shared_ptr<network::Client> EchoServer::FindClient() {
+	auto found = std::find_if(_clients.begin(), _clients.end(), [](std::shared_ptr<network::Client> const& c) {
 		return c->socket == INVALID_SOCKET;
 	});
 	if (found != _clients.end())

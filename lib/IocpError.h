@@ -1,20 +1,13 @@
 #pragma once
 
-#include "Result.hpp"
+#include <string_view>
 
 namespace highp::err {
 enum class EIocpError {
 	UnknownError = 0,
 
-	WsaStartupFailed,
-	CreateSocketFailed,
-	SocketError,
-	BindFailed,
-	ListenFailed,
-	AcceptFailed,
-	PostAcceptFailed,
-
 	CreateIocpFailed,
+	ConnectIocpFailed,
 	IocpInternalError,
 	IoFailed,
 
@@ -23,29 +16,37 @@ enum class EIocpError {
 
 	CreateWorkerThreadFailed,
 	CreateAccepterThreadFailed,
+	WorkerThreadFailed,
+	AcceptThreadFailed,
 };
 
-using IocpResult = highp::func::Result<EIocpError>;
+//static std::string_view FromIocpErrorToString(EIocpError err) {
+//	switch (err) {
+//		case EIocpError::CreateIocpFailed: return "CreateIoCompletionPort failed.";
+//		case EIocpError::ConnectIocpFailed: return "CreateIoCompletionPort failed: connecting a clientSocket socket failed.";
+//		case EIocpError::RecvFailed: return "Receive failed.";
+//		case EIocpError::SendFailed: return "Send failed.";
+//		case EIocpError::CreateWorkerThreadFailed: return "Create worker thread failed.";
+//		case EIocpError::CreateAccepterThreadFailed: return "Create accepter thread failed.";
+//		case EIocpError::WorkerThreadFailed: return "Worker thread failed.";
+//		case EIocpError::AcceptThreadFailed: return "Accept thread failed.";
+//		case EIocpError::UnknownError:
+//		default: return "Unknown error.";
+//	}
+//}
 
-class EIocpErrorHelper {
-public:
-	static const char* ToString(EIocpError error) {
-		switch (error) {
-			case EIocpError::WsaStartupFailed: return "WSAStartup failed.";
-			case EIocpError::CreateIocpFailed: return "CreateIoCompletionPort failed.";
-			case EIocpError::CreateSocketFailed: return "Create socket failed.";
-			case EIocpError::SocketError: return "Socket error.";
-			case EIocpError::BindFailed: return "Bind failed.";
-			case EIocpError::ListenFailed: return "Listen failed.";
-			case EIocpError::AcceptFailed: return "Accept failed.";
-			case EIocpError::CreateWorkerThreadFailed: return "Create worker thread failed.";
-			case EIocpError::CreateAccepterThreadFailed: return "Create accepter thread failed.";
-			case EIocpError::PostAcceptFailed: return "Post accept failed.";
-			case EIocpError::RecvFailed: return "Receive failed.";
-			case EIocpError::SendFailed: return "Send failed.";
-			case EIocpError::UnknownError:
-			default: return "Unknown error.";
-		}
+template <EIocpError E>
+static std::string_view FromIocpErrorToString() {
+	switch (E) {
+		case EIocpError::CreateIocpFailed: return "CreateIoCompletionPort failed.";
+		case EIocpError::RecvFailed: return "Receive failed.";
+		case EIocpError::SendFailed: return "Send failed.";
+		case EIocpError::CreateWorkerThreadFailed: return "Create worker thread failed.";
+		case EIocpError::CreateAccepterThreadFailed: return "Create accepter thread failed.";
+		case EIocpError::WorkerThreadFailed: return "Worker thread failed.";
+		case EIocpError::AcceptThreadFailed: return "Accept thread failed.";
+		case EIocpError::UnknownError:
+		default: return "Unknown error.";
 	}
-};
+}
 }
