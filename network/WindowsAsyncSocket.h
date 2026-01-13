@@ -7,6 +7,7 @@ class WindowsAsyncSocket : public AsyncSocket {
 	using ResWithData = highp::fn::Result<SOCKET, highp::err::ESocketError>;
 
 public:
+	WindowsAsyncSocket(std::shared_ptr<log::Logger> logger);
 	virtual ~WindowsAsyncSocket() noexcept override;
 
 public:

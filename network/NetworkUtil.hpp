@@ -6,7 +6,7 @@ namespace highp::network {
 /// </summary>
 /// <param name="port"></param>
 /// <returns></returns>
-bool IsValidPort(unsigned short port) {
+inline bool IsValidPort(unsigned short port) {
 	return port > 0 && port <= 65535;
 }
 

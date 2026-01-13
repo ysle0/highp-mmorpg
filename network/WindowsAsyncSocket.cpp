@@ -4,6 +4,7 @@
 #include "WindowsAsyncSocket.h"
 
 namespace highp::network {
+WindowsAsyncSocket::WindowsAsyncSocket(std::shared_ptr<log::Logger> logger) : AsyncSocket{ logger } {}
 
 WindowsAsyncSocket::~WindowsAsyncSocket() {
 	WSACleanup();

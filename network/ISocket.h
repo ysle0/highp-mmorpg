@@ -5,7 +5,6 @@
 #include "NetworkTransport.hpp"
 
 namespace highp::network {
-struct Client;
 
 class ISocket {
 public:
@@ -19,6 +18,5 @@ public:
 	virtual Res Accept(SocketHandle clientSocket) PURE;
 	virtual Res Cleanup() PURE;
 	virtual SocketHandle GetSocketHandle() const PURE;
-	virtual Client GetClient() PURE;
 };
 }
