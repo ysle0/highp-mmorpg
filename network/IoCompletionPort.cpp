@@ -4,8 +4,13 @@
 
 namespace highp::network {
 
-IoCompletionPort::IoCompletionPort(std::shared_ptr<log::Logger> logger)
-	: _logger(logger) {}
+IoCompletionPort::IoCompletionPort(
+	std::shared_ptr<log::Logger> logger,
+	CompletionHandler handler)
+	: _logger(std::move(logger))
+	, _completionHandler(std::move(handler))
+{
+}
 
 IoCompletionPort::~IoCompletionPort() {
 	Shutdown();

@@ -75,7 +75,7 @@ private:
 	/// - Recv: Echo 로직 (수신 데이터를 Send)
 	/// - Send: 로깅
 	/// </remarks>
-	void OnCompletion(const network::CompletionEvent& event);
+	void OnCompletion(network::CompletionEvent event);
 
 	/// <summary>
 	/// 새 클라이언트 연결 처리 핸들러.

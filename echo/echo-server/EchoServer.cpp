@@ -25,26 +25,25 @@ EchoServer::EchoServer(std::shared_ptr<Logger> logger, network::RuntimeCfg confi
 }
 
 EchoServer::Res EchoServer::Start(std::shared_ptr<highp::network::ISocket> asyncSocket) {
-	_iocp = std::make_unique<network::IoCompletionPort>(_logger);
+	_iocp = std::make_unique<network::IoCompletionPort>(
+		_logger,
+		std::bind_front(&EchoServer::OnCompletion, this));
+
 	if (auto res = _iocp->Initialize(_config.workerThreadCount); res.HasErr()) {
 		return res;
 	}
 
-	_iocp->SetCompletionHandler([this](const network::CompletionEvent& event) {
-		OnCompletion(event);
-	});
+	_acceptor = std::make_unique<network::Acceptor>(
+		_logger,
+		_config.backlog,
+		std::bind_front(&EchoServer::OnAccept, this));
 
-	_acceptor = std::make_unique<network::Acceptor>(_logger, _config.backlog);
 	auto acceptorRes = _acceptor->Initialize(
 		asyncSocket->GetSocketHandle(),
 		_iocp->GetHandle());
 	if (acceptorRes.HasErr()) {
 		return Res::Err(EIocpError::CreateIocpFailed);
 	}
-
-	_acceptor->SetAcceptCallback([this](network::AcceptContext& ctx) {
-		OnAccept(ctx);
-	});
 
 	for (int i = 0; i < _config.maxClients; ++i) {
 		_clientPool.emplace_back(std::make_shared<network::Client>());
@@ -74,7 +73,7 @@ void EchoServer::Stop() {
 	_connectedClientCount = 0;
 }
 
-void EchoServer::OnCompletion(const network::CompletionEvent& event) {
+void EchoServer::OnCompletion(network::CompletionEvent event) {
 	switch (event.ioType) {
 		case network::EIoType::Accept:
 		{

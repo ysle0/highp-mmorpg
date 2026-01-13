@@ -3,9 +3,13 @@
 
 namespace highp::network {
 
-Acceptor::Acceptor(std::shared_ptr<log::Logger> logger, int preAllocCount)
+Acceptor::Acceptor(
+	std::shared_ptr<log::Logger> logger,
+	int preAllocCount,
+	AcceptCallback onAfterAccept)
 	: _logger(std::move(logger))
-	, _preAllocCount(preAllocCount)
+	, _overlappedPool(preAllocCount)
+	, _acceptCallback(std::move(onAfterAccept))
 {
 }
 
@@ -23,7 +27,6 @@ Acceptor::Res Acceptor::Initialize(SocketHandle listenSocket, HANDLE iocpHandle)
 		_iocpHandle,
 		0,  // Listen 소켓은 completionKey 불필요
 		0);
-
 	if (result == NULL || result != _iocpHandle) {
 		_logger->Error("Failed to associate listen socket with IOCP. error: {}", GetLastError());
 		return Res::Err(err::ESocketError::CreateSocketFailed);
@@ -33,13 +36,7 @@ Acceptor::Res Acceptor::Initialize(SocketHandle listenSocket, HANDLE iocpHandle)
 		return res;
 	}
 
-	for (int i = 0; i < _preAllocCount; ++i) {
-		auto overlapped = std::make_unique<OverlappedExt>();
-		_availableOverlappeds.push(overlapped.get());
-		_overlappedPool.push_back(std::move(overlapped));
-	}
-
-	_logger->Info("Acceptor initialized. listen socket associated with IOCP. pre-allocated overlappeds: {}", _preAllocCount);
+	_logger->Info("Acceptor initialized. listen socket associated with IOCP. pre-allocated overlappeds: {}", _overlappedPool.AvailableCount());
 	return Res::Ok();
 }
 
@@ -97,28 +94,15 @@ SocketHandle Acceptor::CreateAcceptSocket() {
 }
 
 OverlappedExt* Acceptor::AcquireOverlapped() {
-	std::lock_guard<std::mutex> lock(_poolMutex);
-	if (_availableOverlappeds.empty()) {
-		return nullptr;
-	}
-	auto* overlapped = _availableOverlappeds.front();
-	_availableOverlappeds.pop();
-	return overlapped;
+	return _overlappedPool.Acquire();
 }
 
 void Acceptor::ReleaseOverlapped(OverlappedExt* overlapped) {
-	std::lock_guard<std::mutex> lock(_poolMutex);
-	_availableOverlappeds.push(overlapped);
+	_overlappedPool.Release(overlapped);
 }
 
 Acceptor::Res Acceptor::PostAccept() {
 	OverlappedExt* overlapped = AcquireOverlapped();
-	if (overlapped == nullptr) {
-		auto newOverlapped = std::make_unique<OverlappedExt>();
-		overlapped = newOverlapped.get();
-		std::lock_guard<std::mutex> lock(_poolMutex);
-		_overlappedPool.push_back(std::move(newOverlapped));
-	}
 
 	SocketHandle acceptSocket = CreateAcceptSocket();
 	if (acceptSocket == InvalidSocket) {
@@ -228,16 +212,9 @@ void Acceptor::SetAcceptCallback(AcceptCallback callback) {
 }
 
 void Acceptor::Shutdown() {
-	std::lock_guard<std::mutex> lock(_poolMutex);
-
-	while (!_availableOverlappeds.empty()) {
-		_availableOverlappeds.pop();
-	}
-	_overlappedPool.clear();
-
+	_overlappedPool.Clear();
 	_fnAcceptEx = nullptr;
 	_fnGetAcceptExSockAddrs = nullptr;
-
 	_logger->Info("Acceptor shutdown complete.");
 }
 
