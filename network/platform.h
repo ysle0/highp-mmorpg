@@ -65,10 +65,19 @@
 // 타입 정의
 //=============================================================================
 #ifdef PLATFORM_WINDOWS
+
+/// <summary>플랫폼 독립적 소켓 핸들 타입. Windows에서는 SOCKET.</summary>
 using SocketHandle = SOCKET;
+
+/// <summary>소켓 주소 길이 타입. Windows에서는 int.</summary>
 using SocketLength = int;
+
+/// <summary>유효하지 않은 소켓 핸들 상수. Windows에서는 INVALID_SOCKET.</summary>
 constexpr SocketHandle InvalidSocket = INVALID_SOCKET;
+
+/// <summary>소켓 에러 반환값 상수. Windows에서는 SOCKET_ERROR.</summary>
 constexpr int SocketError = SOCKET_ERROR;
+
 //#else
 //using SocketHandle = int;
 //using SocketLength = socklen_t;
