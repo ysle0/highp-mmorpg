@@ -57,6 +57,9 @@
     <ClInclude Include="Errors.hpp">
       <Filter>inc\error</Filter>
     </ClInclude>
+    <ClInclude Include="ObjectPool.hpp">
+      <Filter>inc\memory</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="lib.cpp" />

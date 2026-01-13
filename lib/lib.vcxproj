@@ -145,6 +145,7 @@
     <ClInclude Include="compileTime\TomlEntry.hpp" />
     <ClInclude Include="compileTime\TomlParser.hpp" />
     <ClInclude Include="Errors.hpp" />
+    <ClInclude Include="ObjectPool.hpp" />
     <ClInclude Include="runTime\Config.hpp" />
     <ClInclude Include="runTime\StringUtils.hpp" />
     <ClInclude Include="runTime\TomlEntry.hpp" />
