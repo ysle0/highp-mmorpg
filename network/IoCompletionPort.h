@@ -1,32 +1,61 @@
 #pragma once
 
 #include "platform.h"
-#include <functional>
+#include "EIoType.h"
 #include <IocpError.h>
+#include <Logger.hpp>
+#include <Result.hpp>
+#include <atomic>
+#include <functional>
 #include <memory>
-#include <span>
-#include "OverlappedExt.h"
-#include "RuntimeCfg.h"
+#include <thread>
+#include <vector>
 
 namespace highp::network {
+
+struct CompletionEvent {
+	EIoType ioType;
+	void* completionKey;
+	LPOVERLAPPED overlapped;
+	DWORD bytesTransferred;
+	bool success;
+	DWORD errorCode;
+};
+
+using CompletionHandler = std::function<void(const CompletionEvent&)>;
+
 class IoCompletionPort final {
-	using Res = fn::Result<void, err::EIocpError>;
 public:
-	explicit IoCompletionPort(RuntimeCfg runtimeCfg);
-	Res Initialize(SocketHandle clientSocket);
-	Res PostAccept();
-	Res PostAccepts(int repeat);
-	Res OnAcceptComplete(int bytesTransferred, std::span<char> recvBuffer);
-	void SetCallback(std::function<void()> onAfterAcceptComplete);
+	using Res = fn::Result<void, err::EIocpError>;
+
+	explicit IoCompletionPort(std::shared_ptr<log::Logger> logger);
+	~IoCompletionPort();
+
+	IoCompletionPort(const IoCompletionPort&) = delete;
+	IoCompletionPort& operator=(const IoCompletionPort&) = delete;
+	IoCompletionPort(IoCompletionPort&&) = delete;
+	IoCompletionPort& operator=(IoCompletionPort&&) = delete;
+
+	Res Initialize(int workerThreadCount);
+	void Shutdown();
+
+	Res AssociateSocket(SocketHandle socket, void* completionKey);
+	Res PostCompletion(DWORD bytes, void* key, LPOVERLAPPED overlapped);
+
+	void SetCompletionHandler(CompletionHandler handler);
+
+	HANDLE GetHandle() const noexcept { return _handle; }
+	bool IsRunning() const noexcept { return _isRunning.load(); }
 
 private:
-	RuntimeCfg _runtimeCfg;
-	SocketHandle _listenSocket = InvalidSocket;
-	std::shared_ptr<IoCompletionPort> _iocp;
-	//LPFN_ACCEPTEX _fnAcceptEx;
-	//LPFN_GETACCEPTEXSOCKADDRS _fnGetAcceptExSockAddrs;
-	std::vector<network::OverlappedExt> _reusedOverlappedExts;
-	std::function<void()> _onAccept;
-};
-}
+	void WorkerLoop(std::stop_token st);
 
+private:
+	std::shared_ptr<log::Logger> _logger;
+	HANDLE _handle = INVALID_HANDLE_VALUE;
+	std::vector<std::jthread> _workerThreads;
+	std::atomic<bool> _isRunning{ false };
+	CompletionHandler _completionHandler;
+};
+
+}
