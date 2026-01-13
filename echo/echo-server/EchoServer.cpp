@@ -47,7 +47,7 @@ EchoServer::Res EchoServer::Start(std::shared_ptr<highp::network::ISocket> async
 	});
 
 	for (int i = 0; i < _config.maxClients; ++i) {
-		_clients.emplace_back(std::make_shared<network::Client>());
+		_clientPool.emplace_back(std::make_shared<network::Client>());
 	}
 
 	auto postRes = _acceptor->PostAccepts(_config.backlog);
@@ -70,8 +70,8 @@ void EchoServer::Stop() {
 		_iocp.reset();
 	}
 
-	_clients.clear();
-	_clientCount = 0;
+	_clientPool.clear();
+	_connectedClientCount = 0;
 }
 
 void EchoServer::OnCompletion(const network::CompletionEvent& event) {
@@ -129,7 +129,7 @@ void EchoServer::OnCompletion(const network::CompletionEvent& event) {
 }
 
 void EchoServer::OnAccept(network::AcceptContext& ctx) {
-	auto client = FindClient();
+	auto client = FindAvailableClient();
 	if (!client) {
 		_logger->Error("Client pool full!");
 		closesocket(ctx.acceptSocket);
@@ -150,7 +150,7 @@ void EchoServer::OnAccept(network::AcceptContext& ctx) {
 		return;
 	}
 
-	_clientCount++;
+	_connectedClientCount++;
 
 	char clientIp[network::Const::clientIpBufferSize]{ 0 };
 	inet_ntop(AF_INET, &ctx.remoteAddr.sin_addr, clientIp, sizeof(clientIp));
@@ -186,12 +186,12 @@ EchoServer::Res EchoServer::Recv(std::shared_ptr<network::Client> clientSocket) 
 EchoServer::Res EchoServer::Send(
 	std::shared_ptr<network::Client> clientSocket,
 	std::string_view message,
-	ULONG messageLen
+	ULONG messageLength
 ) {
 	ZeroMemory(&clientSocket->sendOverlapped.overlapped, sizeof(WSAOVERLAPPED));
-	CopyMemory(clientSocket->sendOverlapped.buffer, message.data(), messageLen);
+	CopyMemory(clientSocket->sendOverlapped.buffer, message.data(), messageLength);
 
-	clientSocket->sendOverlapped.wsaBuffer.len = messageLen;
+	clientSocket->sendOverlapped.wsaBuffer.len = messageLength;
 	clientSocket->sendOverlapped.wsaBuffer.buf = clientSocket->sendOverlapped.buffer;
 	clientSocket->sendOverlapped.ioType = network::EIoType::Send;
 
@@ -213,16 +213,16 @@ EchoServer::Res EchoServer::Send(
 	return Res::Ok();
 }
 
-void EchoServer::CloseSocket(std::shared_ptr<network::Client> clientSocket, bool isFireAndForget) {
-	clientSocket->Close(isFireAndForget);
-	_clientCount--;
+void EchoServer::CloseSocket(std::shared_ptr<network::Client> clientSocket, bool forceClose) {
+	clientSocket->Close(forceClose);
+	_connectedClientCount--;
 }
 
-std::shared_ptr<network::Client> EchoServer::FindClient() {
-	auto found = std::find_if(_clients.begin(), _clients.end(), [](const std::shared_ptr<network::Client>& c) {
+std::shared_ptr<network::Client> EchoServer::FindAvailableClient() {
+	auto found = std::find_if(_clientPool.begin(), _clientPool.end(), [](const std::shared_ptr<network::Client>& c) {
 		return c->socket == INVALID_SOCKET;
 	});
-	if (found != _clients.end()) {
+	if (found != _clientPool.end()) {
 		return *found;
 	}
 	return nullptr;

@@ -57,7 +57,7 @@ public:
 	/// 4. Client 풀 사전 할당
 	/// 5. PostAccepts() 호출
 	/// </remarks>
-	Res Start(std::shared_ptr<network::ISocket> asyncSocket);
+	Res Start(std::shared_ptr<network::ISocket> listenSocket);
 
 	/// <summary>
 	/// Echo 서버를 중지하고 리소스를 정리한다.
@@ -91,31 +91,31 @@ private:
 	/// <summary>
 	/// 클라이언트로부터 비동기 수신을 시작한다.
 	/// </summary>
-	/// <param name="clientSocket">대상 클라이언트</param>
+	/// <param name="client">대상 클라이언트</param>
 	/// <returns>성공 시 Ok, 실패 시 에러 코드</returns>
-	Res Recv(std::shared_ptr<network::Client> clientSocket);
+	Res Recv(std::shared_ptr<network::Client> client);
 
 	/// <summary>
 	/// 클라이언트에게 비동기 송신을 수행한다.
 	/// </summary>
-	/// <param name="clientSocket">대상 클라이언트</param>
+	/// <param name="client">대상 클라이언트</param>
 	/// <param name="message">송신할 메시지</param>
-	/// <param name="messageLen">메시지 길이 (바이트)</param>
+	/// <param name="messageLength">메시지 길이 (바이트)</param>
 	/// <returns>성공 시 Ok, 실패 시 에러 코드</returns>
-	Res Send(std::shared_ptr<network::Client> clientSocket, std::string_view message, ULONG messageLen);
+	Res Send(std::shared_ptr<network::Client> client, std::string_view message, ULONG messageLength);
 
 	/// <summary>
 	/// 클라이언트 연결을 종료한다.
 	/// </summary>
-	/// <param name="clientSocket">종료할 클라이언트</param>
-	/// <param name="isFireAndForget">true면 linger 없이 즉시 종료</param>
-	void CloseSocket(std::shared_ptr<network::Client> clientSocket, bool isFireAndForget);
+	/// <param name="client">종료할 클라이언트</param>
+	/// <param name="forceClose">true면 linger 없이 즉시 종료</param>
+	void CloseSocket(std::shared_ptr<network::Client> client, bool forceClose);
 
 	/// <summary>
 	/// Client 풀에서 사용 가능한 슬롯을 찾는다.
 	/// </summary>
 	/// <returns>사용 가능한 Client. 풀이 가득 차면 nullptr.</returns>
-	std::shared_ptr<network::Client> FindClient();
+	std::shared_ptr<network::Client> FindAvailableClient();
 
 private:
 	/// <summary>로거 인스턴스</summary>
@@ -131,10 +131,10 @@ private:
 	std::unique_ptr<network::Acceptor> _acceptor;
 
 	/// <summary>클라이언트 연결 풀. 사전 할당하여 메모리 재사용.</summary>
-	std::vector<std::shared_ptr<network::Client>> _clients;
+	std::vector<std::shared_ptr<network::Client>> _clientPool;
 
 	/// <summary>현재 연결된 클라이언트 수</summary>
-	std::atomic_uint _clientCount = 0;
+	std::atomic_uint _connectedClientCount = 0;
 };
 
 }
