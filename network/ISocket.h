@@ -48,16 +48,6 @@ public:
 	virtual Res Listen(int backlog) PURE;
 
 	/// <summary>
-	/// 동기식으로 클라이언트 연결을 수락한다.
-	/// </summary>
-	/// <param name="clientSocket">수락된 클라이언트 소켓 (out)</param>
-	/// <returns>성공 시 Ok, 실패 시 에러 코드</returns>
-	/// <remarks>
-	/// AcceptEx 비동기 방식 사용 시 Acceptor 클래스 사용 권장.
-	/// </remarks>
-	virtual Res Accept(SocketHandle clientSocket) PURE;
-
-	/// <summary>
 	/// 소켓 리소스를 정리한다. closesocket() 및 WSACleanup() 호출.
 	/// </summary>
 	/// <returns>성공 시 Ok, 실패 시 에러 코드</returns>

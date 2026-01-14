@@ -36,9 +36,6 @@ public:
 	/// <summary>소켓을 Listen 상태로 전환.</summary>
 	virtual Res Listen(int backlog) override;
 
-	/// <summary>동기식 클라이언트 연결 수락.</summary>
-	virtual Res Accept(SocketHandle clientSocket) override;
-
 	/// <summary>소켓 리소스 정리. closesocket() 및 WSACleanup() 호출.</summary>
 	virtual Res Cleanup() override;
 

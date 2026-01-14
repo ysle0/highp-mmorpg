@@ -66,26 +66,6 @@ WindowsAsyncSocket::Res WindowsAsyncSocket::Listen(int backlog) {
 	return Res::Ok();
 }
 
-WindowsAsyncSocket::Res WindowsAsyncSocket::Accept(SocketHandle clientSocket) {
-	char addrBuffer[32];
-	const size_t clientSocketAddrSize = sizeof(_sockaddr) + 16;
-	OVERLAPPED overlapped{};
-
-	//if (BOOL result = AcceptEx(
-	//	_socketHandle, // SocketHandle
-	//	clientSocket, // must not be connected or bound socket.
-	//	&addrBuffer, // local address, remote addres (never be NULL).
-	//	0, // initial data receving buffer on accept.
-	//	clientSocketAddrSize,
-	//	clientSocketAddrSize,
-	//	NULL,
-	//	reinterpret_cast<LPOVERLAPPED>(&overlapped)
-	//); result != 0) {
-	//	return err::LogErrorWithResult<err::ESocketError::AcceptFailed>(_logger);
-	//}
-	return Res::Ok();
-}
-
 WindowsAsyncSocket::Res WindowsAsyncSocket::Cleanup() {
 	int status = closesocket(_socketHandle);
 	status = WSACleanup();
