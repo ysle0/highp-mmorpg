@@ -74,7 +74,7 @@ public:
 	/// <summary>
 	/// 소멸자. Shutdown()을 호출하여 리소스 정리.
 	/// </summary>
-	~IoCompletionPort();
+	~IoCompletionPort() noexcept;
 
 	IoCompletionPort(const IoCompletionPort&) = delete;
 	IoCompletionPort& operator=(const IoCompletionPort&) = delete;

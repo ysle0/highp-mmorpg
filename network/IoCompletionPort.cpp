@@ -12,7 +12,7 @@ IoCompletionPort::IoCompletionPort(
 {
 }
 
-IoCompletionPort::~IoCompletionPort() {
+IoCompletionPort::~IoCompletionPort() noexcept {
 	Shutdown();
 }
 
