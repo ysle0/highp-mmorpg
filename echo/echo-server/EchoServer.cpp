@@ -88,29 +88,26 @@ void EchoServer::OnCompletion(network::CompletionEvent event) {
 			auto* client = static_cast<network::Client*>(event.completionKey);
 			if (!event.success || event.bytesTransferred == 0) {
 				_logger->Info("[Graceful Disconnect] Socket #{} disconnected.", client->socket);
-				CloseSocket(client->shared_from_this(), true);
+				CloseClient(client->shared_from_this(), true);
 				break;
 			}
 
 			auto* overlapped = reinterpret_cast<network::OverlappedExt*>(event.overlapped);
 			overlapped->recvBuffer[event.bytesTransferred] = '\0';
 
+			std::string_view recvData{ overlapped->recvBuffer, event.bytesTransferred };
 			_logger->Info("[Recv] socket #{}, data: {}, bytes: {}",
-				client->socket,
-				std::string_view(overlapped->recvBuffer, event.bytesTransferred),
-				event.bytesTransferred);
+				client->socket, recvData, event.bytesTransferred);
 
+			// Echo: 받은 데이터 그대로 전송
 			auto clientPtr = client->shared_from_this();
-			std::string_view recvStr{
-				overlapped->recvBuffer,
-				event.bytesTransferred };
-			if (auto res = Send(clientPtr, recvStr, event.bytesTransferred); res.HasErr()) {
-				CloseSocket(clientPtr, true);
+			if (auto res = clientPtr->PostSend(recvData); res.HasErr()) {
+				CloseClient(clientPtr, true);
 				break;
 			}
 
-			if (auto res = Recv(clientPtr); res.HasErr()) {
-				CloseSocket(clientPtr, true);
+			if (auto res = clientPtr->PostRecv(); res.HasErr()) {
+				CloseClient(clientPtr, true);
 			}
 		}
 		break;
@@ -123,8 +120,8 @@ void EchoServer::OnCompletion(network::CompletionEvent event) {
 		break;
 
 		default:
-		_logger->Error("Unknown IO type received.");
-		break;
+			_logger->Error("Unknown IO type received.");
+			break;
 	}
 }
 
@@ -144,7 +141,7 @@ void EchoServer::OnAccept(network::AcceptContext& ctx) {
 		return;
 	}
 
-	if (auto res = Recv(client); res.HasErr()) {
+	if (auto res = client->PostRecv(); res.HasErr()) {
 		_logger->Error("Failed to post initial Recv.");
 		client->Close(true);
 		return;
@@ -157,69 +154,15 @@ void EchoServer::OnAccept(network::AcceptContext& ctx) {
 	_logger->Info("Client connected. socket: {}, ip: {}", client->socket, clientIp);
 }
 
-EchoServer::Res EchoServer::Recv(std::shared_ptr<network::Client> clientSocket) {
-	ZeroMemory(&clientSocket->recvOverlapped.overlapped, sizeof(WSAOVERLAPPED));
-
-	clientSocket->recvOverlapped.wsaBuffer.buf = clientSocket->recvOverlapped.recvBuffer;
-	clientSocket->recvOverlapped.wsaBuffer.len = network::Const::Socket::recvBufferSize;
-	clientSocket->recvOverlapped.ioType = network::EIoType::Recv;
-
-	DWORD flag = 0;
-	DWORD recvNumBytes = 0;
-
-	int result = WSARecv(
-		clientSocket->socket,
-		&clientSocket->recvOverlapped.wsaBuffer,
-		1,
-		&recvNumBytes,
-		&flag,
-		reinterpret_cast<LPWSAOVERLAPPED>(&clientSocket->recvOverlapped),
-		nullptr);
-
-	if (result == SOCKET_ERROR && WSAGetLastError() != ERROR_IO_PENDING) {
-		return err::LogErrorWithResult<EIocpError::RecvFailed>(_logger);
-	}
-	return Res::Ok();
-}
-
-EchoServer::Res EchoServer::Send(
-	std::shared_ptr<network::Client> clientSocket,
-	std::string_view message,
-	ULONG messageLength
-) {
-	ZeroMemory(&clientSocket->sendOverlapped.overlapped, sizeof(WSAOVERLAPPED));
-	CopyMemory(clientSocket->sendOverlapped.sendBuffer, message.data(), messageLength);
-
-	clientSocket->sendOverlapped.wsaBuffer.len = messageLength;
-	clientSocket->sendOverlapped.wsaBuffer.buf = clientSocket->sendOverlapped.sendBuffer;
-	clientSocket->sendOverlapped.ioType = network::EIoType::Send;
-
-	DWORD sendNumBytes = 0;
-
-	int result = WSASend(
-		clientSocket->socket,
-		&clientSocket->sendOverlapped.wsaBuffer,
-		1,
-		&sendNumBytes,
-		0,
-		reinterpret_cast<LPWSAOVERLAPPED>(&clientSocket->sendOverlapped),
-		nullptr);
-
-	if (result == SOCKET_ERROR && WSAGetLastError() != ERROR_IO_PENDING) {
-		return err::LogErrorWithResult<EIocpError::SendFailed>(_logger);
-	}
-
-	return Res::Ok();
-}
-
-void EchoServer::CloseSocket(std::shared_ptr<network::Client> clientSocket, bool forceClose) {
-	clientSocket->Close(forceClose);
+void EchoServer::CloseClient(std::shared_ptr<network::Client> client, bool forceClose) {
+	client->Close(forceClose);
 	_connectedClientCount--;
 }
 
 std::shared_ptr<network::Client> EchoServer::FindAvailableClient() {
-	auto found = std::find_if(_clientPool.begin(), _clientPool.end(), [](const std::shared_ptr<network::Client>& c) {
-		return c->socket == INVALID_SOCKET;
+	auto found = std::find_if(_clientPool.begin(), _clientPool.end(),
+		[](const std::shared_ptr<network::Client>& c) {
+			return c->socket == INVALID_SOCKET;
 		});
 	if (found != _clientPool.end()) {
 		return *found;

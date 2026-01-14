@@ -24,6 +24,7 @@ namespace highp::echo_srv {
 /// </summary>
 /// <remarks>
 /// network::IoCompletionPort와 network::Acceptor를 의존성 주입 방식으로 사용하여 관심사를 분리한다.
+/// Send/Recv 로직은 network::Client에 위임한다.
 /// </remarks>
 class EchoServer final {
 	/// <summary>EchoServer 작업 결과 타입</summary>
@@ -72,7 +73,7 @@ private:
 	/// <remarks>
 	/// ioType에 따라 분기:
 	/// - Accept: network::Acceptor::OnAcceptComplete() 호출
-	/// - Recv: Echo 로직 (수신 데이터를 Send)
+	/// - Recv: Echo 로직 (Client::PostSend 호출)
 	/// - Send: 로깅
 	/// </remarks>
 	void OnCompletion(network::CompletionEvent event);
@@ -84,35 +85,16 @@ private:
 	/// <remarks>
 	/// 1. Client 풀에서 빈 슬롯 할당
 	/// 2. 클라이언트 소켓을 IOCP에 연결
-	/// 3. 첫 번째 WSARecv 호출
+	/// 3. Client::PostRecv() 호출
 	/// </remarks>
 	void OnAccept(network::AcceptContext& ctx);
-
-	/// <summary>
-	/// 클라이언트로부터 비동기 수신을 시작한다.
-	/// </summary>
-	/// <param name="client">대상 클라이언트</param>
-	/// <returns>성공 시 Ok, 실패 시 에러 코드</returns>
-	Res Recv(std::shared_ptr<network::Client> client);
-
-	/// <summary>
-	/// 클라이언트에게 비동기 송신을 수행한다.
-	/// </summary>
-	/// <param name="client">대상 클라이언트</param>
-	/// <param name="message">송신할 메시지</param>
-	/// <param name="messageLength">메시지 길이 (바이트)</param>
-	/// <returns>성공 시 Ok, 실패 시 에러 코드</returns>
-	Res Send(
-		std::shared_ptr<network::Client> client,
-		std::string_view message,
-		ULONG messageLength);
 
 	/// <summary>
 	/// 클라이언트 연결을 종료한다.
 	/// </summary>
 	/// <param name="client">종료할 클라이언트</param>
 	/// <param name="forceClose">true면 linger 없이 즉시 종료</param>
-	void CloseSocket(std::shared_ptr<network::Client> client, bool forceClose);
+	void CloseClient(std::shared_ptr<network::Client> client, bool forceClose);
 
 	/// <summary>
 	/// Client 풀에서 사용 가능한 슬롯을 찾는다.
