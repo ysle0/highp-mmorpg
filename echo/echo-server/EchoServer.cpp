@@ -14,28 +14,26 @@ EchoServer::~EchoServer() noexcept {
 
 EchoServer::EchoServer(std::shared_ptr<Logger> logger)
 	: _logger(logger)
-	, _config(network::NetworkCfg::WithDefaults())
-{
-}
+	, _config(network::NetworkCfg::WithDefaults()) {}
 
 EchoServer::EchoServer(std::shared_ptr<Logger> logger, network::NetworkCfg config)
 	: _logger(logger)
-	, _config(config)
-{
-}
+	, _config(config) {}
 
 EchoServer::Res EchoServer::Start(std::shared_ptr<highp::network::ISocket> asyncSocket) {
 	_iocp = std::make_unique<network::IoCompletionPort>(
 		_logger,
 		std::bind_front(&EchoServer::OnCompletion, this));
 
-	if (auto res = _iocp->Initialize(_config.workerThreadCount); res.HasErr()) {
+	const auto iocpWorkerCount = std::thread::hardware_concurrency() *
+		_config.thread.maxWorkerThreadMultiplier;
+	if (auto res = _iocp->Initialize(iocpWorkerCount); res.HasErr()) {
 		return res;
 	}
 
 	_acceptor = std::make_unique<network::Acceptor>(
 		_logger,
-		_config.backlog,
+		_config.server.backlog,
 		std::bind_front(&EchoServer::OnAccept, this));
 
 	auto acceptorRes = _acceptor->Initialize(
@@ -45,16 +43,16 @@ EchoServer::Res EchoServer::Start(std::shared_ptr<highp::network::ISocket> async
 		return Res::Err(EIocpError::CreateIocpFailed);
 	}
 
-	for (int i = 0; i < _config.maxClients; ++i) {
+	for (int i = 0; i < _config.server.maxClients; ++i) {
 		_clientPool.emplace_back(std::make_shared<network::Client>());
 	}
 
-	auto postRes = _acceptor->PostAccepts(_config.backlog);
+	auto postRes = _acceptor->PostAccepts(_config.server.backlog);
 	if (postRes.HasErr()) {
 		return Res::Err(EIocpError::AcceptThreadFailed);
 	}
 
-	_logger->Info("EchoServer started on port {}.", _config.port);
+	_logger->Info("EchoServer started on port {}.", _config.server.port);
 	return Res::Ok();
 }
 
@@ -122,8 +120,8 @@ void EchoServer::OnCompletion(network::CompletionEvent event) {
 		break;
 
 		default:
-			_logger->Error("Unknown IO type received.");
-			break;
+		_logger->Error("Unknown IO type received.");
+		break;
 	}
 }
 
@@ -151,7 +149,7 @@ void EchoServer::OnAccept(network::AcceptContext& ctx) {
 
 	_connectedClientCount++;
 
-	char clientIp[network::Const::clientIpBufferSize]{ 0 };
+	char clientIp[network::Const::Network::clientIpBufferSize]{ 0 };
 	inet_ntop(AF_INET, &ctx.remoteAddr.sin_addr, clientIp, sizeof(clientIp));
 	_logger->Info("Client connected. socket: {}, ip: {}", client->socket, clientIp);
 }
@@ -160,7 +158,7 @@ EchoServer::Res EchoServer::Recv(std::shared_ptr<network::Client> clientSocket) 
 	ZeroMemory(&clientSocket->recvOverlapped.overlapped, sizeof(WSAOVERLAPPED));
 
 	clientSocket->recvOverlapped.wsaBuffer.buf = clientSocket->recvOverlapped.buffer;
-	clientSocket->recvOverlapped.wsaBuffer.len = network::Const::socketBufferSize;
+	clientSocket->recvOverlapped.wsaBuffer.len = network::Const::Socket::bufferSize;
 	clientSocket->recvOverlapped.ioType = network::EIoType::Recv;
 
 	DWORD flag = 0;
@@ -220,7 +218,7 @@ void EchoServer::CloseSocket(std::shared_ptr<network::Client> clientSocket, bool
 std::shared_ptr<network::Client> EchoServer::FindAvailableClient() {
 	auto found = std::find_if(_clientPool.begin(), _clientPool.end(), [](const std::shared_ptr<network::Client>& c) {
 		return c->socket == INVALID_SOCKET;
-	});
+		});
 	if (found != _clientPool.end()) {
 		return *found;
 	}

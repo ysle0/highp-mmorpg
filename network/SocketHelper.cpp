@@ -18,11 +18,11 @@ std::shared_ptr<ISocket> SocketHelper::MakeDefault(
 		return nullptr;
 	}
 
-	if (auto res = s->Bind(networkCfg.port); res.HasErr()) {
+	if (auto res = s->Bind(networkCfg.server.port); res.HasErr()) {
 		return nullptr;
 	}
 
-	if (auto res = s->Listen(networkCfg.backlog); res.HasErr()) {
+	if (auto res = s->Listen(networkCfg.server.backlog); res.HasErr()) {
 		return nullptr;
 	}
 

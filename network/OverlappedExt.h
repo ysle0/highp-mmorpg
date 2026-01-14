@@ -37,7 +37,7 @@ struct OverlappedExt {
 	WSABUF wsaBuffer{};
 
 	/// <summary>실제 데이터 버퍼. 크기는 Const::socketBufferSize.</summary>
-	char buffer[Const::socketBufferSize]{};
+	char buffer[Const::Socket::bufferSize]{};
 
 	/// <summary>기본 생성자</summary>
 	OverlappedExt() = default;
