@@ -1,12 +1,10 @@
 #pragma once
 #include <AcceptContext.h>
 #include <Acceptor.h>
-#include <Const.h>
 #include <IoCompletionPort.h>
 #include <IocpError.h>
 #include <ISocket.h>
 #include <NetworkCfg.h>
-#include <platform.h>
 
 namespace highp::network {
 struct Client;
