@@ -123,7 +123,7 @@ Acceptor::Res Acceptor::PostAccept() {
 	BOOL result = _fnAcceptEx(
 		_listenSocket,
 		acceptSocket,
-		overlapped->buffer,
+		overlapped->sendBuffer,
 		0,
 		addrLen,
 		addrLen,
@@ -179,7 +179,7 @@ Acceptor::Res Acceptor::OnAcceptComplete(OverlappedExt* overlapped, DWORD bytesT
 	constexpr DWORD addrLen = sizeof(SOCKADDR_IN) + 16;
 
 	_fnGetAcceptExSockAddrs(
-		overlapped->buffer,
+		overlapped->sendBuffer,
 		0,
 		addrLen,
 		addrLen,

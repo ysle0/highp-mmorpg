@@ -93,15 +93,18 @@ void EchoServer::OnCompletion(network::CompletionEvent event) {
 			}
 
 			auto* overlapped = reinterpret_cast<network::OverlappedExt*>(event.overlapped);
-			overlapped->buffer[event.bytesTransferred] = '\0';
+			overlapped->recvBuffer[event.bytesTransferred] = '\0';
 
 			_logger->Info("[Recv] socket #{}, data: {}, bytes: {}",
 				client->socket,
-				std::string_view(overlapped->buffer, event.bytesTransferred),
+				std::string_view(overlapped->recvBuffer, event.bytesTransferred),
 				event.bytesTransferred);
 
 			auto clientPtr = client->shared_from_this();
-			if (auto res = Send(clientPtr, { overlapped->buffer, event.bytesTransferred }, event.bytesTransferred); res.HasErr()) {
+			std::string_view recvStr{
+				overlapped->recvBuffer,
+				event.bytesTransferred };
+			if (auto res = Send(clientPtr, recvStr, event.bytesTransferred); res.HasErr()) {
 				CloseSocket(clientPtr, true);
 				break;
 			}
@@ -157,8 +160,8 @@ void EchoServer::OnAccept(network::AcceptContext& ctx) {
 EchoServer::Res EchoServer::Recv(std::shared_ptr<network::Client> clientSocket) {
 	ZeroMemory(&clientSocket->recvOverlapped.overlapped, sizeof(WSAOVERLAPPED));
 
-	clientSocket->recvOverlapped.wsaBuffer.buf = clientSocket->recvOverlapped.buffer;
-	clientSocket->recvOverlapped.wsaBuffer.len = network::Const::Socket::bufferSize;
+	clientSocket->recvOverlapped.wsaBuffer.buf = clientSocket->recvOverlapped.recvBuffer;
+	clientSocket->recvOverlapped.wsaBuffer.len = network::Const::Socket::recvBufferSize;
 	clientSocket->recvOverlapped.ioType = network::EIoType::Recv;
 
 	DWORD flag = 0;
@@ -176,7 +179,6 @@ EchoServer::Res EchoServer::Recv(std::shared_ptr<network::Client> clientSocket) 
 	if (result == SOCKET_ERROR && WSAGetLastError() != ERROR_IO_PENDING) {
 		return err::LogErrorWithResult<EIocpError::RecvFailed>(_logger);
 	}
-
 	return Res::Ok();
 }
 
@@ -186,10 +188,10 @@ EchoServer::Res EchoServer::Send(
 	ULONG messageLength
 ) {
 	ZeroMemory(&clientSocket->sendOverlapped.overlapped, sizeof(WSAOVERLAPPED));
-	CopyMemory(clientSocket->sendOverlapped.buffer, message.data(), messageLength);
+	CopyMemory(clientSocket->sendOverlapped.sendBuffer, message.data(), messageLength);
 
 	clientSocket->sendOverlapped.wsaBuffer.len = messageLength;
-	clientSocket->sendOverlapped.wsaBuffer.buf = clientSocket->sendOverlapped.buffer;
+	clientSocket->sendOverlapped.wsaBuffer.buf = clientSocket->sendOverlapped.sendBuffer;
 	clientSocket->sendOverlapped.ioType = network::EIoType::Send;
 
 	DWORD sendNumBytes = 0;

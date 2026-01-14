@@ -36,8 +36,10 @@ struct OverlappedExt {
 	/// <summary>WSARecv/WSASend에 전달되는 버퍼 디스크립터</summary>
 	WSABUF wsaBuffer{};
 
-	/// <summary>실제 데이터 버퍼. 크기는 Const::socketBufferSize.</summary>
-	char buffer[Const::Socket::bufferSize]{};
+	/// <summary>실제 데이터 버퍼. </summary>
+	char sendBuffer[Const::Socket::sendBufferSize]{};
+
+	char recvBuffer[Const::Socket::recvBufferSize]{};
 
 	/// <summary>기본 생성자</summary>
 	OverlappedExt() = default;
