@@ -6,7 +6,7 @@
 #include <IoCompletionPort.h>
 #include <IocpError.h>
 #include <ISocket.h>
-#include <RuntimeCfg.h>
+#include <NetworkCfg.h>
 
 namespace highp::network {
 struct Client;
@@ -42,8 +42,8 @@ public:
 	/// 지정된 설정으로 EchoServer를 생성한다.
 	/// </summary>
 	/// <param name="logger">로깅에 사용할 Logger 인스턴스</param>
-	/// <param name="config">서버 런타임 설정. network::RuntimeCfg 참조.</param>
-	EchoServer(std::shared_ptr<log::Logger> logger, network::RuntimeCfg config);
+	/// <param name="config">서버 네트워크 설정. network::NetworkCfg 참조.</param>
+	EchoServer(std::shared_ptr<log::Logger> logger, network::NetworkCfg config);
 
 	/// <summary>
 	/// Echo 서버를 시작한다.
@@ -121,8 +121,8 @@ private:
 	/// <summary>로거 인스턴스</summary>
 	std::shared_ptr<log::Logger> _logger;
 
-	/// <summary>서버 런타임 설정</summary>
-	network::RuntimeCfg _config = network::RuntimeCfg::WithDefaults();
+	/// <summary>서버 네트워크 설정</summary>
+	network::NetworkCfg _config = network::NetworkCfg::WithDefaults();
 
 	/// <summary>IOCP 관리자. network::IoCompletionPort 인스턴스.</summary>
 	std::unique_ptr<network::IoCompletionPort> _iocp;

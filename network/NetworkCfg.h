@@ -9,14 +9,14 @@
 namespace highp::network {
 
 // =============================================================================
-// Runtime Config
+// Network Config
 // =============================================================================
 
 /// <summary>
-/// 서버 런타임 설정 구조체.
-/// 설정 파일 또는 기본값에서 런타임에 로드되며, 서버 동작 파라미터를 정의한다.
+/// 네트워크 레이어 설정 구조체.
+/// 설정 파일 또는 기본값에서 런타임에 로드되며, 서버 네트워크 파라미터를 정의한다.
 /// </summary>
-struct RuntimeCfg {
+struct NetworkCfg {
 	/// <summary>서버 리스닝 포트 번호 (1-65535)</summary>
 	INT port;
 
@@ -47,12 +47,12 @@ struct RuntimeCfg {
 	};
 
 	/// <summary>
-	/// 설정 파일에서 RuntimeCfg를 로드한다.
+	/// 설정 파일에서 NetworkCfg를 로드한다.
 	/// </summary>
 	/// <param name="path">설정 파일 경로</param>
-	/// <returns>로드된 RuntimeCfg 인스턴스</returns>
+	/// <returns>로드된 NetworkCfg 인스턴스</returns>
 	/// <exception cref="std::runtime_error">파일 로드 실패 시</exception>
-	static RuntimeCfg FromFile(const std::filesystem::path& path) {
+	static NetworkCfg FromFile(const std::filesystem::path& path) {
 		auto cfg = highp::config::Config::FromFile(path);
 		if (!cfg.has_value()) {
 			throw std::runtime_error("Failed to load config file: " + path.string());
@@ -61,22 +61,22 @@ struct RuntimeCfg {
 	}
 
 	/// <summary>
-	/// Config 객체에서 RuntimeCfg를 생성한다.
+	/// Config 객체에서 NetworkCfg를 생성한다.
 	/// </summary>
 	/// <param name="cfg">highp::config::Config 인스턴스</param>
-	/// <returns>생성된 RuntimeCfg 인스턴스</returns>
+	/// <returns>생성된 NetworkCfg 인스턴스</returns>
 	/// <remarks>
 	/// workerThreadCount가 0 이하이면 CPU 코어 수로 자동 설정.
 	/// 환경 변수 오버라이드 지원: SERVER_PORT, SERVER_MAX_CLIENTS, SERVER_BACKLOG, SERVER_WORKER_COUNT
 	/// </remarks>
-	static RuntimeCfg FromCfg(const highp::config::Config& cfg) {
+	static NetworkCfg FromCfg(const highp::config::Config& cfg) {
 		INT threadCount = cfg.Int("thread.worker_count", Defaults::workerThreadCount, "SERVER_WORKER_COUNT");
 		if (threadCount <= 0) {
 			threadCount = static_cast<INT>(std::thread::hardware_concurrency());
 			if (threadCount <= 0) threadCount = 4;  // fallback
 		}
 
-		RuntimeCfg result{
+		NetworkCfg result{
 			.port = cfg.Int("server.port", Defaults::port, "SERVER_PORT"),
 			.maxClients = cfg.Int("server.max_clients", Defaults::maxClients, "SERVER_MAX_CLIENTS"),
 			.backlog = cfg.Int("server.backlog", Defaults::backlog, "SERVER_BACKLOG"),
@@ -87,16 +87,16 @@ struct RuntimeCfg {
 	}
 
 	/// <summary>
-	/// 기본값으로 RuntimeCfg를 생성한다.
+	/// 기본값으로 NetworkCfg를 생성한다.
 	/// </summary>
-	/// <returns>기본값이 적용된 RuntimeCfg 인스턴스</returns>
-	static RuntimeCfg WithDefaults() {
+	/// <returns>기본값이 적용된 NetworkCfg 인스턴스</returns>
+	static NetworkCfg WithDefaults() {
 		INT threadCount = Defaults::workerThreadCount;
 		if (threadCount <= 0) {
 			threadCount = static_cast<INT>(std::thread::hardware_concurrency());
 			if (threadCount <= 0) threadCount = 4;  // fallback
 		}
-		return RuntimeCfg{
+		return NetworkCfg{
 			.port = Defaults::port,
 			.maxClients = Defaults::maxClients,
 			.backlog = Defaults::backlog,

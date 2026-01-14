@@ -14,11 +14,11 @@ EchoServer::~EchoServer() noexcept {
 
 EchoServer::EchoServer(std::shared_ptr<Logger> logger)
 	: _logger(logger)
-	, _config(network::RuntimeCfg::WithDefaults())
+	, _config(network::NetworkCfg::WithDefaults())
 {
 }
 
-EchoServer::EchoServer(std::shared_ptr<Logger> logger, network::RuntimeCfg config)
+EchoServer::EchoServer(std::shared_ptr<Logger> logger, network::NetworkCfg config)
 	: _logger(logger)
 	, _config(config)
 {
