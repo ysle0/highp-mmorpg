@@ -92,14 +92,17 @@
     <ClInclude Include="IoCompletionPort.h">
       <Filter>inc\io\windows</Filter>
     </ClInclude>
-    <ClInclude Include="OverlappedEx.h">
-      <Filter>inc\client\windows</Filter>
-    </ClInclude>
-    <ClInclude Include="IAsyncAcceptor.h">
+    <ClInclude Include="AcceptContext.h">
       <Filter>inc\acceptor</Filter>
     </ClInclude>
-    <ClInclude Include="WindowAsyncAcceptor.h">
+    <ClInclude Include="Acceptor.h">
       <Filter>inc\acceptor</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkCfg.h">
+      <Filter>inc\config</Filter>
+    </ClInclude>
+    <ClInclude Include="SocketHelper.h">
+      <Filter>inc\socket</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -117,10 +120,10 @@
     <ClCompile Include="IoCompletionPort.cpp">
       <Filter>src\io\windows</Filter>
     </ClCompile>
-    <ClCompile Include="WindowsAsyncAcceptor.cpp">
+    <ClCompile Include="Acceptor.cpp">
       <Filter>src\acceptor</Filter>
     </ClCompile>
-    <ClCompile Include="WindowAsyncAcceptor.cpp" />
+    <ClCompile Include="SocketHelper.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="config.compile.toml" />

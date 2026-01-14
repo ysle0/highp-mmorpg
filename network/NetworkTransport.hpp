@@ -39,6 +39,10 @@ public:
 		}
 	}
 
+	ETransport GetTransportType() const {
+		return _transportType;
+	}
+
 private:
 	/// <summary>전송 프로토콜 유형</summary>
 	ETransport _transportType;

@@ -151,6 +151,7 @@
     <ClInclude Include="OverlappedExt.h" />
     <ClInclude Include="NetworkUtil.hpp" />
     <ClInclude Include="platform.h" />
+    <ClInclude Include="SocketHelper.h" />
     <ClInclude Include="WindowsAsyncSocket.h" />
     <ClInclude Include="ISocket.h" />
     <ClInclude Include="NetworkCfg.h" />
@@ -163,6 +164,7 @@
     <ClCompile Include="AsyncSocket.cpp" />
     <ClCompile Include="Client.cpp" />
     <ClCompile Include="IoCompletionPort.cpp" />
+    <ClCompile Include="SocketHelper.cpp" />
     <ClCompile Include="WindowsAsyncSocket.cpp" />
     <ClCompile Include="network.cpp" />
     <ClCompile Include="pch.cpp">

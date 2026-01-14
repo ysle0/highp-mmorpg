@@ -19,7 +19,7 @@ public:
 	/// WindowsAsyncSocket 생성자.
 	/// </summary>
 	/// <param name="logger">로깅에 사용할 Logger 인스턴스</param>
-	WindowsAsyncSocket(std::shared_ptr<log::Logger> logger);
+	explicit WindowsAsyncSocket(std::shared_ptr<log::Logger> logger);
 
 	virtual ~WindowsAsyncSocket() noexcept override;
 

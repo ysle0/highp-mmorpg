@@ -1,12 +1,12 @@
 #pragma once
-#include <platform.h>
-#include <Acceptor.h>
 #include <AcceptContext.h>
+#include <Acceptor.h>
 #include <Const.h>
 #include <IoCompletionPort.h>
 #include <IocpError.h>
 #include <ISocket.h>
 #include <NetworkCfg.h>
+#include <platform.h>
 
 namespace highp::network {
 struct Client;
@@ -33,7 +33,7 @@ public:
 	~EchoServer() noexcept;
 
 	/// <summary>
-	/// 기본 설정으로 EchoServer를 생성한다. config 은 WithDefaults().
+	/// 기본 설정으로 EchoServer를 생성한다. network config 은 WithDefaults().
 	/// </summary>
 	/// <param name="logger">로깅에 사용할 Logger 인스턴스</param>
 	explicit EchoServer(std::shared_ptr<log::Logger> logger);
@@ -102,7 +102,10 @@ private:
 	/// <param name="message">송신할 메시지</param>
 	/// <param name="messageLength">메시지 길이 (바이트)</param>
 	/// <returns>성공 시 Ok, 실패 시 에러 코드</returns>
-	Res Send(std::shared_ptr<network::Client> client, std::string_view message, ULONG messageLength);
+	Res Send(
+		std::shared_ptr<network::Client> client,
+		std::string_view message,
+		ULONG messageLength);
 
 	/// <summary>
 	/// 클라이언트 연결을 종료한다.

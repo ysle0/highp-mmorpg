@@ -4,7 +4,9 @@
 #include "WindowsAsyncSocket.h"
 
 namespace highp::network {
-WindowsAsyncSocket::WindowsAsyncSocket(std::shared_ptr<log::Logger> logger) : AsyncSocket{ logger } {}
+WindowsAsyncSocket::WindowsAsyncSocket(
+	std::shared_ptr<log::Logger> logger
+) : AsyncSocket{ logger } {}
 
 WindowsAsyncSocket::~WindowsAsyncSocket() {
 	WSACleanup();
@@ -12,8 +14,7 @@ WindowsAsyncSocket::~WindowsAsyncSocket() {
 
 WindowsAsyncSocket::Res WindowsAsyncSocket::Initialize() {
 	WSADATA wsaData;
-	const int res = WSAStartup(MAKEWORD(2, 2), &wsaData);
-	if (res != 0) {
+	if (int res = WSAStartup(MAKEWORD(2, 2), &wsaData); res != 0) {
 		return err::LogErrorWithResult<err::ESocketError::WsaStartupFailed>(_logger);
 	}
 	return Res::Ok();
