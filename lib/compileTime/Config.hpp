@@ -1,5 +1,5 @@
 #pragma once
-#include "TomlParser.h"
+#include "TomlParser.hpp"
 
 namespace highp::config {
 

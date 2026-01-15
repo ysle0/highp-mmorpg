@@ -13,7 +13,7 @@ struct CompileTimeTomlEntry {
 	std::string_view section;   // e.g., "server"
 	std::string_view key;       // e.g., "port"
 	std::string_view value;     // raw string value
-	TomlValueType type;
+	TomlValueType ioType;
 
 	constexpr bool Matches(std::string_view sec, std::string_view k) const noexcept {
 		if (section.size() != sec.size() || key.size() != k.size())
