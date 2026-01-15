@@ -21,10 +21,9 @@ std::shared_ptr<ISocket> SocketHelper::MakeDefault(
 	}
 
 	// Before bind() - 소켓 옵션 설정
-	if (socketOptionBuilder) {
-		SocketHandle sh = s->GetSocketHandle();
-		socketOptionBuilder->SetReuseAddr(sh, true);
-	}
+	const SocketHandle sh = s->GetSocketHandle();
+	socketOptionBuilder->SetReuseAddr(sh, true);
+	//socketOptionBuilder->SetSendBufferSize(sh, network::Const::Buffer::sendBufferSize);
 
 	if (auto res = s->Bind(networkCfg.server.port); res.HasErr()) {
 		return nullptr;

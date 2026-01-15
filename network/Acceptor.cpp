@@ -164,38 +164,21 @@ Acceptor::Res Acceptor::OnAcceptComplete(AcceptOverlapped* overlapped, DWORD byt
 	SocketHandle clientSocket = overlapped->clientSocket;
 
 	// After AcceptEx() - 소켓 컨텍스트 업데이트
-	if (_socketOptionBuilder) {
-		if (!_socketOptionBuilder->SetUpdateAcceptContext(clientSocket, _listenSocket)) {
-			closesocket(clientSocket);
-			ReleaseOverlapped(overlapped);
-			return Res::Err(err::ESocketError::AcceptFailed);
-		}
-
-		// On connected socket - 연결된 소켓 옵션 설정
-		_socketOptionBuilder->SetTcpNoDelay(clientSocket, true);
-
-		tcp_keepalive keepAlive = {};
-		keepAlive.onoff = 1;
-		keepAlive.keepalivetime = 30000;
-		keepAlive.keepaliveinterval = 5000;
-		_socketOptionBuilder->SetKeepAlive(clientSocket, keepAlive);
+	if (!_socketOptionBuilder->SetUpdateAcceptContext(clientSocket, _listenSocket)) {
+		closesocket(clientSocket);
+		ReleaseOverlapped(overlapped);
+		return Res::Err(err::ESocketError::AcceptFailed);
 	}
-	else {
-		// Fallback: SocketOptionBuilder 없을 때 기존 동작
-		int result = setsockopt(
-			clientSocket,
-			SOL_SOCKET,
-			SO_UPDATE_ACCEPT_CONTEXT,
-			reinterpret_cast<char*>(&_listenSocket),
-			sizeof(_listenSocket));
 
-		if (result == SOCKET_ERROR) {
-			_logger->Error("SO_UPDATE_ACCEPT_CONTEXT failed. error: {}", WSAGetLastError());
-			closesocket(clientSocket);
-			ReleaseOverlapped(overlapped);
-			return Res::Err(err::ESocketError::AcceptFailed);
-		}
-	}
+	// On connected socket - 연결된 소켓 옵션 설정
+	_socketOptionBuilder->SetTcpNoDelay(clientSocket, true);
+
+	tcp_keepalive keepAlive = {
+		.onoff = 1,
+		.keepalivetime = 30000,
+		.keepaliveinterval = 5000
+	};
+	_socketOptionBuilder->SetKeepAlive(clientSocket, keepAlive);
 
 	SOCKADDR_IN* localAddr = nullptr;
 	SOCKADDR_IN* remoteAddr = nullptr;
