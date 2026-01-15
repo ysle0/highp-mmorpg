@@ -1,8 +1,8 @@
 #pragma once
 #include <array>
 #include <optional>
-#include "StringUtils.h"
-#include "TomlEntry.h"
+#include "StringUtils.hpp"
+#include "TomlEntry.hpp"
 
 namespace highp::config {
 
@@ -124,19 +124,19 @@ private:
 			value = CompileTimeStringUtils::Trim(value.substr(0, commentPos.value()));
 		}
 
-		// Determine type
-		TomlValueType type = TomlValueType::String;
+		// Determine ioType
+		TomlValueType ioType = TomlValueType::String;
 		if (CompileTimeStringUtils::Equals(value, "true") || CompileTimeStringUtils::Equals(value, "false")) {
-			type = TomlValueType::Boolean;
+			ioType = TomlValueType::Boolean;
 		} else if (!value.empty() && (CompileTimeStringUtils::IsDigit(value[0]) || value[0] == '-' || value[0] == '+')) {
-			type = TomlValueType::Integer;
+			ioType = TomlValueType::Integer;
 		}
 
 		return CompileTimeTomlEntry{
 			.section = currentSection,
 			.key = key,
 			.value = value,
-			.type = type
+			.ioType = ioType
 		};
 	}
 };

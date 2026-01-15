@@ -2,7 +2,7 @@
 
 #include <string>
 #include <string_view>
-#include "../compileTime/TomlEntry.h"  // for TomlValueType
+#include "../compileTime/TomlEntry.hpp"  // for TomlValueType
 
 namespace highp::config {
 
@@ -10,7 +10,7 @@ struct TomlEntry {
 	std::string section;
 	std::string key;
 	std::string value;
-	TomlValueType type;
+	TomlValueType ioType;
 
 	[[nodiscard]] bool Matches(std::string_view sec, std::string_view k) const noexcept {
 		return section == sec && key == k;
