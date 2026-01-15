@@ -1,8 +1,6 @@
 #include "pch.h"
 #include "TextLogger.h"
 
-#include <iostream>
-
 namespace highp::log
 {
 void TextLogger::Info(std::string_view msg)

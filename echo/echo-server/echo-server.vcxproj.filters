@@ -2,46 +2,12 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="EchoServer.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="Client.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
+    <ClCompile Include="EchoServer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="inc">
-      <UniqueIdentifier>{26294ccc-3ccc-4b5c-a75d-c01ea70afdc7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src">
-      <UniqueIdentifier>{c6ec08d5-b850-446f-9dd3-fc80c7076a79}</UniqueIdentifier>
-    </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="EIoType.h">
-      <Filter>inc</Filter>
-    </ClInclude>
-    <ClInclude Include="EchoServer.h">
-      <Filter>inc</Filter>
-    </ClInclude>
-    <ClInclude Include="IoContext.h">
-      <Filter>inc</Filter>
-    </ClInclude>
-    <ClInclude Include="Client.h">
-      <Filter>inc</Filter>
-    </ClInclude>
-    <ClInclude Include="Const.h">
-      <Filter>inc</Filter>
-    </ClInclude>
-    <ClInclude Include="ConfigEmbedded.h">
-      <Filter>inc</Filter>
-    </ClInclude>
-    <ClInclude Include="Config.h">
-      <Filter>inc</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="config.compile.toml" />
     <None Include="config.runtime.toml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="EchoServer.h" />
   </ItemGroup>
 </Project>

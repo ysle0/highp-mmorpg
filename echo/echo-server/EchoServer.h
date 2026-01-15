@@ -1,63 +1,123 @@
 #pragma once
-#pragma comment(lib, "ws2_32.lib")
-
-#include <atomic>
+#include <AcceptContext.h>
+#include <Acceptor.h>
+#include <IoCompletionPort.h>
 #include <IocpError.h>
-#include <Logger.hpp>
-#include <memory>
-#include <string_view>
-#include <thread>
-#include <vector>
-#include <WinSock2.h>
-#include "Client.h"
-#include "Config.h"
-#include "Const.h"
+#include <ISocket.h>
+#include <NetworkCfg.h>
+
+namespace highp::network {
+struct Client;
+}
+
+namespace highp::log {
+class Logger;
+}
 
 namespace highp::echo_srv {
-using highp::err::IocpResult;
-using highp::log::Logger;
 
+/// <summary>
+/// IOCP 기반 비동기 Echo 서버.
+/// 클라이언트로부터 수신한 메시지를 그대로 반환한다.
+/// </summary>
+/// <remarks>
+/// network::IoCompletionPort와 network::Acceptor를 의존성 주입 방식으로 사용하여 관심사를 분리한다.
+/// Send/Recv 로직은 network::Client에 위임한다.
+/// </remarks>
 class EchoServer final {
+	/// <summary>EchoServer 작업 결과 타입</summary>
+	using Res = highp::fn::Result<void, highp::err::EIocpError>;
+
 public:
 	~EchoServer() noexcept;
-	explicit EchoServer(std::shared_ptr<Logger> logger);
-	EchoServer(std::shared_ptr<Logger> logger, RuntimeCfg config);
 
 	/// <summary>
-	/// Start EchoServer with configured values.
-	/// <see href="config.runtime.toml"/>
+	/// 기본 설정으로 EchoServer를 생성한다. network config 은 WithDefaults().
 	/// </summary>
-	IocpResult Start();
+	/// <param name="logger">로깅에 사용할 Logger 인스턴스</param>
+	explicit EchoServer(std::shared_ptr<log::Logger> logger);
 
+	/// <summary>
+	/// 지정된 설정으로 EchoServer를 생성한다.
+	/// </summary>
+	/// <param name="logger">로깅에 사용할 Logger 인스턴스</param>
+	/// <param name="config">서버 네트워크 설정. network::NetworkCfg 참조.</param>
+	EchoServer(std::shared_ptr<log::Logger> logger, network::NetworkCfg config);
+
+	/// <summary>
+	/// Echo 서버를 시작한다.
+	/// </summary>
+	/// <param name="listenSocket">Listen 상태의 소켓. network::ISocket 구현체.</param>
+	/// <returns>성공 시 Ok, 실패 시 에러 코드</returns>
+	/// <remarks>
+	/// 1. network::IoCompletionPort 초기화
+	/// 2. network::Acceptor 초기화 (IOCP 핸들 주입)
+	/// 3. CompletionHandler, AcceptCallback 콜백 등록
+	/// 4. Client 풀 사전 할당
+	/// 5. PostAccepts() 호출
+	/// </remarks>
+	Res Start(std::shared_ptr<network::ISocket> listenSocket);
+
+	/// <summary>
+	/// Echo 서버를 중지하고 리소스를 정리한다.
+	/// </summary>
 	void Stop();
 
 private:
-	IocpResult Recv(std::shared_ptr<Client> client);
-	IocpResult Send(std::shared_ptr<Client> client, std::string_view message, ULONG messageLen);
+	/// <summary>
+	/// IOCP 완료 이벤트 핸들러. Worker 스레드에서 호출된다.
+	/// </summary>
+	/// <param name="event">완료 이벤트 정보. network::CompletionEvent 참조.</param>
+	/// <remarks>
+	/// ioType에 따라 분기:
+	/// - Accept: network::Acceptor::OnAcceptComplete() 호출
+	/// - Recv: Echo 로직 (Client::PostSend 호출)
+	/// - Send: 로깅
+	/// </remarks>
+	void OnCompletion(network::CompletionEvent event);
 
-	void WorkerLoop(std::stop_token st);
-	void AccepterLoop(std::stop_token st);
+	/// <summary>
+	/// 새 클라이언트 연결 처리 핸들러.
+	/// </summary>
+	/// <param name="ctx">Accept 완료 정보. network::AcceptContext 참조.</param>
+	/// <remarks>
+	/// 1. Client 풀에서 빈 슬롯 할당
+	/// 2. 클라이언트 소켓을 IOCP에 연결
+	/// 3. Client::PostRecv() 호출
+	/// </remarks>
+	void OnAccept(network::AcceptContext& ctx);
 
-	void CloseSocket(std::shared_ptr<Client> client, bool isFireAndForget);
+	/// <summary>
+	/// 클라이언트 연결을 종료한다.
+	/// </summary>
+	/// <param name="client">종료할 클라이언트</param>
+	/// <param name="forceClose">true면 linger 없이 즉시 종료</param>
+	void CloseClient(std::shared_ptr<network::Client> client, bool forceClose);
 
-	std::shared_ptr<Client> FindClient();
+	/// <summary>
+	/// Client 풀에서 사용 가능한 슬롯을 찾는다.
+	/// </summary>
+	/// <returns>사용 가능한 Client. 풀이 가득 차면 nullptr.</returns>
+	std::shared_ptr<network::Client> FindAvailableClient();
 
-	// dependency injected
 private:
-	std::shared_ptr<Logger> _logger;
+	/// <summary>로거 인스턴스</summary>
+	std::shared_ptr<log::Logger> _logger;
 
-	// networks
-	SOCKET _listenerSocket = INVALID_SOCKET;
-	HANDLE _iocpHandle = INVALID_HANDLE_VALUE;
-	std::vector<std::shared_ptr<Client>> _clients;
-	char _socketBuffer[Const::socketBufferSize]{ 0, };
+	/// <summary>서버 네트워크 설정</summary>
+	network::NetworkCfg _config = network::NetworkCfg::WithDefaults();
 
-	// threads
-	std::vector<std::jthread> _workerThreads;
-	std::jthread _accepterThread;
+	/// <summary>IOCP 관리자. network::IoCompletionPort 인스턴스.</summary>
+	std::unique_ptr<network::IoCompletionPort> _iocp;
 
-	// config & states
-	RuntimeCfg _config = RuntimeCfg::WithDefaults();
-	std::atomic_uint _clientCount = 0;
+	/// <summary>비동기 Accept 관리자. network::Acceptor 인스턴스.</summary>
+	std::unique_ptr<network::Acceptor> _acceptor;
+
+	/// <summary>클라이언트 연결 풀. 사전 할당하여 메모리 재사용.</summary>
+	std::vector<std::shared_ptr<network::Client>> _clientPool;
+
+	/// <summary>현재 연결된 클라이언트 수</summary>
+	std::atomic_uint _connectedClientCount = 0;
 };
+
 }

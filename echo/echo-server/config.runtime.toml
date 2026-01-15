@@ -8,4 +8,6 @@ max_clients = 1000
 backlog = 10
 
 [thread]
-worker_count = -1
+max_worker_thread_multiplier = 2
+max_acceptor_thread_count = 2
+desirable_iocp_thread_count = -1

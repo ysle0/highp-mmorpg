@@ -1,20 +1,16 @@
 #pragma once
+#include "macro.h"
 
-#include <macro/macro.h>
-
-class ILoggerOptions
-{
+class ILoggerOptions {
 	INIT_INTERFACE(ILoggerOptions)
 
 };
 
-class TextLoggerOptions
-{
+class TextLoggerOptions {
 
 
 };
 
-class StructuredLoggerOptions
-{
+class StructuredLoggerOptions {
 
 };
