@@ -9,7 +9,7 @@ SocketOptionBuilder::SocketOptionBuilder(
 ) : _logger(std::move(logger)) {}
 
 //=============================================================================
-// SOL_SOCKET 레벨 옵션
+// Before bind() - 소켓 생성 직후
 //=============================================================================
 
 bool SocketOptionBuilder::SetReuseAddr(SocketHandle sh, bool enable)
@@ -21,6 +21,71 @@ bool SocketOptionBuilder::SetReuseAddr(SocketHandle sh, bool enable)
 		return false;
 	}
 	_logger->Debug("SetReuseAddr: {}", enable);
+	return true;
+}
+
+bool SocketOptionBuilder::SetSendBufferSize(SocketHandle sh, int size)
+{
+	if (setsockopt(sh, SOL_SOCKET, SO_SNDBUF,
+		reinterpret_cast<const char*>(&size), sizeof(size)) == SocketError) {
+		_logger->Error("SetSendBufferSize failed: {}", WSAGetLastError());
+		return false;
+	}
+	_logger->Debug("SetSendBufferSize: {}", size);
+	return true;
+}
+
+bool SocketOptionBuilder::SetRecvBufferSize(SocketHandle sh, int size)
+{
+	if (setsockopt(sh, SOL_SOCKET, SO_RCVBUF,
+		reinterpret_cast<const char*>(&size), sizeof(size)) == SocketError) {
+		_logger->Error("SetRecvBufferSize failed: {}", WSAGetLastError());
+		return false;
+	}
+	_logger->Debug("SetRecvBufferSize: {}", size);
+	return true;
+}
+
+bool SocketOptionBuilder::SetBroadcast(SocketHandle sh, bool enable)
+{
+	int value = enable ? 1 : 0;
+	if (setsockopt(sh, SOL_SOCKET, SO_BROADCAST,
+		reinterpret_cast<const char*>(&value), sizeof(value)) == SocketError) {
+		_logger->Error("SetBroadcast failed: {}", WSAGetLastError());
+		return false;
+	}
+	_logger->Debug("SetBroadcast: {}", enable);
+	return true;
+}
+
+//=============================================================================
+// After AcceptEx() - 연결 수락 직후
+//=============================================================================
+
+bool SocketOptionBuilder::SetUpdateAcceptContext(SocketHandle acceptedSock, SocketHandle listenSock)
+{
+	if (setsockopt(acceptedSock, SOL_SOCKET, SO_UPDATE_ACCEPT_CONTEXT,
+		reinterpret_cast<const char*>(&listenSock), sizeof(listenSock)) == SocketError) {
+		_logger->Error("SetUpdateAcceptContext failed: {}", WSAGetLastError());
+		return false;
+	}
+	_logger->Debug("SetUpdateAcceptContext: applied");
+	return true;
+}
+
+//=============================================================================
+// On connected socket - 연결된 소켓
+//=============================================================================
+
+bool SocketOptionBuilder::SetTcpNoDelay(SocketHandle sh, bool enable)
+{
+	int value = enable ? 1 : 0;
+	if (setsockopt(sh, IPPROTO_TCP, TCP_NODELAY,
+		reinterpret_cast<const char*>(&value), sizeof(value)) == SocketError) {
+		_logger->Error("SetTcpNoDelay failed: {}", WSAGetLastError());
+		return false;
+	}
+	_logger->Debug("SetTcpNoDelay: {}", enable);
 	return true;
 }
 
@@ -62,28 +127,6 @@ bool SocketOptionBuilder::SetLinger(SocketHandle sh, const linger& l)
 	return true;
 }
 
-bool SocketOptionBuilder::SetSendBufferSize(SocketHandle sh, int size)
-{
-	if (setsockopt(sh, SOL_SOCKET, SO_SNDBUF,
-		reinterpret_cast<const char*>(&size), sizeof(size)) == SocketError) {
-		_logger->Error("SetSendBufferSize failed: {}", WSAGetLastError());
-		return false;
-	}
-	_logger->Debug("SetSendBufferSize: {}", size);
-	return true;
-}
-
-bool SocketOptionBuilder::SetRecvBufferSize(SocketHandle sh, int size)
-{
-	if (setsockopt(sh, SOL_SOCKET, SO_RCVBUF,
-		reinterpret_cast<const char*>(&size), sizeof(size)) == SocketError) {
-		_logger->Error("SetRecvBufferSize failed: {}", WSAGetLastError());
-		return false;
-	}
-	_logger->Debug("SetRecvBufferSize: {}", size);
-	return true;
-}
-
 bool SocketOptionBuilder::SetSendTimeout(SocketHandle sh, DWORD timeoutMs)
 {
 	if (setsockopt(sh, SOL_SOCKET, SO_SNDTIMEO,
@@ -106,49 +149,6 @@ bool SocketOptionBuilder::SetRecvTimeout(SocketHandle sh, DWORD timeoutMs)
 	return true;
 }
 
-bool SocketOptionBuilder::SetBroadcast(SocketHandle sh, bool enable)
-{
-	int value = enable ? 1 : 0;
-	if (setsockopt(sh, SOL_SOCKET, SO_BROADCAST,
-		reinterpret_cast<const char*>(&value), sizeof(value)) == SocketError) {
-		_logger->Error("SetBroadcast failed: {}", WSAGetLastError());
-		return false;
-	}
-	_logger->Debug("SetBroadcast: {}", enable);
-	return true;
-}
-
-bool SocketOptionBuilder::SetUpdateAcceptContext(SocketHandle acceptedSock, SocketHandle listenSock)
-{
-	if (setsockopt(acceptedSock, SOL_SOCKET, SO_UPDATE_ACCEPT_CONTEXT,
-		reinterpret_cast<const char*>(&listenSock), sizeof(listenSock)) == SocketError) {
-		_logger->Error("SetUpdateAcceptContext failed: {}", WSAGetLastError());
-		return false;
-	}
-	_logger->Debug("SetUpdateAcceptContext: applied");
-	return true;
-}
-
-//=============================================================================
-// IPPROTO_TCP 레벨 옵션
-//=============================================================================
-
-bool SocketOptionBuilder::SetTcpNoDelay(SocketHandle sh, bool enable)
-{
-	int value = enable ? 1 : 0;
-	if (setsockopt(sh, IPPROTO_TCP, TCP_NODELAY,
-		reinterpret_cast<const char*>(&value), sizeof(value)) == SocketError) {
-		_logger->Error("SetTcpNoDelay failed: {}", WSAGetLastError());
-		return false;
-	}
-	_logger->Debug("SetTcpNoDelay: {}", enable);
-	return true;
-}
-
-//=============================================================================
-// IPPROTO_IP 레벨 옵션
-//=============================================================================
-
 bool SocketOptionBuilder::SetTtl(SocketHandle sh, int ttl)
 {
 	if (setsockopt(sh, IPPROTO_IP, IP_TTL,
@@ -161,7 +161,7 @@ bool SocketOptionBuilder::SetTtl(SocketHandle sh, int ttl)
 }
 
 //=============================================================================
-// 유틸리티
+// Utility
 //=============================================================================
 
 bool SocketOptionBuilder::ApplyGameServerDefaults(SocketHandle sh)

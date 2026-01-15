@@ -1,6 +1,5 @@
 #pragma once
 #include "platform.h"
-#include "mswsockdef.h"
 
 namespace highp::log {
 class Logger;
@@ -13,24 +12,24 @@ class SocketOptionBuilder final {
 public:
 	explicit SocketOptionBuilder(std::shared_ptr<log::Logger> logger);
 
-	// SOL_SOCKET 레벨 옵션
+	// Before bind() - 소켓 생성 직후
 	bool SetReuseAddr(SocketHandle sh, bool enable);
-	bool SetKeepAlive(SocketHandle sh, const tcp_keepalive& config);
-	bool SetLinger(SocketHandle sh, const linger& l);
 	bool SetSendBufferSize(SocketHandle sh, int size);
 	bool SetRecvBufferSize(SocketHandle sh, int size);
-	bool SetSendTimeout(SocketHandle sh, DWORD timeoutMs);
-	bool SetRecvTimeout(SocketHandle sh, DWORD timeoutMs);
-	bool SetBroadcast(SocketHandle sh, bool enable);
+	bool SetBroadcast(SocketHandle sh, bool enable);  // UDP only
+
+	// After AcceptEx() - 연결 수락 직후
 	bool SetUpdateAcceptContext(SocketHandle acceptedSock, SocketHandle listenSock);
 
-	// IPPROTO_TCP 레벨 옵션
+	// On connected socket - 연결된 소켓
 	bool SetTcpNoDelay(SocketHandle sh, bool enable);
-
-	// IPPROTO_IP 레벨 옵션
+	bool SetKeepAlive(SocketHandle sh, const tcp_keepalive& config);
+	bool SetLinger(SocketHandle sh, const linger& l);
+	bool SetSendTimeout(SocketHandle sh, DWORD timeoutMs);
+	bool SetRecvTimeout(SocketHandle sh, DWORD timeoutMs);
 	bool SetTtl(SocketHandle sh, int ttl);
 
-	// 유틸리티: 게임 서버용 기본 설정 적용
+	// Utility
 	bool ApplyGameServerDefaults(SocketHandle sh);
 
 private:
