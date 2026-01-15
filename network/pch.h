@@ -10,4 +10,15 @@
 // add headers that you want to pre-compile here
 #include "framework.h"
 
+#include <Errors.h>
+#include <macro.h>
+#include <Result.hpp>
+#include <SocketError.h>
+#include "Client.h"
+#include "Const.h"
+#include "EIoType.h"
+#include "OverlappedExt.h"
+#include "NetworkTransport.hpp"
+#include "NetworkUtil.hpp"
+
 #endif //PCH_H
