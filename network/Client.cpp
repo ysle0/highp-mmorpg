@@ -1,19 +1,17 @@
 #include "pch.h"
 #include "Client.h"
-#include "Const.h"
 
 namespace highp::network {
 
 Client::Client() {
-	ZeroMemory(&recvOverlapped, sizeof(OverlappedExt));
-	ZeroMemory(&sendOverlapped, sizeof(OverlappedExt));
+	ZeroMemory(&recvOverlapped, sizeof(RecvOverlapped));
+	ZeroMemory(&sendOverlapped, sizeof(SendOverlapped));
 }
 
 Client::Res Client::PostRecv() {
 	ZeroMemory(&recvOverlapped.overlapped, sizeof(WSAOVERLAPPED));
-
-	recvOverlapped.wsaBuffer.buf = recvOverlapped.recvBuffer;
-	recvOverlapped.wsaBuffer.len = Const::Socket::recvBufferSize;
+	recvOverlapped.bufDesc.buf = recvOverlapped.buf;
+	recvOverlapped.bufDesc.len = std::size(recvOverlapped.buf);
 	recvOverlapped.ioType = EIoType::Recv;
 
 	DWORD flags = 0;
@@ -21,7 +19,7 @@ Client::Res Client::PostRecv() {
 
 	int result = WSARecv(
 		socket,
-		&recvOverlapped.wsaBuffer,
+		&recvOverlapped.bufDesc,
 		1,
 		&recvNumBytes,
 		&flags,
@@ -39,17 +37,16 @@ Client::Res Client::PostSend(std::string_view data) {
 	ZeroMemory(&sendOverlapped.overlapped, sizeof(WSAOVERLAPPED));
 
 	auto len = static_cast<ULONG>(data.size());
-	CopyMemory(sendOverlapped.sendBuffer, data.data(), len);
-
-	sendOverlapped.wsaBuffer.buf = sendOverlapped.sendBuffer;
-	sendOverlapped.wsaBuffer.len = len;
+	CopyMemory(sendOverlapped.buf, data.data(), len);
+	sendOverlapped.bufDesc.buf = sendOverlapped.buf;
+	sendOverlapped.bufDesc.len = len;
 	sendOverlapped.ioType = EIoType::Send;
 
 	DWORD sendNumBytes = 0;
 
 	int result = WSASend(
 		socket,
-		&sendOverlapped.wsaBuffer,
+		&sendOverlapped.bufDesc,
 		1,
 		&sendNumBytes,
 		0,

@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 // Auto-generated from: network/config.compile.toml
 // Do not edit manually. Run scripts/parse_compile_cfg.ps1 to regenerate.
 
@@ -11,15 +11,12 @@ namespace highp::network {
 /// TOML sections are represented as nested structs.
 /// </summary>
 struct Const {
-	/// <summary>[network] section</summary>
-	struct Network {
-		static constexpr INT clientIpBufferSize = 32;
-	};
-	/// <summary>[socket] section</summary>
-	struct Socket {
-		static constexpr INT bufferSize = 4096;
+	/// <summary>[buffer] section</summary>
+	struct Buffer {
 		static constexpr INT recvBufferSize = 4096;
 		static constexpr INT sendBufferSize = 1024;
+		static constexpr INT addressBufferSize = 64;
+		static constexpr INT clientIpBufferSize = 32;
 	};
 };
 

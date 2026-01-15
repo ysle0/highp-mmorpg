@@ -83,7 +83,7 @@ void EchoServer::OnCompletion(network::CompletionEvent event) {
 	switch (event.ioType) {
 		case network::EIoType::Accept:
 		{
-			auto* overlapped = reinterpret_cast<network::OverlappedExt*>(event.overlapped);
+			auto* overlapped = reinterpret_cast<network::AcceptOverlapped*>(event.overlapped);
 			if (_acceptor) {
 				_logger->Info("[Accept] Socket #{} is accepted", overlapped->clientSocket);
 				_acceptor->OnAcceptComplete(overlapped, event.bytesTransferred);
@@ -100,10 +100,10 @@ void EchoServer::OnCompletion(network::CompletionEvent event) {
 				break;
 			}
 
-			auto* overlapped = reinterpret_cast<network::OverlappedExt*>(event.overlapped);
-			overlapped->recvBuffer[event.bytesTransferred] = '\0';
+			auto* overlapped = reinterpret_cast<network::RecvOverlapped*>(event.overlapped);
+			overlapped->buf[event.bytesTransferred] = '\0';
 
-			std::string_view recvData{ overlapped->recvBuffer, event.bytesTransferred };
+			std::string_view recvData{ overlapped->buf, event.bytesTransferred };
 			_logger->Info("[Recv] socket #{}, data: {}, bytes: {}",
 				client->socket, recvData, event.bytesTransferred);
 
@@ -157,7 +157,7 @@ void EchoServer::OnAccept(network::AcceptContext& ctx) {
 
 	_connectedClientCount++;
 
-	char clientIp[network::Const::Network::clientIpBufferSize]{ 0 };
+	char clientIp[network::Const::Buffer::clientIpBufferSize]{ 0 };
 	inet_ntop(AF_INET, &ctx.remoteAddr.sin_addr, clientIp, sizeof(clientIp));
 	_logger->Info("Client connected. socket: {}, ip: {}", client->socket, clientIp);
 }

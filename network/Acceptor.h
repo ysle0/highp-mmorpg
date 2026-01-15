@@ -42,7 +42,7 @@ public:
 	/// </summary>
 	/// <param name="logger">로깅에 사용할 Logger 인스턴스</param>
 	/// <param name="socketOptionBuilder">소켓 옵션 설정을 위한 빌더 (선택적)</param>
-	/// <param name="preAllocCount">사전 할당할 OverlappedExt 개수. 기본값 10.</param>
+	/// <param name="preAllocCount">사전 할당할 Overlapped 개수. 기본값 10.</param>
 	/// <param name="onAfterAccept">Accept 완료 콜백 (선택적). RAII 원칙에 따라 생성 시 설정 권장.</param>
 	explicit Acceptor(
 		std::shared_ptr<log::Logger> logger,
@@ -95,14 +95,14 @@ public:
 	/// <summary>
 	/// AcceptEx 완료 시 호출되는 핸들러. IoCompletionPort::WorkerLoop()에서 호출된다.
 	/// </summary>
-	/// <param name="overlapped">완료된 OverlappedExt 포인터</param>
+	/// <param name="overlapped">완료된 AcceptOverlapped 포인터</param>
 	/// <param name="bytesTransferred">전송된 바이트 수 (AcceptEx에서는 보통 0)</param>
 	/// <returns>성공 시 Ok, 실패 시 에러 코드</returns>
 	/// <remarks>
 	/// SO_UPDATE_ACCEPT_CONTEXT 설정 후 GetAcceptExSockAddrs로 주소를 파싱하고
 	/// 등록된 콜백을 호출한다. 처리 후 자동으로 PostAccept()를 재호출한다.
 	/// </remarks>
-	Res OnAcceptComplete(OverlappedExt* overlapped, DWORD bytesTransferred);
+	Res OnAcceptComplete(AcceptOverlapped* overlapped, DWORD bytesTransferred);
 
 	/// <summary>
 	/// Accept 완료 시 호출될 콜백을 등록한다.
@@ -136,28 +136,21 @@ private:
 	SocketHandle CreateAcceptSocket();
 
 	/// <summary>
-	/// 풀에서 사용 가능한 OverlappedExt를 획득한다.
+	/// 풀에서 사용 가능한 AcceptOverlapped를 획득한다.
 	/// </summary>
-	/// <returns>사용 가능한 OverlappedExt 포인터. 풀이 비어있으면 nullptr.</returns>
-	OverlappedExt* AcquireOverlapped();
+	/// <returns>사용 가능한 AcceptOverlapped 포인터. 풀이 비어있으면 nullptr.</returns>
+	AcceptOverlapped* AcquireOverlapped();
 
 	/// <summary>
-	/// 사용 완료된 OverlappedExt를 풀에 반환한다.
+	/// 사용 완료된 AcceptOverlapped를 풀에 반환한다.
 	/// </summary>
-	/// <param name="overlapped">반환할 OverlappedExt 포인터</param>
-	void ReleaseOverlapped(OverlappedExt* overlapped);
+	/// <param name="overlapped">반환할 AcceptOverlapped 포인터</param>
+	void ReleaseOverlapped(AcceptOverlapped* overlapped);
 
 private:
-	/// <summary>로거 인스턴스</summary>
 	std::shared_ptr<log::Logger> _logger;
-
-	/// <summary>소켓 옵션 빌더</summary>
 	std::shared_ptr<SocketOptionBuilder> _socketOptionBuilder;
-
-	/// <summary>Listen 소켓 핸들</summary>
 	SocketHandle _listenSocket = InvalidSocket;
-
-	/// <summary>IOCP 핸들</summary>
 	HANDLE _iocpHandle = INVALID_HANDLE_VALUE;
 
 	/// <summary>AcceptEx 함수 포인터. WSAIoctl로 획득.</summary>
@@ -166,10 +159,7 @@ private:
 	/// <summary>GetAcceptExSockAddrs 함수 포인터. WSAIoctl로 획득.</summary>
 	LPFN_GETACCEPTEXSOCKADDRS _fnGetAcceptExSockAddrs = nullptr;
 
-	/// <summary>OverlappedExt 객체 풀</summary>
-	mem::ObjectPool<OverlappedExt> _overlappedPool;
-
-	/// <summary>Accept 완료 콜백</summary>
+	mem::ObjectPool<AcceptOverlapped> _overlappedPool;
 	AcceptCallback _acceptCallback;
 };
 

@@ -117,7 +117,7 @@ void IoCompletionPort::WorkerLoop(std::stop_token st) {
 		};
 
 		if (overlapped != nullptr) {
-			auto* ext = reinterpret_cast<OverlappedExt*>(overlapped);
+			auto* ext = reinterpret_cast<OverlappedBase*>(overlapped);
 			event.ioType = ext->ioType;
 		}
 
