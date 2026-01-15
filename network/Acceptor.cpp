@@ -7,7 +7,7 @@ Acceptor::Acceptor(
 	std::shared_ptr<log::Logger> logger,
 	int preAllocCount,
 	AcceptCallback onAfterAccept)
-	: _logger(std::move(logger))
+	: _logger(logger)
 	, _overlappedPool(preAllocCount)
 	, _acceptCallback(std::move(onAfterAccept))
 {
