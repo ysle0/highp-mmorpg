@@ -12,6 +12,8 @@
 
 namespace highp::network {
 
+class SocketOptionBuilder;
+
 /// <summary>
 /// Accept 완료 시 호출되는 콜백 함수 타입.
 /// Acceptor::SetAcceptCallback()으로 등록하며, AcceptContext를 인자로 받는다.
@@ -39,10 +41,12 @@ public:
 	/// Acceptor 생성자.
 	/// </summary>
 	/// <param name="logger">로깅에 사용할 Logger 인스턴스</param>
+	/// <param name="socketOptionBuilder">소켓 옵션 설정을 위한 빌더 (선택적)</param>
 	/// <param name="preAllocCount">사전 할당할 OverlappedExt 개수. 기본값 10.</param>
 	/// <param name="onAfterAccept">Accept 완료 콜백 (선택적). RAII 원칙에 따라 생성 시 설정 권장.</param>
 	explicit Acceptor(
 		std::shared_ptr<log::Logger> logger,
+		std::shared_ptr<SocketOptionBuilder> socketOptionBuilder = nullptr,
 		int preAllocCount = 10,
 		AcceptCallback onAfterAccept = nullptr);
 
@@ -146,6 +150,9 @@ private:
 private:
 	/// <summary>로거 인스턴스</summary>
 	std::shared_ptr<log::Logger> _logger;
+
+	/// <summary>소켓 옵션 빌더</summary>
+	std::shared_ptr<SocketOptionBuilder> _socketOptionBuilder;
 
 	/// <summary>Listen 소켓 핸들</summary>
 	SocketHandle _listenSocket = InvalidSocket;

@@ -8,6 +8,7 @@
 
 namespace highp::network {
 struct Client;
+class SocketOptionBuilder;
 }
 
 namespace highp::log {
@@ -35,14 +36,21 @@ public:
 	/// 기본 설정으로 EchoServer를 생성한다. network config 은 WithDefaults().
 	/// </summary>
 	/// <param name="logger">로깅에 사용할 Logger 인스턴스</param>
-	explicit EchoServer(std::shared_ptr<log::Logger> logger);
+	/// <param name="socketOptionBuilder">소켓 옵션 빌더 (선택적)</param>
+	explicit EchoServer(
+		std::shared_ptr<log::Logger> logger,
+		std::shared_ptr<network::SocketOptionBuilder> socketOptionBuilder = nullptr);
 
 	/// <summary>
 	/// 지정된 설정으로 EchoServer를 생성한다.
 	/// </summary>
 	/// <param name="logger">로깅에 사용할 Logger 인스턴스</param>
 	/// <param name="config">서버 네트워크 설정. network::NetworkCfg 참조.</param>
-	EchoServer(std::shared_ptr<log::Logger> logger, network::NetworkCfg config);
+	/// <param name="socketOptionBuilder">소켓 옵션 빌더 (선택적)</param>
+	EchoServer(
+		std::shared_ptr<log::Logger> logger,
+		network::NetworkCfg config,
+		std::shared_ptr<network::SocketOptionBuilder> socketOptionBuilder = nullptr);
 
 	/// <summary>
 	/// Echo 서버를 시작한다.
@@ -103,6 +111,9 @@ private:
 private:
 	/// <summary>로거 인스턴스</summary>
 	std::shared_ptr<log::Logger> _logger;
+
+	/// <summary>소켓 옵션 빌더</summary>
+	std::shared_ptr<network::SocketOptionBuilder> _socketOptionBuilder;
 
 	/// <summary>서버 네트워크 설정</summary>
 	network::NetworkCfg _config = network::NetworkCfg::WithDefaults();

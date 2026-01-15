@@ -5,6 +5,9 @@
 #include "NetworkTransport.hpp"
 
 namespace highp::network {
+
+class SocketOptionBuilder;
+
 class SocketHelper {
 public:
 	SocketHelper() = delete;
@@ -12,7 +15,8 @@ public:
 	static std::shared_ptr<ISocket> MakeDefault(
 		std::shared_ptr<log::Logger> logger,
 		NetworkTransport netTransport,
-		NetworkCfg networkCfg
+		NetworkCfg networkCfg,
+		std::shared_ptr<SocketOptionBuilder> socketOptionBuilder = nullptr
 	);
 };
 }

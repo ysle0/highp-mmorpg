@@ -1,13 +1,16 @@
 #include "pch.h"
 #include "Acceptor.h"
+#include "SocketOptionBuilder.h"
 
 namespace highp::network {
 
 Acceptor::Acceptor(
 	std::shared_ptr<log::Logger> logger,
+	std::shared_ptr<SocketOptionBuilder> socketOptionBuilder,
 	int preAllocCount,
 	AcceptCallback onAfterAccept)
 	: _logger(logger)
+	, _socketOptionBuilder(socketOptionBuilder)
 	, _overlappedPool(preAllocCount)
 	, _acceptCallback(std::move(onAfterAccept))
 {
@@ -158,18 +161,40 @@ Acceptor::Res Acceptor::OnAcceptComplete(OverlappedExt* overlapped, DWORD bytesT
 		return Res::Err(err::ESocketError::AcceptFailed);
 	}
 
-	int result = setsockopt(
-		overlapped->clientSocket,
-		SOL_SOCKET,
-		SO_UPDATE_ACCEPT_CONTEXT,
-		reinterpret_cast<char*>(&_listenSocket),
-		sizeof(_listenSocket));
+	SocketHandle clientSocket = overlapped->clientSocket;
 
-	if (result == SOCKET_ERROR) {
-		_logger->Error("SO_UPDATE_ACCEPT_CONTEXT failed. error: {}", WSAGetLastError());
-		closesocket(overlapped->clientSocket);
-		ReleaseOverlapped(overlapped);
-		return Res::Err(err::ESocketError::AcceptFailed);
+	// After AcceptEx() - 소켓 컨텍스트 업데이트
+	if (_socketOptionBuilder) {
+		if (!_socketOptionBuilder->SetUpdateAcceptContext(clientSocket, _listenSocket)) {
+			closesocket(clientSocket);
+			ReleaseOverlapped(overlapped);
+			return Res::Err(err::ESocketError::AcceptFailed);
+		}
+
+		// On connected socket - 연결된 소켓 옵션 설정
+		_socketOptionBuilder->SetTcpNoDelay(clientSocket, true);
+
+		tcp_keepalive keepAlive = {};
+		keepAlive.onoff = 1;
+		keepAlive.keepalivetime = 30000;
+		keepAlive.keepaliveinterval = 5000;
+		_socketOptionBuilder->SetKeepAlive(clientSocket, keepAlive);
+	}
+	else {
+		// Fallback: SocketOptionBuilder 없을 때 기존 동작
+		int result = setsockopt(
+			clientSocket,
+			SOL_SOCKET,
+			SO_UPDATE_ACCEPT_CONTEXT,
+			reinterpret_cast<char*>(&_listenSocket),
+			sizeof(_listenSocket));
+
+		if (result == SOCKET_ERROR) {
+			_logger->Error("SO_UPDATE_ACCEPT_CONTEXT failed. error: {}", WSAGetLastError());
+			closesocket(clientSocket);
+			ReleaseOverlapped(overlapped);
+			return Res::Err(err::ESocketError::AcceptFailed);
+		}
 	}
 
 	SOCKADDR_IN* localAddr = nullptr;

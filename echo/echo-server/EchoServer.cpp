@@ -12,12 +12,19 @@ EchoServer::~EchoServer() noexcept {
 	WSACleanup();
 }
 
-EchoServer::EchoServer(std::shared_ptr<Logger> logger)
+EchoServer::EchoServer(
+	std::shared_ptr<Logger> logger,
+	std::shared_ptr<network::SocketOptionBuilder> socketOptionBuilder)
 	: _logger(logger)
+	, _socketOptionBuilder(socketOptionBuilder)
 	, _config(network::NetworkCfg::WithDefaults()) {}
 
-EchoServer::EchoServer(std::shared_ptr<Logger> logger, network::NetworkCfg config)
+EchoServer::EchoServer(
+	std::shared_ptr<Logger> logger,
+	network::NetworkCfg config,
+	std::shared_ptr<network::SocketOptionBuilder> socketOptionBuilder)
 	: _logger(logger)
+	, _socketOptionBuilder(socketOptionBuilder)
 	, _config(config) {}
 
 EchoServer::Res EchoServer::Start(std::shared_ptr<highp::network::ISocket> asyncSocket) {
@@ -33,6 +40,7 @@ EchoServer::Res EchoServer::Start(std::shared_ptr<highp::network::ISocket> async
 
 	_acceptor = std::make_unique<network::Acceptor>(
 		_logger,
+		_socketOptionBuilder,
 		_config.server.backlog,
 		std::bind_front(&EchoServer::OnAccept, this));
 

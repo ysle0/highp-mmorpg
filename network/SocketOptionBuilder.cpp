@@ -6,7 +6,7 @@ namespace highp::network {
 
 SocketOptionBuilder::SocketOptionBuilder(
 	std::shared_ptr<log::Logger> logger
-) : _logger(std::move(logger)) {}
+) : _logger(logger) {}
 
 //=============================================================================
 // Before bind() - 소켓 생성 직후
