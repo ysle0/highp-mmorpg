@@ -32,9 +32,23 @@ Acceptor::Res Acceptor::Initialize(SocketHandle listenSocket, HANDLE iocpHandle)
 		return Res::Err(err::ESocketError::CreateSocketFailed);
 	}
 
-	if (auto res = LoadAcceptExFunctions(); res.HasErr()) {
-		return res;
-	}
+
+	// 0) 원본 C++17 if with initializer 로 2줄 -> 1줄로 줄이기!
+	//if (auto res = LoadAcceptExFunctions(); res.HasErr()) {
+	//	return res;
+	//}
+
+	// 1) bool 연산자 오버로딩 -> .HasErr() 를 줄일 수 있음.
+	//if (auto res = LoadAcceptExFunctions(); !res) {
+	//	return res;
+	//}
+	//
+	// 만약 return 으로 err propagation 이 필요없으면
+	//if (LoadAcceptExFunctions()) {
+	//}
+
+	// 2) macro GUARD(expr)
+	GUARD(LoadAcceptExFunctions());
 
 	_logger->Info("Acceptor initialized. listen socket associated with IOCP. pre-allocated overlappeds: {}", _overlappedPool.AvailableCount());
 	return Res::Ok();
@@ -145,9 +159,7 @@ Acceptor::Res Acceptor::PostAccept() {
 
 Acceptor::Res Acceptor::PostAccepts(int count) {
 	for (int i = 0; i < count; ++i) {
-		if (auto res = PostAccept(); res.HasErr()) {
-			return res;
-		}
+		GUARD(PostAccept());
 	}
 	_logger->Info("Posted {} AcceptEx requests.", count);
 	return Res::Ok();
@@ -200,9 +212,10 @@ Acceptor::Res Acceptor::OnAcceptComplete(OverlappedExt* overlapped, DWORD bytesT
 
 	ReleaseOverlapped(overlapped);
 
-	if (auto res = PostAccept(); res.HasErr()) {
+	// 3) 매크로 처리 + 후속 실행함수 추가
+	GUARD_EFFECT(PostAccept(), [this]() {
 		_logger->Error("Failed to re-post AcceptEx after completion.");
-	}
+	});
 
 	return Res::Ok();
 }

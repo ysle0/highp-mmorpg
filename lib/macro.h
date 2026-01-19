@@ -7,4 +7,3 @@
 #define INIT_INTERFACE(className) \
 public: \
 	virtual ~className() = default;
-
