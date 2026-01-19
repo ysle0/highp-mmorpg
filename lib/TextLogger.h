@@ -1,5 +1,4 @@
 #pragma once
-
 #include "ILogger.h"
 
 namespace highp::log {
