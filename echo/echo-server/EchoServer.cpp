@@ -40,7 +40,7 @@ EchoServer::Res EchoServer::Start(std::shared_ptr<highp::network::ISocket> async
 		asyncSocket->GetSocketHandle(),
 		_iocp->GetHandle());
 	if (acceptorRes.HasErr()) {
-		return Res::Err(EIocpError::CreateIocpFailed);
+		return Res::Err(ENetworkError::IocpCreateFailed);
 	}
 
 	for (int i = 0; i < _config.server.maxClients; ++i) {
@@ -49,7 +49,7 @@ EchoServer::Res EchoServer::Start(std::shared_ptr<highp::network::ISocket> async
 
 	auto postRes = _acceptor->PostAccepts(_config.server.backlog);
 	if (postRes.HasErr()) {
-		return Res::Err(EIocpError::AcceptThreadFailed);
+		return Res::Err(ENetworkError::ThreadAcceptFailed);
 	}
 
 	_logger->Info("EchoServer started on port {}.", _config.server.port);

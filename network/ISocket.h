@@ -1,7 +1,7 @@
 #pragma once
 #include <macro.h>
 #include <Result.hpp>
-#include <SocketError.h>
+#include <NetworkError.h>
 #include "NetworkTransport.hpp"
 
 namespace highp::network {
@@ -14,7 +14,7 @@ namespace highp::network {
 class ISocket {
 public:
 	/// <summary>소켓 작업 결과 타입</summary>
-	using Res = highp::fn::Result<void, highp::err::ESocketError>;
+	using Res = highp::fn::Result<void, highp::err::ENetworkError>;
 
 	/// <summary>가상 소멸자</summary>
 	virtual ~ISocket() = default;

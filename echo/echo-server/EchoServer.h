@@ -2,7 +2,7 @@
 #include <AcceptContext.h>
 #include <Acceptor.h>
 #include <IoCompletionPort.h>
-#include <IocpError.h>
+#include <NetworkError.h>
 #include <ISocket.h>
 #include <NetworkCfg.h>
 
@@ -26,7 +26,7 @@ namespace highp::echo_srv {
 /// </remarks>
 class EchoServer final {
 	/// <summary>EchoServer 작업 결과 타입</summary>
-	using Res = highp::fn::Result<void, highp::err::EIocpError>;
+	using Res = highp::fn::Result<void, highp::err::ENetworkError>;
 
 public:
 	~EchoServer() noexcept;

@@ -9,10 +9,10 @@ namespace highp::network {
 /// </summary>
 class WindowsAsyncSocket : public AsyncSocket {
 	/// <summary>소켓 작업 결과 타입</summary>
-	using Res = highp::fn::Result<void, highp::err::ESocketError>;
+	using Res = highp::fn::Result<void, highp::err::ENetworkError>;
 
 	/// <summary>소켓 핸들을 포함한 결과 타입</summary>
-	using ResWithData = highp::fn::Result<SOCKET, highp::err::ESocketError>;
+	using ResWithData = highp::fn::Result<SOCKET, highp::err::ENetworkError>;
 
 public:
 	/// <summary>

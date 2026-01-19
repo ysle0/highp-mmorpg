@@ -13,7 +13,7 @@
 #include <Errors.h>
 #include <macro.h>
 #include <Result.hpp>
-#include <SocketError.h>
+#include "NetworkError.h"
 #include "Client.h"
 #include "Const.h"
 #include "EIoType.h"

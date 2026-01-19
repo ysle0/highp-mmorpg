@@ -4,13 +4,13 @@
 #include <string_view>
 #include "Logger.hpp"
 #include "Result.hpp"
-#include "SocketError.h"
+#include "NetworkError.h"
 
 namespace highp::err {
 
 /// <summary>
 /// 에러 코드를 문자열로 변환하는 통합 함수.
-/// ESocketError와 EIocpError를 자동으로 구분하여 처리한다.
+/// ENetworkError를 문자열로 변환한다.
 /// </summary>
 /// <typeparam name="E">변환할 에러 코드 값 (컴파일 타임 상수)</typeparam>
 /// <returns>에러 설명 문자열</returns>
@@ -70,17 +70,17 @@ static void LogError(std::shared_ptr<log::Logger> logger) {
 /// </summary>
 /// <param name="logger">로거 인스턴스</param>
 /// <returns>CreateSocketFailed 에러가 설정된 Result</returns>
-static fn::Result<void, ESocketError> LogErrorByWSAStartupResult(std::shared_ptr<log::Logger> logger) {
+static fn::Result<void, ENetworkError> LogErrorByWSAStartupResult(std::shared_ptr<log::Logger> logger) {
 	const int err = WSAGetLastError();
 	switch (err) {
-		case WSANOTINITIALISED: return LogErrorWSAWithResult<ESocketError::WsaNotInitialized>(logger);
-		case WSAENETDOWN: return LogErrorWSAWithResult<ESocketError::WsaNetworkSubSystemFailed>(logger);
-		case WSAEAFNOSUPPORT: return LogErrorWSAWithResult<ESocketError::WsaNotSupportedAddressFamily>(logger);
-		case WSAEINVAL: return LogErrorWSAWithResult<ESocketError::WsaInvalidArgs>(logger);
-		case WSAEMFILE: return LogErrorWSAWithResult<ESocketError::WsaLackFileDescriptor>(logger);
-		case WSAENOBUFS: return LogErrorWSAWithResult<ESocketError::WsaNoBufferSpace>(logger);
-		case WSAEPROTONOSUPPORT: return LogErrorWSAWithResult<ESocketError::WsaNotSupportedProtocol>(logger);
-		default: return LogErrorWSAWithResult<ESocketError::WsaStartupFailed>(logger);
+		case WSANOTINITIALISED: return LogErrorWSAWithResult<ENetworkError::WsaNotInitialized>(logger);
+		case WSAENETDOWN: return LogErrorWSAWithResult<ENetworkError::WsaNetworkSubSystemFailed>(logger);
+		case WSAEAFNOSUPPORT: return LogErrorWSAWithResult<ENetworkError::WsaNotSupportedAddressFamily>(logger);
+		case WSAEINVAL: return LogErrorWSAWithResult<ENetworkError::WsaInvalidArgs>(logger);
+		case WSAEMFILE: return LogErrorWSAWithResult<ENetworkError::WsaLackFileDescriptor>(logger);
+		case WSAENOBUFS: return LogErrorWSAWithResult<ENetworkError::WsaNoBufferSpace>(logger);
+		case WSAEPROTONOSUPPORT: return LogErrorWSAWithResult<ENetworkError::WsaNotSupportedProtocol>(logger);
+		default: return LogErrorWSAWithResult<ENetworkError::WsaStartupFailed>(logger);
 	}
 }
 

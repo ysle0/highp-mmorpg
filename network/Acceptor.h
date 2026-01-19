@@ -6,7 +6,7 @@
 #include <Logger.hpp>
 #include <ObjectPool.hpp>
 #include <Result.hpp>
-#include <SocketError.h>
+#include <NetworkError.h>
 #include <functional>
 #include <memory>
 
@@ -33,7 +33,7 @@ using AcceptCallback = std::function<void(AcceptContext&)>;
 class Acceptor final {
 public:
 	/// <summary>Acceptor 작업 결과 타입</summary>
-	using Res = fn::Result<void, err::ESocketError>;
+	using Res = fn::Result<void, err::ENetworkError>;
 
 	/// <summary>
 	/// Acceptor 생성자.
