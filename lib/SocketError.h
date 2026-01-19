@@ -59,13 +59,12 @@ enum class ESocketError {
 };
 
 /// <summary>
-/// ESocketError 에러 코드를 문자열로 변환한다. (컴파일 타임 템플릿 버전)
+/// ESocketError 에러 코드를 문자열로 변환한다.
 /// </summary>
-/// <typeparam name="E">변환할 ESocketError 값</typeparam>
+/// <param name="e">변환할 ESocketError 값</param>
 /// <returns>에러 설명 문자열</returns>
-template <ESocketError E>
-static std::string_view FromSocketErrorToString() {
-	switch (E) {
+constexpr std::string_view ToString(ESocketError e) {
+	switch (e) {
 		case ESocketError::WsaStartupFailed: return "WSAStartup failed.";
 		case ESocketError::WsaNotInitialized: return "WSAStartup failed: WSAStartup() is not called.";
 		case ESocketError::WsaNetworkSubSystemFailed: return "WSAStartup failed: Network Subsystem failed.";

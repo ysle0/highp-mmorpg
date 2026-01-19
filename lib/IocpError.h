@@ -44,13 +44,12 @@ enum class EIocpError {
 };
 
 /// <summary>
-/// EIocpError 에러 코드를 문자열로 변환한다. (컴파일 타임 템플릿 버전)
+/// EIocpError 에러 코드를 문자열로 변환한다.
 /// </summary>
-/// <typeparam name="E">변환할 EIocpError 값</typeparam>
+/// <param name="e">변환할 EIocpError 값</param>
 /// <returns>에러 설명 문자열</returns>
-template <EIocpError E>
-static std::string_view FromIocpErrorToString() {
-	switch (E) {
+constexpr std::string_view ToString(EIocpError e) {
+	switch (e) {
 		case EIocpError::CreateIocpFailed: return "CreateIoCompletionPort failed.";
 		case EIocpError::RecvFailed: return "Receive failed.";
 		case EIocpError::SendFailed: return "Send failed.";
