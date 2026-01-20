@@ -1,7 +1,9 @@
-# Windows Sockets & IOCP 함수 완벽 가이드
+# Windows Sockets & IOCP 함수 완벽 가이드 (13개 함수)
 
 **작성일**: 2026-01-20
+**최종 업데이트**: 2026-01-20
 **목적**: Windows IOCP 기반 MMORPG 서버 개발을 위한 학습 자료
+**포함 함수**: 13개 (소켓 8개 + IOCP 5개)
 
 ---
 
@@ -74,9 +76,10 @@
 └─ WSAIoctl         (소켓 I/O 제어, 확장 함수 획득)
 
 IOCP 관리
-├─ CreateIoCompletionPort  (IOCP 생성 및 소켓 연결)
+├─ CreateIoCompletionPort      (IOCP 생성 및 소켓 연결)
 ├─ GetQueuedCompletionStatus   (완료 패킷 가져오기 - 단일)
-└─ GetQueuedCompletionStatusEx (완료 패킷 가져오기 - 배치)
+├─ GetQueuedCompletionStatusEx (완료 패킷 가져오기 - 배치)
+└─ PostQueuedCompletionStatus  (완료 패킷 수동 삽입)
 
 I/O 취소
 └─ CancelIoEx       (비동기 I/O 취소)
@@ -97,6 +100,7 @@ I/O 취소
 | CreateIoCompletionPort | Synchronous | Non-blocking (즉시 생성) |
 | **GetQueuedCompletionStatus** | **Synchronous** | **Blocking** (타임아웃까지 대기) |
 | **GetQueuedCompletionStatusEx** | **Synchronous** | **Blocking** (타임아웃까지 대기) |
+| PostQueuedCompletionStatus | Synchronous | Non-blocking (즉시 반환) |
 | CancelIoEx | Synchronous | Non-blocking (취소 요청만, 완료는 비동기) |
 
 ---
@@ -1410,6 +1414,11 @@ ErrorAction HandleIoError(Client* client, DWORD error) {
 
 ---
 
-**문서 버전**: 1.0
+**문서 버전**: 1.1
 **최종 수정**: 2026-01-20
+**포함 함수**: 13개 (WSASocket, bind, listen, AcceptEx, setsockopt, WSARecv, WSASend, WSAIoctl, CreateIoCompletionPort, GetQueuedCompletionStatus, GetQueuedCompletionStatusEx, PostQueuedCompletionStatus, CancelIoEx)
 **작성자**: Claude Code Analysis Team
+
+### 변경 이력
+- **v1.1 (2026-01-20)**: PostQueuedCompletionStatus 추가, 총 13개 함수
+- **v1.0 (2026-01-20)**: 초기 버전, 12개 함수
