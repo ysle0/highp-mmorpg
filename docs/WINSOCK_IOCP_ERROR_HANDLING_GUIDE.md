@@ -22,6 +22,7 @@
    - [CreateIoCompletionPort](#createiocompletionport)
    - [GetQueuedCompletionStatus](#getqueuedcompletionstatus)
    - [GetQueuedCompletionStatusEx](#getqueuedcompletionstatusex)
+   - [PostQueuedCompletionStatus](#postqueuedcompletionstatus)
    - [CancelIoEx](#cancelioex)
 5. [함수 비교표](#함수-비교표)
 6. [실전 패턴](#실전-패턴)
@@ -37,7 +38,7 @@
 
 - **소켓 생성 및 설정**: WSASocket, bind, listen, setsockopt
 - **비동기 I/O**: AcceptEx, WSARecv, WSASend
-- **IOCP 관리**: CreateIoCompletionPort, GetQueuedCompletionStatus/Ex
+- **IOCP 관리**: CreateIoCompletionPort, GetQueuedCompletionStatus/Ex, PostQueuedCompletionStatus
 - **제어 및 취소**: WSAIoctl, CancelIoEx
 
 ### 용어 정의
@@ -869,6 +870,121 @@ for (ULONG i = 0; i < removed; ++i) {
 
 ---
 
+### PostQueuedCompletionStatus
+
+#### 함수 시그니처
+```cpp
+BOOL PostQueuedCompletionStatus(
+    HANDLE       CompletionPort,              // IOCP 핸들
+    DWORD        dwNumberOfBytesTransferred,  // 완료 패킷에 포함될 바이트 수
+    ULONG_PTR    dwCompletionKey,             // 완료 키
+    LPOVERLAPPED lpOverlapped                 // Overlapped 구조체 포인터
+);
+```
+
+#### 역할
+- IOCP 큐에 **완료 패킷을 수동으로 삽입**하는 함수
+- 실제 I/O 작업 없이도 워커 스레드에게 사용자 정의 메시지 전달
+- **Shutdown 신호 전송**에 가장 많이 사용됨
+- 스레드 간 통신 및 제어 신호 전송에 활용
+
+#### 동작 특성
+- **Synchronous**: 호출 즉시 큐에 패킷을 삽입하고 반환
+- **Non-blocking**: 큐에 패킷을 추가하는 작업만 수행하고 즉시 반환
+
+#### 주요 사용 사례
+
+**1. Shutdown 신호 전송 (가장 일반적)**
+```cpp
+// IoCompletionPort::Shutdown()에서
+for (auto& worker : _workerThreads) {
+    worker.request_stop();
+    PostQueuedCompletionStatus(_handle, 0, 0, nullptr);  // Shutdown 신호
+}
+
+// WorkerLoop에서 수신
+if (completionKey == 0 && overlapped == nullptr) {
+    break;  // 종료
+}
+```
+
+**2. 커스텀 메시지 전송**
+```cpp
+// 특정 클라이언트에게 우선순위 작업 할당
+PostQueuedCompletionStatus(iocp, 0, (ULONG_PTR)client, customOverlapped);
+```
+
+#### 주요 에러 코드
+
+| 에러 코드 | 값 | 발생 조건 | 복구 가능 |
+|----------|-----|----------|-----------|
+| ERROR_INVALID_HANDLE | 6 | IOCP 핸들이 유효하지 않음 | ❌ 프로그래밍 오류 |
+| ERROR_NOT_ENOUGH_MEMORY | 8 | 시스템 메모리 부족 | ⚠️ 일시적, 재시도 가능 |
+| ERROR_INVALID_PARAMETER | 87 | 잘못된 파라미터 (드물음) | ❌ 파라미터 검증 필요 |
+
+#### 에러 핸들링 예시
+
+```cpp
+BOOL result = PostQueuedCompletionStatus(_handle, 0, 0, nullptr);
+if (result == FALSE) {
+    DWORD error = GetLastError();
+
+    switch (error) {
+        case ERROR_INVALID_HANDLE:
+            _logger->Error("PostCompletion failed: Invalid IOCP handle");
+            break;
+        case ERROR_NOT_ENOUGH_MEMORY:
+            _logger->Error("PostCompletion failed: Insufficient memory");
+            break;
+        default:
+            _logger->Error("PostCompletion failed: Error {}", error);
+            break;
+    }
+}
+```
+
+#### GetQueuedCompletionStatus와의 관계
+
+```
+Post 측:
+PostQueuedCompletionStatus(iocp, 1024, 0xABCD, ptr);
+                           ↓
+                     IOCP 큐에 삽입
+                           ↓
+Get 측:
+GetQueuedCompletionStatus(..., &bytes, &key, &overlapped, ...);
+                           ↓
+                     bytes = 1024  (동일)
+                     key   = 0xABCD (동일)
+                     overlapped = ptr (동일)
+```
+
+#### 현재 코드베이스 사용 분석
+
+**IoCompletionPort.cpp:49** - Shutdown에서 사용
+```cpp
+// ⚠️ 개선 필요: 에러 체크 없음
+PostQueuedCompletionStatus(_handle, 0, 0, nullptr);
+```
+
+**IoCompletionPort.cpp:77** - PostCompletion에서 사용
+```cpp
+// ✅ 에러 체크 있음 (Result 타입 반환)
+BOOL result = PostQueuedCompletionStatus(_handle, bytes,
+                                         reinterpret_cast<ULONG_PTR>(key),
+                                         overlapped);
+if (result == FALSE) {
+    return Res::Err(err::EIocpError::IocpInternalError);
+}
+```
+
+**권장 개선:**
+- Shutdown에도 에러 로깅 추가
+- GetLastError() 호출하여 상세 에러 정보 기록
+- 핸들 유효성 사전 검증
+
+---
+
 ### CancelIoEx
 
 #### 함수 시그니처
@@ -975,6 +1091,7 @@ void HandleCompletion(IOContext* ioCtx, DWORD error) {
 | CreateIoCompletionPort | 유효한 HANDLE | NULL | GetLastError() |
 | GetQueuedCompletionStatus | TRUE | FALSE | GetLastError() |
 | GetQueuedCompletionStatusEx | TRUE | FALSE | GetLastError() |
+| PostQueuedCompletionStatus | TRUE (Non-zero) | FALSE (Zero) | GetLastError() |
 | CancelIoEx | TRUE | FALSE | GetLastError() |
 
 ### 비동기 작업 정상 케이스
