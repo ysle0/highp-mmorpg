@@ -43,6 +43,10 @@ public:
 	/// <summary>실패 시 에러 코드 반환</summary>
 	E Err() const { return _err; }
 
+	explicit operator bool() const {
+		return !_hasError;
+	}
+
 private:
 	/// <summary>성공 시 데이터</summary>
 	TData _data;
@@ -84,6 +88,10 @@ public:
 	/// <summary>실패 시 에러 코드 반환</summary>
 	E Err() const { return _err; }
 
+	explicit operator bool() const {
+		return !_hasError;
+	}
+
 private:
 	/// <summary>실패 시 에러 코드</summary>
 	E _err;
@@ -93,3 +101,19 @@ private:
 };
 
 } // namespace highp::fn
+
+
+// Result Helper
+#define GUARD(expr) \
+do { \
+	if (auto _result = (expr); _result.HasErr()) \
+		return _result; \
+} while (0)
+
+#define GUARD_EFFECT(expr, fn) \
+do { \
+	if (auto _result = (expr); _result.HasErr()) { \
+        fn(); \
+		return _result; \
+	} \
+} while (0)
