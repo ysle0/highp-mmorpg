@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Acceptor.h"
+#include <Errors.hpp>
 
 namespace highp::network {
 
@@ -29,7 +30,7 @@ Acceptor::Res Acceptor::Initialize(SocketHandle listenSocket, HANDLE iocpHandle)
 		0);
 	if (result == NULL || result != _iocpHandle) {
 		_logger->Error("Failed to associate listen socket with IOCP. error: {}", GetLastError());
-		return Res::Err(err::ESocketError::CreateSocketFailed);
+		return Res::Err(err::ENetworkError::SocketCreateFailed);
 	}
 
 
@@ -72,7 +73,7 @@ Acceptor::Res Acceptor::LoadAcceptExFunctions() {
 
 	if (result == SOCKET_ERROR) {
 		_logger->Error("Failed to load AcceptEx function. error: {}", WSAGetLastError());
-		return Res::Err(err::ESocketError::PostAcceptFailed);
+		return Res::Err(err::ENetworkError::SocketPostAcceptFailed);
 	}
 
 	result = WSAIoctl(
@@ -88,7 +89,7 @@ Acceptor::Res Acceptor::LoadAcceptExFunctions() {
 
 	if (result == SOCKET_ERROR) {
 		_logger->Error("Failed to load GetAcceptExSockaddrs function. error: {}", WSAGetLastError());
-		return Res::Err(err::ESocketError::PostAcceptFailed);
+		return Res::Err(err::ENetworkError::SocketPostAcceptFailed);
 	}
 
 	_logger->Info("AcceptEx functions loaded successfully.");
@@ -122,7 +123,7 @@ Acceptor::Res Acceptor::PostAccept() {
 	if (acceptSocket == InvalidSocket) {
 		ReleaseOverlapped(overlapped);
 		_logger->Error("Failed to create accept socket. error: {}", WSAGetLastError());
-		return Res::Err(err::ESocketError::CreateSocketFailed);
+		return Res::Err(err::ENetworkError::SocketCreateFailed);
 	}
 
 	ZeroMemory(&overlapped->overlapped, sizeof(WSAOVERLAPPED));
@@ -150,7 +151,7 @@ Acceptor::Res Acceptor::PostAccept() {
 			closesocket(acceptSocket);
 			ReleaseOverlapped(overlapped);
 			_logger->Error("AcceptEx failed. error: {}", err);
-			return Res::Err(err::ESocketError::PostAcceptFailed);
+			return Res::Err(err::ENetworkError::SocketPostAcceptFailed);
 		}
 	}
 
@@ -167,7 +168,7 @@ Acceptor::Res Acceptor::PostAccepts(int count) {
 
 Acceptor::Res Acceptor::OnAcceptComplete(OverlappedExt* overlapped, DWORD bytesTransferred) {
 	if (overlapped == nullptr || overlapped->ioType != EIoType::Accept) {
-		return Res::Err(err::ESocketError::AcceptFailed);
+		return Res::Err(err::ENetworkError::SocketAcceptFailed);
 	}
 
 	int result = setsockopt(
@@ -181,7 +182,7 @@ Acceptor::Res Acceptor::OnAcceptComplete(OverlappedExt* overlapped, DWORD bytesT
 		_logger->Error("SO_UPDATE_ACCEPT_CONTEXT failed. error: {}", WSAGetLastError());
 		closesocket(overlapped->clientSocket);
 		ReleaseOverlapped(overlapped);
-		return Res::Err(err::ESocketError::AcceptFailed);
+		return Res::Err(err::ENetworkError::SocketAcceptFailed);
 	}
 
 	SOCKADDR_IN* localAddr = nullptr;

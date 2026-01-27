@@ -1,5 +1,5 @@
 ﻿#include "pch.h"
-#include <SocketError.h>
+#include <NetworkError.h>
 #include <Errors.hpp>
 #include "WindowsAsyncSocket.h"
 
@@ -15,7 +15,7 @@ WindowsAsyncSocket::~WindowsAsyncSocket() {
 WindowsAsyncSocket::Res WindowsAsyncSocket::Initialize() {
 	WSADATA wsaData;
 	if (int res = WSAStartup(MAKEWORD(2, 2), &wsaData); res != 0) {
-		return err::LogErrorWithResult<err::ESocketError::WsaStartupFailed>(_logger);
+		return err::LogErrorWSAWithResult<err::ENetworkError::WsaStartupFailed>(_logger);
 	}
 	return Res::Ok();
 }
@@ -49,7 +49,7 @@ WindowsAsyncSocket::Res WindowsAsyncSocket::Bind(unsigned short port) {
 	_sockaddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	if (bind(_socketHandle, (SOCKADDR*)&_sockaddr, sizeof(SOCKADDR_IN)) != 0) {
-		return err::LogErrorWithResult<err::ESocketError::BindFailed>(_logger);
+		return err::LogErrorWSAWithResult<err::ENetworkError::SocketBindFailed>(_logger);
 	}
 
 	return Res::Ok();
@@ -57,11 +57,11 @@ WindowsAsyncSocket::Res WindowsAsyncSocket::Bind(unsigned short port) {
 
 WindowsAsyncSocket::Res WindowsAsyncSocket::Listen(int backlog) {
 	if (_socketHandle == INVALID_SOCKET) {
-		return err::LogErrorWithResult<err::ESocketError::InvalidSocketErr>(_logger);
+		return err::LogErrorWSAWithResult<err::ENetworkError::SocketInvalid>(_logger);
 	}
 
 	if (listen(_socketHandle, backlog) != 0) {
-		return err::LogErrorWithResult<err::ESocketError::ListenFailed>(_logger);
+		return err::LogErrorWSAWithResult<err::ENetworkError::SocketListenFailed>(_logger);
 	}
 
 	return Res::Ok();

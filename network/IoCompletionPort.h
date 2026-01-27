@@ -2,7 +2,7 @@
 
 #include "platform.h"
 #include "EIoType.h"
-#include <IocpError.h>
+#include <NetworkError.h>
 #include <Logger.hpp>
 #include <Result.hpp>
 #include <atomic>
@@ -60,7 +60,7 @@ using CompletionHandler = std::function<void(CompletionEvent)>;
 class IoCompletionPort final {
 public:
 	/// <summary>IOCP 작업 결과 타입</summary>
-	using Res = fn::Result<void, err::EIocpError>;
+	using Res = fn::Result<void, err::ENetworkError>;
 
 	/// <summary>
 	/// IoCompletionPort 생성자.

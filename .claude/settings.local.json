@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git branch:*)",
+      "Bash(git checkout:*)",
+      "Bash(git merge:*)",
+      "Bash(git reset:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\ninfra: network 프로젝트 플랫폼 헤더 추가\n\n- platform.h: Windows/WinSock2/MSWSock 헤더 통합\n- WIN32_LEAN_AND_MEAN, NOMINMAX 정의\n- SocketHandle, SocketLength 타입 정의\n- pch.h, framework.h 업데이트\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(gh pr create:*)",
+      "Bash(git filter-branch:*)"
+    ]
+  }
+}

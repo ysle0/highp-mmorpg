@@ -29,7 +29,7 @@ Client::Res Client::PostRecv() {
 		nullptr);
 
 	if (result == SOCKET_ERROR && WSAGetLastError() != ERROR_IO_PENDING) {
-		return Res::Err(err::EIocpError::RecvFailed);
+		return Res::Err(err::ENetworkError::WsaRecvFailed);
 	}
 
 	return Res::Ok();
@@ -57,7 +57,7 @@ Client::Res Client::PostSend(std::string_view data) {
 		nullptr);
 
 	if (result == SOCKET_ERROR && WSAGetLastError() != ERROR_IO_PENDING) {
-		return Res::Err(err::EIocpError::SendFailed);
+		return Res::Err(err::ENetworkError::WsaSendFailed);
 	}
 
 	return Res::Ok();

@@ -48,17 +48,14 @@
     <ClInclude Include="Logger.hpp">
       <Filter>inc\logger</Filter>
     </ClInclude>
-    <ClInclude Include="IocpError.h">
-      <Filter>inc\error</Filter>
-    </ClInclude>
-    <ClInclude Include="SocketError.h">
-      <Filter>inc\error</Filter>
-    </ClInclude>
     <ClInclude Include="Errors.hpp">
       <Filter>inc\error</Filter>
     </ClInclude>
     <ClInclude Include="ObjectPool.hpp">
       <Filter>inc\memory</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkError.h">
+      <Filter>inc\error</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

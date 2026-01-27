@@ -24,7 +24,7 @@ IoCompletionPort::Res IoCompletionPort::Initialize(int workerThreadCount) {
 		workerThreadCount);
 
 	if (_handle == NULL) {
-		return Res::Err(err::EIocpError::CreateIocpFailed);
+		return Res::Err(err::ENetworkError::IocpCreateFailed);
 	}
 
 	_isRunning = true;
@@ -67,7 +67,7 @@ IoCompletionPort::Res IoCompletionPort::AssociateSocket(SocketHandle socket, voi
 		0);
 
 	if (result == NULL || result != _handle) {
-		return Res::Err(err::EIocpError::ConnectIocpFailed);
+		return Res::Err(err::ENetworkError::IocpConnectFailed);
 	}
 
 	return Res::Ok();
@@ -81,7 +81,7 @@ IoCompletionPort::Res IoCompletionPort::PostCompletion(DWORD bytes, void* key, L
 		overlapped);
 
 	if (result == FALSE) {
-		return Res::Err(err::EIocpError::IocpInternalError);
+		return Res::Err(err::ENetworkError::IocpInternalError);
 	}
 
 	return Res::Ok();
