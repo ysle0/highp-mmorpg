@@ -153,6 +153,10 @@ private:
 
 	/// <summary>Accept 완료 콜백</summary>
 	AcceptCallback _acceptCallback;
+
+
+	std::mutex _ioPendingOverlappedMtx;
+	std::set<OverlappedExt*> _ioPendingOverlappeds;
 };
 
 }

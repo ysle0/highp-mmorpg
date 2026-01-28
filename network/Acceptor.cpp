@@ -126,6 +126,13 @@ Acceptor::Res Acceptor::PostAccept() {
 	overlapped->ioType = EIoType::Accept;
 	overlapped->clientSocket = acceptSocket;
 
+	// overlappedExt 추적 시작.
+	{
+		std::lock_guard lock(_ioPendingOverlappedMtx);
+		_ioPendingOverlappeds.insert(overlapped);
+	}
+
+
 	DWORD bytesReceived = 0;
 	constexpr DWORD addrLen = sizeof(SOCKADDR_IN) + 16;
 
@@ -157,6 +164,11 @@ Acceptor::Res Acceptor::PostAccept() {
 Acceptor::Res Acceptor::OnAcceptComplete(OverlappedExt* overlapped, DWORD bytesTransferred) {
 	if (overlapped == nullptr || overlapped->ioType != EIoType::Accept) {
 		return Res::Err(err::ENetworkError::SocketAcceptFailed);
+	}
+
+	{
+		std::lock_guard lock(_ioPendingOverlappedMtx);
+		_ioPendingOverlappeds.erase(overlapped);
 	}
 
 	int result = setsockopt(
@@ -215,9 +227,20 @@ void Acceptor::SetAcceptCallback(AcceptCallback callback) {
 }
 
 void Acceptor::Shutdown() {
-	_overlappedPool.Clear();
+	{
+		std::lock_guard lock(_ioPendingOverlappedMtx);
+		for (OverlappedExt* o : _ioPendingOverlappeds) {
+			CancelIoEx(
+				reinterpret_cast<HANDLE>(_listenSocket),
+				&o->overlapped
+			);
+		}
+	}
+
 	_fnAcceptEx = nullptr;
 	_fnGetAcceptExSockAddrs = nullptr;
+
+
 	_logger->Info("Acceptor shutdown complete.");
 }
 
