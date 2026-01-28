@@ -3,8 +3,12 @@
 #include <memory>
 #include <mutex>
 #include <vector>
+#include <concepts>
 
 namespace highp::mem {
+
+template <typename T>
+concept Poolable = std::default_initializable<T>;
 
 /// <summary>
 /// 범용 객체 풀 템플릿.
@@ -15,23 +19,23 @@ namespace highp::mem {
 /// 2컨테이너 방식: _all이 소유권 유지, _available이 사용 가능 객체 추적.
 /// 스레드 안전: mutex로 Acquire/Release 동기화.
 /// </remarks>
-template <typename T>
-class ObjectPool final {
+template <Poolable T>
+class LockObjectPool final {
 public:
 	/// <summary>
-	/// ObjectPool 생성자.
+	/// LockObjectPool 생성자.
 	/// </summary>
 	/// <param name="preAllocCount">사전 할당할 객체 수. 기본값 0.</param>
-	explicit ObjectPool(int preAllocCount = 0) {
+	explicit LockObjectPool(int preAllocCount = 0) {
 		PreAllocate(preAllocCount);
 	}
 
-	~ObjectPool() = default;
+	~LockObjectPool() = default;
 
-	ObjectPool(const ObjectPool&) = delete;
-	ObjectPool& operator=(const ObjectPool&) = delete;
-	ObjectPool(ObjectPool&&) = delete;
-	ObjectPool& operator=(ObjectPool&&) = delete;
+	LockObjectPool(const LockObjectPool&) = delete;
+	LockObjectPool& operator=(const LockObjectPool&) = delete;
+	LockObjectPool(LockObjectPool&&) = delete;
+	LockObjectPool& operator=(LockObjectPool&&) = delete;
 
 	/// <summary>
 	/// 객체를 사전 할당한다.
