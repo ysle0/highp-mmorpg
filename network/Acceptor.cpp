@@ -1,18 +1,15 @@
 #include "pch.h"
 #include "Acceptor.h"
-#include <Errors.hpp>
 
 namespace highp::network {
 
 Acceptor::Acceptor(
 	std::shared_ptr<log::Logger> logger,
-	int preAllocCount,
-	AcceptCallback onAfterAccept)
+	AcceptCallback onAfterAccept
+)
 	: _logger(std::move(logger))
-	, _overlappedPool(preAllocCount)
-	, _acceptCallback(std::move(onAfterAccept))
-{
-}
+	, _overlappedPool()
+	, _acceptCallback(std::move(onAfterAccept)) {}
 
 Acceptor::~Acceptor() {
 	Shutdown();
@@ -33,7 +30,6 @@ Acceptor::Res Acceptor::Initialize(SocketHandle listenSocket, HANDLE iocpHandle)
 		return Res::Err(err::ENetworkError::SocketCreateFailed);
 	}
 
-
 	// 0) 원본 C++17 if with initializer 로 2줄 -> 1줄로 줄이기!
 	//if (auto res = LoadAcceptExFunctions(); res.HasErr()) {
 	//	return res;
@@ -51,7 +47,8 @@ Acceptor::Res Acceptor::Initialize(SocketHandle listenSocket, HANDLE iocpHandle)
 	// 2) macro GUARD(expr)
 	GUARD(LoadAcceptExFunctions());
 
-	_logger->Info("Acceptor initialized. listen socket associated with IOCP. pre-allocated overlappeds: {}", _overlappedPool.AvailableCount());
+	_logger->Info("Acceptor initialized. listen socket associated with IOCP. pre-allocated overlappeds: {}",
+		_overlappedPool.GetAvailableCount());
 	return Res::Ok();
 }
 
@@ -108,24 +105,23 @@ SocketHandle Acceptor::CreateAcceptSocket() {
 	return socket;
 }
 
-OverlappedExt* Acceptor::AcquireOverlapped() {
-	return _overlappedPool.Acquire();
-}
-
-void Acceptor::ReleaseOverlapped(OverlappedExt* overlapped) {
-	_overlappedPool.Release(overlapped);
+Acceptor::Res Acceptor::PostAccepts(int count) {
+	for (int i = 0; i < count; ++i) {
+		GUARD(PostAccept());
+	}
+	_logger->Info("Posted {} AcceptEx requests.", count);
+	return Res::Ok();
 }
 
 Acceptor::Res Acceptor::PostAccept() {
-	OverlappedExt* overlapped = AcquireOverlapped();
-
 	SocketHandle acceptSocket = CreateAcceptSocket();
 	if (acceptSocket == InvalidSocket) {
-		ReleaseOverlapped(overlapped);
+		//ReleaseOverlapped(overlapped);
 		_logger->Error("Failed to create accept socket. error: {}", WSAGetLastError());
-		return Res::Err(err::ENetworkError::SocketCreateFailed);
+		return Res::Err(err::ENetworkError::SocketAcceptFailed);
 	}
 
+	OverlappedExt* overlapped = _overlappedPool.Acquire();
 	ZeroMemory(&overlapped->overlapped, sizeof(WSAOVERLAPPED));
 	overlapped->ioType = EIoType::Accept;
 	overlapped->clientSocket = acceptSocket;
@@ -149,20 +145,12 @@ Acceptor::Res Acceptor::PostAccept() {
 		DWORD err = WSAGetLastError();
 		if (err != ERROR_IO_PENDING) {
 			closesocket(acceptSocket);
-			ReleaseOverlapped(overlapped);
+			_overlappedPool.Release(overlapped);
 			_logger->Error("AcceptEx failed. error: {}", err);
 			return Res::Err(err::ENetworkError::SocketPostAcceptFailed);
 		}
 	}
 
-	return Res::Ok();
-}
-
-Acceptor::Res Acceptor::PostAccepts(int count) {
-	for (int i = 0; i < count; ++i) {
-		GUARD(PostAccept());
-	}
-	_logger->Info("Posted {} AcceptEx requests.", count);
 	return Res::Ok();
 }
 
@@ -181,7 +169,7 @@ Acceptor::Res Acceptor::OnAcceptComplete(OverlappedExt* overlapped, DWORD bytesT
 	if (result == SOCKET_ERROR) {
 		_logger->Error("SO_UPDATE_ACCEPT_CONTEXT failed. error: {}", WSAGetLastError());
 		closesocket(overlapped->clientSocket);
-		ReleaseOverlapped(overlapped);
+		_overlappedPool.Release(overlapped);
 		return Res::Err(err::ENetworkError::SocketAcceptFailed);
 	}
 
@@ -202,16 +190,17 @@ Acceptor::Res Acceptor::OnAcceptComplete(OverlappedExt* overlapped, DWORD bytesT
 		&remoteAddrLen);
 
 	if (_acceptCallback) {
-		AcceptContext ctx;
-		ctx.acceptSocket = overlapped->clientSocket;
-		ctx.listenSocket = _listenSocket;
-		if (localAddr) ctx.localAddr = *localAddr;
-		if (remoteAddr) ctx.remoteAddr = *remoteAddr;
+		AcceptContext ctx{
+			.acceptSocket = overlapped->clientSocket,
+			.listenSocket = _listenSocket,
+			.localAddr = localAddr ? *localAddr : sockaddr_in{},
+			.remoteAddr = remoteAddr ? *remoteAddr : sockaddr_in{}
+		};
 
 		_acceptCallback(ctx);
 	}
 
-	ReleaseOverlapped(overlapped);
+	_overlappedPool.Release(overlapped);
 
 	// 3) 매크로 처리 + 후속 실행함수 추가
 	GUARD_EFFECT(PostAccept(), [this]() {

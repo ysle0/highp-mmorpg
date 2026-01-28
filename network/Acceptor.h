@@ -1,10 +1,12 @@
 #pragma once
 
+#include <mutex>
+#include <set>
 #include "platform.h"
 #include "AcceptContext.h"
 #include "OverlappedExt.h"
 #include <Logger.hpp>
-#include <ObjectPool.hpp>
+#include <ThreadLocalPool.hpp>
 #include <Result.hpp>
 #include <NetworkError.h>
 #include <functional>
@@ -43,7 +45,6 @@ public:
 	/// <param name="onAfterAccept">Accept 완료 콜백 (선택적). RAII 원칙에 따라 생성 시 설정 권장.</param>
 	explicit Acceptor(
 		std::shared_ptr<log::Logger> logger,
-		int preAllocCount = 10,
 		AcceptCallback onAfterAccept = nullptr);
 
 	/// <summary>
@@ -131,18 +132,6 @@ private:
 	/// </remarks>
 	SocketHandle CreateAcceptSocket();
 
-	/// <summary>
-	/// 풀에서 사용 가능한 OverlappedExt를 획득한다.
-	/// </summary>
-	/// <returns>사용 가능한 OverlappedExt 포인터. 풀이 비어있으면 nullptr.</returns>
-	OverlappedExt* AcquireOverlapped();
-
-	/// <summary>
-	/// 사용 완료된 OverlappedExt를 풀에 반환한다.
-	/// </summary>
-	/// <param name="overlapped">반환할 OverlappedExt 포인터</param>
-	void ReleaseOverlapped(OverlappedExt* overlapped);
-
 private:
 	/// <summary>로거 인스턴스</summary>
 	std::shared_ptr<log::Logger> _logger;
@@ -160,7 +149,7 @@ private:
 	LPFN_GETACCEPTEXSOCKADDRS _fnGetAcceptExSockAddrs = nullptr;
 
 	/// <summary>OverlappedExt 객체 풀</summary>
-	mem::ObjectPool<OverlappedExt> _overlappedPool;
+	mem::ThreadLocalPool<OverlappedExt> _overlappedPool;
 
 	/// <summary>Accept 완료 콜백</summary>
 	AcceptCallback _acceptCallback;
