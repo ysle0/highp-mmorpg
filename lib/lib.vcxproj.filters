@@ -51,7 +51,7 @@
     <ClInclude Include="Errors.hpp">
       <Filter>inc\error</Filter>
     </ClInclude>
-    <ClInclude Include="ObjectPool.hpp">
+    <ClInclude Include="LockObjectPool.hpp">
       <Filter>inc\memory</Filter>
     </ClInclude>
     <ClInclude Include="NetworkError.h">
@@ -66,6 +66,9 @@
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="TextLogger.cpp">
       <Filter>src\logger</Filter>
+    </ClCompile>
+    <ClCompile Include="HybridObjectPool.hpp">
+      <Filter>inc\memory</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
