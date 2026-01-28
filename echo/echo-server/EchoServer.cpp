@@ -21,36 +21,30 @@ EchoServer::EchoServer(std::shared_ptr<Logger> logger, network::NetworkCfg confi
 	, _config(config) {}
 
 EchoServer::Res EchoServer::Start(std::shared_ptr<highp::network::ISocket> asyncSocket) {
+	// 1. Initialize IOCP with worker count
 	_iocp = std::make_unique<network::IoCompletionPort>(
 		_logger,
 		std::bind_front(&EchoServer::OnCompletion, this));
 
 	const auto iocpWorkerCount = std::thread::hardware_concurrency() *
 		_config.thread.maxWorkerThreadMultiplier;
-	if (auto res = _iocp->Initialize(iocpWorkerCount); res.HasErr()) {
-		return res;
-	}
 
+	GUARD(_iocp->Initialize(iocpWorkerCount));
+
+	// 2. Initialize acceptor
 	_acceptor = std::make_unique<network::Acceptor>(
 		_logger,
-		_config.server.backlog,
 		std::bind_front(&EchoServer::OnAccept, this));
 
-	auto acceptorRes = _acceptor->Initialize(
-		asyncSocket->GetSocketHandle(),
-		_iocp->GetHandle());
-	if (acceptorRes.HasErr()) {
-		return Res::Err(ENetworkError::IocpCreateFailed);
-	}
+	GUARD(_acceptor->Initialize(asyncSocket->GetSocketHandle(), _iocp->GetHandle()));
 
+	// 3. Prewarm Clients
 	for (int i = 0; i < _config.server.maxClients; ++i) {
 		_clientPool.emplace_back(std::make_shared<network::Client>());
 	}
 
-	auto postRes = _acceptor->PostAccepts(_config.server.backlog);
-	if (postRes.HasErr()) {
-		return Res::Err(ENetworkError::ThreadAcceptFailed);
-	}
+	// 4. Execute AcceptEx
+	GUARD(_acceptor->PostAccepts(_config.server.backlog));
 
 	_logger->Info("EchoServer started on port {}.", _config.server.port);
 	return Res::Ok();
