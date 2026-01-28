@@ -6,7 +6,6 @@
 #include "AcceptContext.h"
 #include "OverlappedExt.h"
 #include <Logger.hpp>
-#include <ThreadLocalPool.hpp>
 #include <Result.hpp>
 #include <NetworkError.h>
 #include <functional>
@@ -147,9 +146,6 @@ private:
 
 	/// <summary>GetAcceptExSockAddrs 함수 포인터. WSAIoctl로 획득.</summary>
 	LPFN_GETACCEPTEXSOCKADDRS _fnGetAcceptExSockAddrs = nullptr;
-
-	/// <summary>OverlappedExt 객체 풀</summary>
-	mem::ThreadLocalPool<OverlappedExt> _overlappedPool;
 
 	/// <summary>Accept 완료 콜백</summary>
 	AcceptCallback _acceptCallback;

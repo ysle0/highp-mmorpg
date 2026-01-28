@@ -1,15 +1,14 @@
 #include "pch.h"
 #include "Acceptor.h"
+#include <HybridObjectPool.hpp>
 
 namespace highp::network {
 
 Acceptor::Acceptor(
 	std::shared_ptr<log::Logger> logger,
 	AcceptCallback onAfterAccept
-)
-	: _logger(std::move(logger))
-	, _overlappedPool()
-	, _acceptCallback(std::move(onAfterAccept)) {}
+) : _logger(std::move(logger))
+, _acceptCallback(std::move(onAfterAccept)) {}
 
 Acceptor::~Acceptor() {
 	Shutdown();
@@ -47,8 +46,7 @@ Acceptor::Res Acceptor::Initialize(SocketHandle listenSocket, HANDLE iocpHandle)
 	// 2) macro GUARD(expr)
 	GUARD(LoadAcceptExFunctions());
 
-	_logger->Info("Acceptor initialized. listen socket associated with IOCP. pre-allocated overlappeds: {}",
-		_overlappedPool.GetAvailableCount());
+	_logger->Info("Acceptor initialized. listen socket associated with IOCP.");
 	return Res::Ok();
 }
 
@@ -121,7 +119,7 @@ Acceptor::Res Acceptor::PostAccept() {
 		return Res::Err(err::ENetworkError::SocketAcceptFailed);
 	}
 
-	OverlappedExt* overlapped = _overlappedPool.Acquire();
+	OverlappedExt* overlapped = mem::HybridObjectPool<OverlappedExt>::Get();
 	ZeroMemory(&overlapped->overlapped, sizeof(WSAOVERLAPPED));
 	overlapped->ioType = EIoType::Accept;
 	overlapped->clientSocket = acceptSocket;
@@ -152,7 +150,7 @@ Acceptor::Res Acceptor::PostAccept() {
 		DWORD err = WSAGetLastError();
 		if (err != ERROR_IO_PENDING) {
 			closesocket(acceptSocket);
-			_overlappedPool.Release(overlapped);
+			mem::HybridObjectPool<OverlappedExt>::Return(overlapped);
 			_logger->Error("AcceptEx failed. error: {}", err);
 			return Res::Err(err::ENetworkError::SocketPostAcceptFailed);
 		}
@@ -181,7 +179,7 @@ Acceptor::Res Acceptor::OnAcceptComplete(OverlappedExt* overlapped, DWORD bytesT
 	if (result == SOCKET_ERROR) {
 		_logger->Error("SO_UPDATE_ACCEPT_CONTEXT failed. error: {}", WSAGetLastError());
 		closesocket(overlapped->clientSocket);
-		_overlappedPool.Release(overlapped);
+		mem::HybridObjectPool<OverlappedExt>::Return(overlapped);
 		return Res::Err(err::ENetworkError::SocketAcceptFailed);
 	}
 
@@ -212,7 +210,7 @@ Acceptor::Res Acceptor::OnAcceptComplete(OverlappedExt* overlapped, DWORD bytesT
 		_acceptCallback(ctx);
 	}
 
-	_overlappedPool.Release(overlapped);
+	mem::HybridObjectPool<OverlappedExt>::Return(overlapped);
 
 	// 3) 매크로 처리 + 후속 실행함수 추가
 	GUARD_EFFECT(PostAccept(), [this]() {
