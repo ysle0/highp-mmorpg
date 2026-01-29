@@ -9,3 +9,4 @@ send_buffer_size = 1024
 
 [network]
 client_ip_buffer_size = 32
+worker_io_pending_cancel_grace_period_ms = 100

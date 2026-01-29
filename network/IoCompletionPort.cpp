@@ -1,6 +1,8 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "IoCompletionPort.h"
 #include "OverlappedExt.h"
+#include <chrono>
+
 
 namespace highp::network {
 
@@ -49,6 +51,7 @@ void IoCompletionPort::Shutdown() {
 
 	_workerThreads.clear();
 
+	// iocp handle 닫기
 	if (_handle != INVALID_HANDLE_VALUE) {
 		CloseHandle(_handle);
 		_handle = INVALID_HANDLE_VALUE;
@@ -110,7 +113,12 @@ void IoCompletionPort::WorkerLoop(std::stop_token st) {
 			const DWORD err = GetLastError();
 			const bool isIoPendingCancelled = err == ERROR_OPERATION_ABORTED;
 			if (isIoPendingCancelled) {
-				_logger->Info("[WorkerpLoop] I/O Pending Cancelled by CancelIoEx()");
+				const auto workerExitDelayMs = std::chrono::milliseconds(
+					network::Const::Network::workerIoPendingCancelGracePeriodMs);
+				_logger->Info("[WorkerpLoop] I/O Pending Cancelled by CancelIoEx()\nexiting worker in {}ms",
+					workerExitDelayMs);
+
+				std::this_thread::sleep_for(workerExitDelayMs);
 				break;
 			}
 		}

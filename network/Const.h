@@ -14,6 +14,7 @@ struct Const {
 	/// <summary>[network] section</summary>
 	struct Network {
 		static constexpr INT clientIpBufferSize = 32;
+		static constexpr INT workerIoPendingCancelGracePeriodMs = 100;
 	};
 	/// <summary>[socket] section</summary>
 	struct Socket {
