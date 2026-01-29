@@ -10,7 +10,6 @@ struct HybridObjectPoolConfig {
 	static constexpr int ChunkSize = 50;
 };
 
-
 template <typename T>
 concept Poolable = std::default_initializable<T>;
 
@@ -61,7 +60,7 @@ public:
 		// 없으면 chunk 하나 때옴
 		{
 			std::lock_guard lock(_globalMtx);
-			const int size = (int)_globalPool.size();
+			const int size = static_cast<int>(_globalPool.size());
 
 			// global 에 여유가 있으면 가져옴
 			if (size > 0) {
@@ -73,7 +72,8 @@ public:
 			}
 		}
 
-		// global 에서 꺼내도 여전히 없으면
+		// global 에서 꺼내도 여전히 없으면 새로 만들어서 바로 반환
+		// 어짜피 이후 Return() 으로 Pool 에 다시 돌아옴.
 		if (local.pool.empty()) {
 			return new T();
 		}
@@ -101,14 +101,21 @@ public:
 		}
 	}
 
-	static void ClearGlobal() {
-		std::lock_guard lock(_globalMtx);
-		for (T* item : _globalPool) {
-			delete item;
-		}
-		_globalPool.clear();
-	}
+	/// <summary>
+	/// global pool 을 안전하게 해제하려면 여기서 chunk 를 때간
+	/// thread local pool 들을 모두 join 시켜 소멸자에서 전부 global pool 로 빌려간 object들을 돌려줘야함
+	/// -> 규약으로 모든 스레드들을 join ->  ClearGlobal() 강제?
+	/// 
+	/// 애초에 프로세스 종료됨에 따라 OS가 메모리 회수해갈거고, 프로세스가 살아있으면서
+	/// pool 을 초기화 하는 시나리오..? 게임서버에서 그런 경우가 있을지 모르겠음.
+	/// </summary>
+	//static void ClearGlobal() {
+	//	std::lock_guard lock(_globalMtx);
+	//	for (T* item : _globalPool) {
+	//		delete item;
+	//	}
+	//	_globalPool.clear();
+	//}
 };
 }
 
-#include "pch.h"
