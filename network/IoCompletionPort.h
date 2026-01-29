@@ -146,6 +146,8 @@ private:
 	/// <param name="st">스레드 중지 토큰 (std::jthread 제공)</param>
 	void WorkerLoop(std::stop_token st);
 
+	void AwakeGetQueuedCompletionStatus();
+
 private:
 	/// <summary>로거 인스턴스</summary>
 	std::shared_ptr<log::Logger> _logger;

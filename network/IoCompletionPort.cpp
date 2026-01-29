@@ -46,7 +46,7 @@ void IoCompletionPort::Shutdown() {
 
 	for (auto& worker : _workerThreads) {
 		worker.request_stop();
-		PostQueuedCompletionStatus(_handle, 0, 0, nullptr);
+		this->AwakeGetQueuedCompletionStatus();
 	}
 
 	_workerThreads.clear();
@@ -127,4 +127,8 @@ void IoCompletionPort::WorkerLoop(std::stop_token st) {
 	}
 }
 
+void IoCompletionPort::AwakeGetQueuedCompletionStatus() {
+	if (_handle != INVALID_HANDLE_VALUE) {
+		PostQueuedCompletionStatus(_handle, 0, 0, nullptr);
+	}
 }
