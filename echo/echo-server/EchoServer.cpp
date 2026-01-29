@@ -20,7 +20,7 @@ EchoServer::EchoServer(std::shared_ptr<Logger> logger, network::NetworkCfg confi
 	: _logger(logger)
 	, _config(config) {}
 
-EchoServer::Res EchoServer::Start(std::shared_ptr<highp::network::ISocket> asyncSocket) {
+EchoServer::Res EchoServer::Start(std::shared_ptr<highp::network::ISocket> listenSocket) {
 	// 1. Initialize IOCP with worker count
 	_iocp = std::make_unique<network::IoCompletionPort>(
 		_logger,
@@ -36,7 +36,7 @@ EchoServer::Res EchoServer::Start(std::shared_ptr<highp::network::ISocket> async
 		_logger,
 		std::bind_front(&EchoServer::OnAccept, this));
 
-	GUARD(_acceptor->Initialize(asyncSocket->GetSocketHandle(), _iocp->GetHandle()));
+	GUARD(_acceptor->Initialize(listenSocket->GetSocketHandle(), _iocp->GetHandle()));
 
 	// 3. Prewarm Clients
 	for (int i = 0; i < _config.server.maxClients; ++i) {

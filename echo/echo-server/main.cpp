@@ -16,12 +16,12 @@ int main() {
 	auto config = NetworkCfg::FromFile("config.runtime.toml");
 	auto transport{ NetworkTransport{ ETransport::TCP } };
 
-	auto sock = SocketHelper::MakeDefault(
+	auto listenSocket = SocketHelper::MakeDefaultListener(
 		logger,
 		transport,
 		config);
 	EchoServer es(logger, config);
-	if (auto res = es.Start(sock); res.HasErr()) {
+	if (auto res = es.Start(listenSocket); res.HasErr()) {
 		logger->Error("Failed to start server.");
 		return -1;
 	}
