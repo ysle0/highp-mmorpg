@@ -112,6 +112,8 @@ private:
 	/// <summary>로거 인스턴스</summary>
 	std::shared_ptr<log::Logger> _logger;
 
+	std::shared_ptr<highp::network::ISocket> _listenSocket;
+
 	/// <summary>소켓 옵션 빌더</summary>
 	std::shared_ptr<network::SocketOptionBuilder> _socketOptionBuilder;
 

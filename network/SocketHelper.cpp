@@ -4,7 +4,7 @@
 #include "SocketOptionBuilder.h"
 
 namespace highp::network {
-std::shared_ptr<ISocket> SocketHelper::MakeDefault(
+std::shared_ptr<ISocket> SocketHelper::MakeDefaultListener(
 	std::shared_ptr<log::Logger> logger,
 	NetworkTransport netTransport,
 	NetworkCfg networkCfg,

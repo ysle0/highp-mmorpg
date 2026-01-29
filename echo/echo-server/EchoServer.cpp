@@ -27,7 +27,9 @@ EchoServer::EchoServer(
 	, _socketOptionBuilder(socketOptionBuilder)
 	, _config(config) {}
 
-EchoServer::Res EchoServer::Start(std::shared_ptr<highp::network::ISocket> asyncSocket) {
+EchoServer::Res EchoServer::Start(std::shared_ptr<highp::network::ISocket> listenSocket) {
+	_listenSocket = listenSocket;
+
 	_iocp = std::make_unique<network::IoCompletionPort>(
 		_logger,
 		std::bind_front(&EchoServer::OnCompletion, this));
@@ -45,7 +47,7 @@ EchoServer::Res EchoServer::Start(std::shared_ptr<highp::network::ISocket> async
 		std::bind_front(&EchoServer::OnAccept, this));
 
 	auto acceptorRes = _acceptor->Initialize(
-		asyncSocket->GetSocketHandle(),
+		listenSocket->GetSocketHandle(),
 		_iocp->GetHandle());
 	if (acceptorRes.HasErr()) {
 		return Res::Err(ENetworkError::IocpCreateFailed);
@@ -65,6 +67,10 @@ EchoServer::Res EchoServer::Start(std::shared_ptr<highp::network::ISocket> async
 }
 
 void EchoServer::Stop() {
+	// TODO: listenSocket 닫기. Acceptor::Shutdown() 에서 CancelIoEx() 시에 listenSocket
+	// 으로 가능한지 확인하기.
+	closesocket(_listenSocket->GetSocketHandle());
+
 	if (_acceptor) {
 		_acceptor->Shutdown();
 		_acceptor.reset();

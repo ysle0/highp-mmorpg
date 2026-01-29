@@ -19,14 +19,14 @@ int main() {
 
 	auto socketOptionBuilder = std::make_shared<SocketOptionBuilder>(logger);
 
-	auto sock = SocketHelper::MakeDefault(
+	auto listenSocket = SocketHelper::MakeDefaultListener(
 		logger,
 		transport,
 		config,
 		socketOptionBuilder);
 
 	EchoServer es(logger, config, socketOptionBuilder);
-	if (auto res = es.Start(sock); res.HasErr()) {
+	if (auto res = es.Start(listenSocket); res.HasErr()) {
 		logger->Error("Failed to start server.");
 		return -1;
 	}
