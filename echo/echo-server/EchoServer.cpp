@@ -94,9 +94,10 @@ void EchoServer::OnCompletion(network::CompletionEvent event) {
 		case network::EIoType::Recv:
 		{
 			auto* client = static_cast<network::Client*>(event.completionKey);
+			auto clientPtr = client->shared_from_this();
 			if (!event.success || event.bytesTransferred == 0) {
 				_logger->Info("[Graceful Disconnect] Socket #{} disconnected.", client->socket);
-				CloseClient(client->shared_from_this(), true);
+				CloseClient(clientPtr, true);
 				break;
 			}
 
@@ -108,15 +109,13 @@ void EchoServer::OnCompletion(network::CompletionEvent event) {
 				client->socket, recvData, event.bytesTransferred);
 
 			// Echo: 받은 데이터 그대로 전송
-			auto clientPtr = client->shared_from_this();
-			if (auto res = clientPtr->PostSend(recvData); res.HasErr()) {
+			GUARD_EFFECT_BREAK(clientPtr->PostSend(recvData), [&]() {
 				CloseClient(clientPtr, true);
-				break;
-			}
+			});
 
-			if (auto res = clientPtr->PostRecv(); res.HasErr()) {
+			GUARD_EFFECT_BREAK(clientPtr->PostRecv(), [&]() {
 				CloseClient(clientPtr, true);
-			}
+			});
 		}
 		break;
 
@@ -143,17 +142,15 @@ void EchoServer::OnAccept(network::AcceptContext& ctx) {
 
 	client->socket = ctx.acceptSocket;
 
-	if (auto res = _iocp->AssociateSocket(client->socket, client.get()); res.HasErr()) {
+	GUARD_EFFECT_VOID(_iocp->AssociateSocket(client->socket, client.get()), [&]() {
 		_logger->Error("Failed to associate socket with IOCP.");
 		client->Close(true);
-		return;
-	}
+	});
 
-	if (auto res = client->PostRecv(); res.HasErr()) {
+	GUARD_EFFECT_VOID(client->PostRecv(), [&]() {
 		_logger->Error("Failed to post initial Recv.");
 		client->Close(true);
-		return;
-	}
+	});
 
 	_connectedClientCount++;
 

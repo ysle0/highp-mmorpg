@@ -110,10 +110,39 @@ do { \
 		return _result; \
 } while (0)
 
+#define GUARD_VOID(expr) \
+do { \
+	if (auto _result = (expr); _result.HasErr()) \
+		return; \
+} while (0)
+
+#define GUARD_BREAK(expr) \
+do { \
+if (auto _result = (expr); _result.HasErr()) \
+return; \
+} while (0)
+
+
 #define GUARD_EFFECT(expr, fn) \
 do { \
 	if (auto _result = (expr); _result.HasErr()) { \
         fn(); \
 		return _result; \
+	} \
+} while (0)
+
+#define GUARD_EFFECT_VOID(expr, fn) \
+do { \
+	if (auto _result = (expr); _result.HasErr()) { \
+        fn(); \
+		return; \
+	} \
+} while (0)
+
+#define GUARD_EFFECT_BREAK(expr, fn) \
+do { \
+	if (auto _result = (expr); _result.HasErr()) { \
+        fn(); \
+		break; \
 	} \
 } while (0)
