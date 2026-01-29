@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "Acceptor.h"
-#include <Errors.hpp>
 
 namespace highp::network {
 
