@@ -128,8 +128,8 @@ void EchoServer::OnCompletion(network::CompletionEvent event) {
 		break;
 
 		default:
-			_logger->Error("Unknown IO type received.");
-			break;
+		_logger->Error("Unknown IO type received.");
+		break;
 	}
 }
 
@@ -170,8 +170,8 @@ void EchoServer::CloseClient(std::shared_ptr<network::Client> client, bool force
 std::shared_ptr<network::Client> EchoServer::FindAvailableClient() {
 	auto found = std::find_if(_clientPool.begin(), _clientPool.end(),
 		[](const std::shared_ptr<network::Client>& c) {
-			return c->socket == INVALID_SOCKET;
-		});
+		return c->socket == INVALID_SOCKET;
+	});
 	if (found != _clientPool.end()) {
 		return *found;
 	}

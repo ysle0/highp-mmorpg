@@ -124,12 +124,6 @@ public:
 	/// </remarks>
 	Res PostCompletion(DWORD bytes, void* key, LPOVERLAPPED overlapped);
 
-	/// <summary>
-	/// IOCP 완료 이벤트 처리 콜백을 등록한다.
-	/// </summary>
-	/// <param name="handler">완료 이벤트 발생 시 호출될 콜백 함수</param>
-	void SetCompletionHandler(CompletionHandler handler);
-
 	/// <summary>IOCP 커널 핸들을 반환한다. Acceptor::Initialize()에 전달용.</summary>
 	/// <returns>IOCP 핸들</returns>
 	HANDLE GetHandle() const noexcept { return _handle; }

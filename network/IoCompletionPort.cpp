@@ -87,9 +87,6 @@ IoCompletionPort::Res IoCompletionPort::PostCompletion(DWORD bytes, void* key, L
 	return Res::Ok();
 }
 
-void IoCompletionPort::SetCompletionHandler(CompletionHandler handler) {
-	_completionHandler = std::move(handler);
-}
 
 void IoCompletionPort::WorkerLoop(std::stop_token st) {
 	while (!st.stop_requested() && _isRunning.load()) {
@@ -132,3 +129,4 @@ void IoCompletionPort::AwakeGetQueuedCompletionStatus() {
 		PostQueuedCompletionStatus(_handle, 0, 0, nullptr);
 	}
 }
+} // namespace highp::network
