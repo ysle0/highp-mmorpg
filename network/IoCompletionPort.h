@@ -10,6 +10,7 @@
 #include <memory>
 #include <thread>
 #include <vector>
+#include "CompletionTarget.hpp"
 
 namespace highp::network {
 
@@ -22,7 +23,7 @@ struct CompletionEvent {
 	EIoType ioType;
 
 	/// <summary>소켓 연결 시 등록한 완료 키. 일반적으로 Client 포인터.</summary>
-	void* completionKey;
+	ICompletionTarget* target = nullptr;
 
 	/// <summary>비동기 I/O에 사용된 OVERLAPPED 구조체 포인터. OverlappedExt로 캐스팅 가능.</summary>
 	LPOVERLAPPED overlapped;
@@ -110,7 +111,20 @@ public:
 	/// <remarks>
 	/// 이 함수 호출 후 해당 소켓의 비동기 I/O 완료가 IOCP로 통지된다.
 	/// </remarks>
-	Res AssociateSocket(SocketHandle socket, void* completionKey);
+	template <typename T> requires std::derived_from<T, ICompletionTarget>
+	Res AssociateSocket(SocketHandle socket, T* completionKey) {
+		HANDLE result = CreateIoCompletionPort(
+			reinterpret_cast<HANDLE>(socket),
+			_handle,
+			reinterpret_cast<ULONG_PTR>(completionKey),
+			0);
+
+		if (result == NULL || result != _handle) {
+			return Res::Err(err::ENetworkError::IocpConnectFailed);
+		}
+
+		return Res::Ok();
+	}
 
 	/// <summary>
 	/// 수동으로 완료 이벤트를 IOCP 큐에 추가한다.

@@ -93,7 +93,7 @@ void EchoServer::OnCompletion(network::CompletionEvent event) {
 
 		case network::EIoType::Recv:
 		{
-			auto* client = static_cast<network::Client*>(event.completionKey);
+			auto* client = event.target->CastTo<network::Client>();
 			if (!event.success || event.bytesTransferred == 0) {
 				_logger->Info("[Graceful Disconnect] Socket #{} disconnected.", client->socket);
 				CloseClient(client->shared_from_this(), true);
@@ -122,7 +122,7 @@ void EchoServer::OnCompletion(network::CompletionEvent event) {
 
 		case network::EIoType::Send:
 		{
-			auto* client = static_cast<network::Client*>(event.completionKey);
+			auto* client = event.target->CastTo<network::Client>();
 			_logger->Info("[Send] socket #{}, bytes: {}", client->socket, event.bytesTransferred);
 		}
 		break;

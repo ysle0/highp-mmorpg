@@ -6,6 +6,7 @@
 #include <Result.hpp>
 #include <memory>
 #include <string_view>
+#include "CompletionTarget.hpp"
 
 namespace highp::network {
 
@@ -16,7 +17,7 @@ namespace highp::network {
 /// <remarks>
 /// 각 클라이언트마다 Recv/Send용 OverlappedExt를 보유하여 동시 I/O 작업을 지원한다.
 /// </remarks>
-struct Client : public std::enable_shared_from_this<Client> {
+struct Client : public std::enable_shared_from_this<Client>, public ICompletionTarget {
 	using Res = fn::Result<void, err::ENetworkError>;
 
 	/// <summary>기본 생성자. 소켓을 INVALID_SOCKET으로 초기화.</summary>

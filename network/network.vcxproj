@@ -144,6 +144,7 @@
     <ClInclude Include="Acceptor.h" />
     <ClInclude Include="AsyncSocket.h" />
     <ClInclude Include="Client.h" />
+    <ClInclude Include="CompletionTarget.hpp" />
     <ClInclude Include="ConfigEmbedded.h" />
     <ClInclude Include="Const.h" />
     <ClInclude Include="EIoType.h" />

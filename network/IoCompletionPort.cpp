@@ -59,19 +59,6 @@ void IoCompletionPort::Shutdown() {
 	_logger->Info("IoCompletionPort shutdown complete.");
 }
 
-IoCompletionPort::Res IoCompletionPort::AssociateSocket(SocketHandle socket, void* completionKey) {
-	HANDLE result = CreateIoCompletionPort(
-		reinterpret_cast<HANDLE>(socket),
-		_handle,
-		reinterpret_cast<ULONG_PTR>(completionKey),
-		0);
-
-	if (result == NULL || result != _handle) {
-		return Res::Err(err::ENetworkError::IocpConnectFailed);
-	}
-
-	return Res::Ok();
-}
 
 IoCompletionPort::Res IoCompletionPort::PostCompletion(DWORD bytes, void* key, LPOVERLAPPED overlapped) {
 	BOOL result = PostQueuedCompletionStatus(
@@ -109,7 +96,7 @@ void IoCompletionPort::WorkerLoop(std::stop_token st) {
 		}
 
 		CompletionEvent event{
-			.completionKey = reinterpret_cast<void*>(completionKey),
+			.target = reinterpret_cast<ICompletionTarget*>(completionKey),
 			.overlapped = overlapped,
 			.bytesTransferred = bytesTransferred,
 			.success = (ok == TRUE),
