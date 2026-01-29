@@ -9,9 +9,7 @@ Acceptor::Acceptor(
 	AcceptCallback onAfterAccept)
 	: _logger(std::move(logger))
 	, _overlappedPool(preAllocCount)
-	, _acceptCallback(std::move(onAfterAccept))
-{
-}
+	, _acceptCallback(std::move(onAfterAccept)) {}
 
 Acceptor::~Acceptor() {
 	Shutdown();
@@ -156,6 +154,11 @@ Acceptor::Res Acceptor::PostAccept() {
 		if (err != ERROR_IO_PENDING) {
 			closesocket(acceptSocket);
 			ReleaseOverlapped(overlapped);
+
+			// 요청이 실패힜으니 더이상 shutdown 에 필요한 overlapped 추적도 필요없음.
+			std::lock_guard lock(_ioPendingOverlappedMtx);
+			_ioPendingOverlappeds.erase(overlapped);
+
 			_logger->Error("AcceptEx failed. error: {}", err);
 			return Res::Err(err::ENetworkError::SocketPostAcceptFailed);
 		}
