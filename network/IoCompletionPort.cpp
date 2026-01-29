@@ -8,9 +8,7 @@ IoCompletionPort::IoCompletionPort(
 	std::shared_ptr<log::Logger> logger,
 	CompletionHandler handler)
 	: _logger(std::move(logger))
-	, _completionHandler(std::move(handler))
-{
-}
+	, _completionHandler(std::move(handler)) {}
 
 IoCompletionPort::~IoCompletionPort() noexcept {
 	Shutdown();
@@ -106,6 +104,15 @@ void IoCompletionPort::WorkerLoop(std::stop_token st) {
 
 		if (completionKey == 0 && overlapped == nullptr) {
 			break;
+		}
+
+		if (!ok) {
+			const DWORD err = GetLastError();
+			const bool isIoPendingCancelled = err == ERROR_OPERATION_ABORTED;
+			if (isIoPendingCancelled) {
+				_logger->Info("[WorkerpLoop] I/O Pending Cancelled by CancelIoEx()");
+				break;
+			}
 		}
 
 		CompletionEvent event{
