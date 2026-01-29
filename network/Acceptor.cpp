@@ -1,13 +1,16 @@
 #include "pch.h"
 #include "Acceptor.h"
+#include "SocketOptionBuilder.h"
 
 namespace highp::network {
 
 Acceptor::Acceptor(
 	std::shared_ptr<log::Logger> logger,
+	std::shared_ptr<SocketOptionBuilder> socketOptionBuilder,
 	int preAllocCount,
 	AcceptCallback onAfterAccept)
-	: _logger(std::move(logger))
+	: _logger(logger)
+	, _socketOptionBuilder(socketOptionBuilder)
 	, _overlappedPool(preAllocCount)
 	, _acceptCallback(std::move(onAfterAccept))
 {
@@ -107,16 +110,16 @@ SocketHandle Acceptor::CreateAcceptSocket() {
 	return socket;
 }
 
-OverlappedExt* Acceptor::AcquireOverlapped() {
+AcceptOverlapped* Acceptor::AcquireOverlapped() {
 	return _overlappedPool.Acquire();
 }
 
-void Acceptor::ReleaseOverlapped(OverlappedExt* overlapped) {
+void Acceptor::ReleaseOverlapped(AcceptOverlapped* overlapped) {
 	_overlappedPool.Release(overlapped);
 }
 
 Acceptor::Res Acceptor::PostAccept() {
-	OverlappedExt* overlapped = AcquireOverlapped();
+	auto* overlapped = AcquireOverlapped();
 
 	SocketHandle acceptSocket = CreateAcceptSocket();
 	if (acceptSocket == InvalidSocket) {
@@ -133,11 +136,11 @@ Acceptor::Res Acceptor::PostAccept() {
 	constexpr DWORD addrLen = sizeof(SOCKADDR_IN) + 16;
 
 	// overlapped->overlapped이 첫 번째 멤버이므로
-	// OverlappedExt* 를 직접 LPOVERLAPPED로 캐스팅 가능
+	// SendOverlapped* 를 직접 LPOVERLAPPED로 캐스팅 가능
 	BOOL result = _fnAcceptEx(
 		_listenSocket,
 		acceptSocket,
-		overlapped->sendBuffer,
+		overlapped->buf,
 		0,
 		addrLen,
 		addrLen,
@@ -165,24 +168,29 @@ Acceptor::Res Acceptor::PostAccepts(int count) {
 	return Res::Ok();
 }
 
-Acceptor::Res Acceptor::OnAcceptComplete(OverlappedExt* overlapped, DWORD bytesTransferred) {
+Acceptor::Res Acceptor::OnAcceptComplete(AcceptOverlapped* overlapped, DWORD bytesTransferred) {
 	if (overlapped == nullptr || overlapped->ioType != EIoType::Accept) {
 		return Res::Err(err::ENetworkError::SocketAcceptFailed);
 	}
 
-	int result = setsockopt(
-		overlapped->clientSocket,
-		SOL_SOCKET,
-		SO_UPDATE_ACCEPT_CONTEXT,
-		reinterpret_cast<char*>(&_listenSocket),
-		sizeof(_listenSocket));
+	SocketHandle clientSocket = overlapped->clientSocket;
 
-	if (result == SOCKET_ERROR) {
-		_logger->Error("SO_UPDATE_ACCEPT_CONTEXT failed. error: {}", WSAGetLastError());
-		closesocket(overlapped->clientSocket);
+	// After AcceptEx() - 소켓 컨텍스트 업데이트
+	if (!_socketOptionBuilder->SetUpdateAcceptContext(clientSocket, _listenSocket)) {
+		closesocket(clientSocket);
 		ReleaseOverlapped(overlapped);
 		return Res::Err(err::ENetworkError::SocketAcceptFailed);
 	}
+
+	// On connected socket - 연결된 소켓 옵션 설정
+	_socketOptionBuilder->SetTcpNoDelay(clientSocket, true);
+
+	tcp_keepalive keepAlive = {
+		.onoff = 1,
+		.keepalivetime = 30000,
+		.keepaliveinterval = 5000
+	};
+	_socketOptionBuilder->SetKeepAlive(clientSocket, keepAlive);
 
 	SOCKADDR_IN* localAddr = nullptr;
 	SOCKADDR_IN* remoteAddr = nullptr;
@@ -191,7 +199,7 @@ Acceptor::Res Acceptor::OnAcceptComplete(OverlappedExt* overlapped, DWORD bytesT
 	constexpr DWORD addrLen = sizeof(SOCKADDR_IN) + 16;
 
 	_fnGetAcceptExSockAddrs(
-		overlapped->sendBuffer,
+		overlapped->buf,
 		0,
 		addrLen,
 		addrLen,

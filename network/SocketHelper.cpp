@@ -1,12 +1,14 @@
 #include "pch.h"
 #include "SocketHelper.h"
 #include "WindowsAsyncSocket.h"
+#include "SocketOptionBuilder.h"
 
 namespace highp::network {
 std::shared_ptr<ISocket> SocketHelper::MakeDefault(
 	std::shared_ptr<log::Logger> logger,
 	NetworkTransport netTransport,
-	NetworkCfg networkCfg
+	NetworkCfg networkCfg,
+	std::shared_ptr<SocketOptionBuilder> socketOptionBuilder
 ) {
 	auto s{ std::make_shared<WindowsAsyncSocket>(logger) };
 
@@ -17,6 +19,11 @@ std::shared_ptr<ISocket> SocketHelper::MakeDefault(
 	if (auto res = s->CreateSocket(netTransport); res.HasErr()) {
 		return nullptr;
 	}
+
+	// Before bind() - 소켓 옵션 설정
+	const SocketHandle sh = s->GetSocketHandle();
+	socketOptionBuilder->SetReuseAddr(sh, true);
+	//socketOptionBuilder->SetSendBufferSize(sh, network::Const::Buffer::sendBufferSize);
 
 	if (auto res = s->Bind(networkCfg.server.port); res.HasErr()) {
 		return nullptr;

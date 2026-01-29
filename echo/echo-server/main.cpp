@@ -3,6 +3,7 @@
 #include <Logger.hpp>
 #include <NetworkCfg.h>
 #include <SocketHelper.h>
+#include <SocketOptionBuilder.h>
 #include <TextLogger.h>
 
 using namespace highp::echo_srv;
@@ -16,11 +17,15 @@ int main() {
 	auto config = NetworkCfg::FromFile("config.runtime.toml");
 	auto transport{ NetworkTransport{ ETransport::TCP } };
 
+	auto socketOptionBuilder = std::make_shared<SocketOptionBuilder>(logger);
+
 	auto sock = SocketHelper::MakeDefault(
 		logger,
 		transport,
-		config);
-	EchoServer es(logger, config);
+		config,
+		socketOptionBuilder);
+
+	EchoServer es(logger, config, socketOptionBuilder);
 	if (auto res = es.Start(sock); res.HasErr()) {
 		logger->Error("Failed to start server.");
 		return -1;

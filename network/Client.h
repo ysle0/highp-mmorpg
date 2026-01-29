@@ -44,11 +44,11 @@ struct Client : public std::enable_shared_from_this<Client> {
 	/// <summary>클라이언트 소켓 핸들</summary>
 	SocketHandle socket = INVALID_SOCKET;
 
-	/// <summary>수신 작업용 OverlappedExt 구조체</summary>
-	OverlappedExt recvOverlapped;
+	/// <summary>수신 작업용 SendOverlapped 구조체</summary>
+	RecvOverlapped recvOverlapped;
 
-	/// <summary>송신 작업용 OverlappedExt 구조체</summary>
-	OverlappedExt sendOverlapped;
+	/// <summary>송신 작업용 SendOverlapped 구조체</summary>
+	SendOverlapped sendOverlapped;
 };
 
 }

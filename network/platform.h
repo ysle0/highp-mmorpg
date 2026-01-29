@@ -31,6 +31,7 @@
 #include <WinSock2.h>
 #include <WS2tcpip.h>
 #include <MSWSock.h>
+#include <mstcpip.h>	// tcp_keepalive, SIO_KEEPALIVE_VALS
 
 //#elif defined(PLATFORM_LINUX)
 //#include <sys/socket.h>
