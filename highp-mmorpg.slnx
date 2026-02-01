@@ -3,9 +3,14 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Folder Name="/echo/">
-    <Project Path="echo/echo-client/echo-client.vcxproj" Id="3fd40365-5fc7-4ede-a1ff-f7a2457407a9" />
-    <Project Path="echo/echo-server/echo-server.vcxproj" Id="819c46db-cc34-4102-90c2-d6359b9b3e94" />
+  <Folder Name="/exec/" />
+  <Folder Name="/exec/chat/">
+    <Project Path="exec/chat/chat-client/chat-client.vcxproj" Id="bf4008a1-5fb9-4b4a-897a-183a0b83d112" />
+    <Project Path="exec/chat/chat-server/chat-server/chat-server.vcxproj" Id="4aa277d1-5677-4849-b4de-72ed81bb3779" />
+  </Folder>
+  <Folder Name="/exec/echo/">
+    <Project Path="exec/echo/echo-client/echo-client.vcxproj" Id="3fd40365-5fc7-4ede-a1ff-f7a2457407a9" />
+    <Project Path="exec/echo/echo-server/echo-server.vcxproj" Id="819c46db-cc34-4102-90c2-d6359b9b3e94" />
   </Folder>
   <Folder Name="/scripts/">
     <File Path="scripts/embed_config.ps1" />
