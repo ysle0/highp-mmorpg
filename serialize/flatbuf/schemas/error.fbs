@@ -1,0 +1,14 @@
+include "enum.fbs";
+
+namespace highp.protocol;
+
+table Error {
+    error_code: ErrorCode;
+    message: string;
+}
+
+table ErrorResponse {
+    error_code: ErrorCode;
+    message: string;
+    details: string;
+}

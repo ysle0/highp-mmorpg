@@ -1,0 +1,38 @@
+include "../user.fbs";
+include "../room.fbs";
+
+namespace highp.protocol.messages;
+
+// 로그인
+table LoginRequest {
+    username: string (required);
+}
+
+// 방생성
+table CreateRoomRequest {
+    room_name: string (required);
+    max_users: ushort = 10;
+}
+
+// 방 입장
+table JoinRoomRequest {
+    room_id: uint32;
+}
+
+// 방 퇴장
+table LeaveRoomRequest {
+    room_id: uint32;
+}
+
+// 메시지 전송
+table SendMessageRequest {
+    room_id: uint32;
+    message: string (required);
+}
+
+// 방 목록 요청
+table GetRoomListRequest {
+    // 빈 메시지 (페이징 추가 기능)
+    offset: uint32 = 0;
+    limit: uint32 = 100;
+}

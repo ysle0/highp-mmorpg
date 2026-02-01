@@ -1,0 +1,7 @@
+namespace highp.protocol.Common;
+
+// fixed size
+struct Timestamp {
+	seconds: uint64;
+	nanos: uint32;
+}

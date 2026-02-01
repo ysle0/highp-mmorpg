@@ -1,0 +1,35 @@
+include "../common.fbs";
+include "../user.fbs";
+include "../room.fbs";
+include "../error.fbs";
+
+namespace highp.protocol.messages;
+
+// 로그인 결과
+table LoginResponse {
+    ok: bool;
+    user: User (required);
+    error: Error;
+}
+
+// 방 생성 결과
+table RoomCreatedResponse {
+    ok: bool;
+    room: Room (required);
+    error: Error;
+}
+
+// 방 입장 결과
+table JoinedRoomResponse {
+    ok: bool;
+    room: RoomWithUsers (required);
+    error: Error;
+}
+
+// 방 목록
+table RoomListResponse {
+    ok: bool;
+    rooms: [Room] (required);
+    total_count: uint32;
+    error: Error;
+}
