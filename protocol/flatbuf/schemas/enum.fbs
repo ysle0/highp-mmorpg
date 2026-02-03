@@ -1,0 +1,52 @@
+namespace highp.protocol;
+
+enum MessageType : ushort {
+	None = 0,
+
+	// Client->Server (1-99)
+	CS_Login = 1,
+    CS_Logout = 2,
+
+	CS_CreateRoom = 10,
+	CS_JoinRoom = 11,
+	CS_LeaveRoom = 12,
+	CS_GetRoomList = 13,
+	CS_SendMessage = 20,
+
+	// Server->Client (100-199)
+	SC_LoginResult = 101,
+    SC_LogoutResult = 102,  
+
+	SC_RoomCreated = 110,
+	SC_JoinedRoom = 111,
+	SC_LeftRoom = 112,
+	SC_RoomList = 113,
+
+    SC_UserJoined = 120,
+    SC_UserLeft = 121,
+    SC_ChatMessage = 122,
+
+    // Errors (500+)
+	SC_Error = 999
+}
+
+/*
+	채팅서버의 모든 에러 코드.
+*/
+enum ErrorCode : ushort {
+	None = 0,
+	InvalidCredentials = 1,
+	RoomFull = 2,
+	RoomNotFound = 3,
+	AlreadyInRoom = 4,
+	NotInRoom = 5,
+    InvalidMessage = 6,
+    ServerError = 99
+}
+
+enum UserStatus : byte {
+    Offline = 0,
+    Online = 1,
+    InRoom = 2,
+    Away = 3
+}

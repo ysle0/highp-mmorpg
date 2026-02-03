@@ -1,0 +1,16 @@
+include "enum.fbs";
+
+namespace highp.protocol;
+
+table User {
+	id: uint32 (key);
+	username: string (required);
+    status: UserStatus = Online;
+	level: uint16 = 1;
+    created_at: uint64; // UNIX timestamp
+}
+
+table UserInfo {
+    user: User (required);
+    current_room_id: uint32;
+}

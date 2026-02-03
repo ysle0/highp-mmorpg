@@ -1,0 +1,43 @@
+include "enum.fbs";
+include "error.fbs";
+include "messages/broadcast.fbs";
+include "messages/server.fbs";
+include "messages/client.fbs";
+
+namespace highp.protocol;
+
+// union 으로 모든 메시지 통합
+union Payload {
+    // Client->Server
+    messages.LoginRequest,
+    messages.CreateRoomRequest,
+    messages.JoinRoomRequest,
+    messages.LeaveRoomRequest,
+    messages.SendMessageRequest,
+    messages.GetRoomListRequest,
+
+    // Server->Client
+    messages.LoginResponse,
+    messages.RoomCreatedResponse,
+    messages.JoinedRoomResponse,
+    messages.RoomListResponse,
+
+    // Broadcast
+    messages.UserJoinedBroadcast,
+    messages.UserLeftBroadcast,
+    messages.ChatMessageBroadcast,
+    
+    // Error
+    ErrorResponse
+}
+
+// 최상위 패킷
+table Packet {
+    type: MessageType;
+    payload: Payload;
+    sequence: uint32 = 0; // 패킷 순서 (선택적)
+}
+
+root_type Packet;
+file_identifier "CHAT";
+file_extension "bin";

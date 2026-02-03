@@ -1,0 +1,25 @@
+include "../common.fbs";
+include "../user.fbs";
+
+namespace highp.protocol.messages;
+
+// 유저 입장 알림
+table UserJoinedBroadcast {
+    room_id: uint32;
+    user: User (required);
+}
+
+// 유저 퇴장 알림
+table UserLeftBroadcast {
+    room_id: uint32;
+    user_id: uint32;
+    username: string (required);
+}
+
+// 채팅 메시지  
+table ChatMessageBroadcast {
+    room_id: uint32;
+    sender: User (required);
+    message: string (required);
+    timestamp: Common.Timestamp;
+}
