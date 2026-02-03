@@ -15,9 +15,12 @@
     <Project Path="exec/echo/echo-server/echo-server.vcxproj" Id="819c46db-cc34-4102-90c2-d6359b9b3e94" />
   </Folder>
   <Folder Name="/scripts/">
-    <File Path="scripts/embed_config.ps1" />
     <File Path="scripts/gen_flatbuffers.ps1" />
     <File Path="scripts/gen_flatbuffers.sh" />
+    <File Path="scripts/parse_compile_cfg.ps1" />
+    <File Path="scripts/parse_compile_cfg.sh" />
+    <File Path="scripts/parse_network_cfg.ps1" />
+    <File Path="scripts/parse_network_cfg.sh" />
   </Folder>
   <Folder Name="/shared/">
     <Project Path="lib/lib.vcxproj" Id="823faac2-5c85-4820-900b-ea98f10c08b4" />

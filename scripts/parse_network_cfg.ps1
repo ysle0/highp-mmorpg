@@ -5,7 +5,7 @@
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ProjectRoot = Split-Path -Parent $ScriptDir
 
-$TomlPath = Join-Path $ProjectRoot "echo\echo-server\config.runtime.toml"
+$TomlPath = Join-Path $ProjectRoot "exec\echo\echo-server\config.runtime.toml"
 $OutputPath = Join-Path $ProjectRoot "network\NetworkCfg.h"
 
 # Convert snake_case to PascalCase
