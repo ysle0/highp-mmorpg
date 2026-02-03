@@ -9,8 +9,8 @@
 // Ensure the included flatbuffers.h is the same version as when this file was
 // generated, otherwise it may not be compatible.
 static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
-              FLATBUFFERS_VERSION_MINOR == 12 &&
-              FLATBUFFERS_VERSION_REVISION == 19,
+              FLATBUFFERS_VERSION_MINOR == 9 &&
+              FLATBUFFERS_VERSION_REVISION == 23,
              "Non-compatible flatbuffers version included");
 
 #include "enum_generated.h"
@@ -154,10 +154,8 @@ template<> struct PayloadTraits<highp::protocol::ErrorResponse> {
   static const Payload enum_value = Payload::ErrorResponse;
 };
 
-template <bool B = false>
-bool VerifyPayload(::flatbuffers::VerifierTemplate<B> &verifier, const void *obj, Payload type);
-template <bool B = false>
-bool VerifyPayloadVector(::flatbuffers::VerifierTemplate<B> &verifier, const ::flatbuffers::Vector<::flatbuffers::Offset<void>> *values, const ::flatbuffers::Vector<Payload> *types);
+bool VerifyPayload(::flatbuffers::Verifier &verifier, const void *obj, Payload type);
+bool VerifyPayloadVector(::flatbuffers::Verifier &verifier, const ::flatbuffers::Vector<::flatbuffers::Offset<void>> *values, const ::flatbuffers::Vector<Payload> *types);
 
 struct Packet FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef PacketBuilder Builder;
@@ -222,8 +220,7 @@ struct Packet FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint32_t sequence() const {
     return GetField<uint32_t>(VT_SEQUENCE, 0);
   }
-  template <bool B = false>
-  bool Verify(::flatbuffers::VerifierTemplate<B> &verifier) const {
+  bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint16_t>(verifier, VT_TYPE, 2) &&
            VerifyField<uint8_t>(verifier, VT_PAYLOAD_TYPE, 1) &&
@@ -331,8 +328,7 @@ inline ::flatbuffers::Offset<Packet> CreatePacket(
   return builder_.Finish();
 }
 
-template <bool B>
-inline bool VerifyPayload(::flatbuffers::VerifierTemplate<B> &verifier, const void *obj, Payload type) {
+inline bool VerifyPayload(::flatbuffers::Verifier &verifier, const void *obj, Payload type) {
   switch (type) {
     case Payload::NONE: {
       return true;
@@ -397,8 +393,7 @@ inline bool VerifyPayload(::flatbuffers::VerifierTemplate<B> &verifier, const vo
   }
 }
 
-template <bool B>
-inline bool VerifyPayloadVector(::flatbuffers::VerifierTemplate<B> &verifier, const ::flatbuffers::Vector<::flatbuffers::Offset<void>> *values, const ::flatbuffers::Vector<Payload> *types) {
+inline bool VerifyPayloadVector(::flatbuffers::Verifier &verifier, const ::flatbuffers::Vector<::flatbuffers::Offset<void>> *values, const ::flatbuffers::Vector<Payload> *types) {
   if (!values || !types) return !values && !types;
   if (values->size() != types->size()) return false;
   for (::flatbuffers::uoffset_t i = 0; i < values->size(); ++i) {
@@ -432,16 +427,14 @@ inline bool SizePrefixedPacketBufferHasIdentifier(const void *buf) {
       buf, PacketIdentifier(), true);
 }
 
-template <bool B = false>
 inline bool VerifyPacketBuffer(
-    ::flatbuffers::VerifierTemplate<B> &verifier) {
-  return verifier.template VerifyBuffer<highp::protocol::Packet>(PacketIdentifier());
+    ::flatbuffers::Verifier &verifier) {
+  return verifier.VerifyBuffer<highp::protocol::Packet>(PacketIdentifier());
 }
 
-template <bool B = false>
 inline bool VerifySizePrefixedPacketBuffer(
-    ::flatbuffers::VerifierTemplate<B> &verifier) {
-  return verifier.template VerifySizePrefixedBuffer<highp::protocol::Packet>(PacketIdentifier());
+    ::flatbuffers::Verifier &verifier) {
+  return verifier.VerifySizePrefixedBuffer<highp::protocol::Packet>(PacketIdentifier());
 }
 
 inline const char *PacketExtension() {

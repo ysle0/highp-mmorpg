@@ -9,8 +9,8 @@
 // Ensure the included flatbuffers.h is the same version as when this file was
 // generated, otherwise it may not be compatible.
 static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
-              FLATBUFFERS_VERSION_MINOR == 12 &&
-              FLATBUFFERS_VERSION_REVISION == 19,
+              FLATBUFFERS_VERSION_MINOR == 9 &&
+              FLATBUFFERS_VERSION_REVISION == 23,
              "Non-compatible flatbuffers version included");
 
 #include "common_generated.h"
@@ -50,8 +50,7 @@ struct LoginResponse FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const highp::protocol::Error *error() const {
     return GetPointer<const highp::protocol::Error *>(VT_ERROR);
   }
-  template <bool B = false>
-  bool Verify(::flatbuffers::VerifierTemplate<B> &verifier) const {
+  bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint8_t>(verifier, VT_OK, 1) &&
            VerifyOffsetRequired(verifier, VT_USER) &&
@@ -115,8 +114,7 @@ struct RoomCreatedResponse FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Tabl
   const highp::protocol::Error *error() const {
     return GetPointer<const highp::protocol::Error *>(VT_ERROR);
   }
-  template <bool B = false>
-  bool Verify(::flatbuffers::VerifierTemplate<B> &verifier) const {
+  bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint8_t>(verifier, VT_OK, 1) &&
            VerifyOffsetRequired(verifier, VT_ROOM) &&
@@ -180,8 +178,7 @@ struct JoinedRoomResponse FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table
   const highp::protocol::Error *error() const {
     return GetPointer<const highp::protocol::Error *>(VT_ERROR);
   }
-  template <bool B = false>
-  bool Verify(::flatbuffers::VerifierTemplate<B> &verifier) const {
+  bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint8_t>(verifier, VT_OK, 1) &&
            VerifyOffsetRequired(verifier, VT_ROOM) &&
@@ -249,8 +246,7 @@ struct RoomListResponse FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const highp::protocol::Error *error() const {
     return GetPointer<const highp::protocol::Error *>(VT_ERROR);
   }
-  template <bool B = false>
-  bool Verify(::flatbuffers::VerifierTemplate<B> &verifier) const {
+  bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint8_t>(verifier, VT_OK, 1) &&
            VerifyOffsetRequired(verifier, VT_ROOMS) &&

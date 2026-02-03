@@ -9,8 +9,8 @@
 // Ensure the included flatbuffers.h is the same version as when this file was
 // generated, otherwise it may not be compatible.
 static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
-              FLATBUFFERS_VERSION_MINOR == 12 &&
-              FLATBUFFERS_VERSION_REVISION == 19,
+              FLATBUFFERS_VERSION_MINOR == 9 &&
+              FLATBUFFERS_VERSION_REVISION == 23,
              "Non-compatible flatbuffers version included");
 
 #include "room_generated.h"
@@ -46,8 +46,7 @@ struct LoginRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::String *username() const {
     return GetPointer<const ::flatbuffers::String *>(VT_USERNAME);
   }
-  template <bool B = false>
-  bool Verify(::flatbuffers::VerifierTemplate<B> &verifier) const {
+  bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffsetRequired(verifier, VT_USERNAME) &&
            verifier.VerifyString(username()) &&
@@ -103,8 +102,7 @@ struct CreateRoomRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table 
   uint16_t max_users() const {
     return GetField<uint16_t>(VT_MAX_USERS, 10);
   }
-  template <bool B = false>
-  bool Verify(::flatbuffers::VerifierTemplate<B> &verifier) const {
+  bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffsetRequired(verifier, VT_ROOM_NAME) &&
            verifier.VerifyString(room_name()) &&
@@ -164,8 +162,7 @@ struct JoinRoomRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint32_t room_id() const {
     return GetField<uint32_t>(VT_ROOM_ID, 0);
   }
-  template <bool B = false>
-  bool Verify(::flatbuffers::VerifierTemplate<B> &verifier) const {
+  bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_ROOM_ID, 4) &&
            verifier.EndTable();
@@ -206,8 +203,7 @@ struct LeaveRoomRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint32_t room_id() const {
     return GetField<uint32_t>(VT_ROOM_ID, 0);
   }
-  template <bool B = false>
-  bool Verify(::flatbuffers::VerifierTemplate<B> &verifier) const {
+  bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_ROOM_ID, 4) &&
            verifier.EndTable();
@@ -252,8 +248,7 @@ struct SendMessageRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table
   const ::flatbuffers::String *message() const {
     return GetPointer<const ::flatbuffers::String *>(VT_MESSAGE);
   }
-  template <bool B = false>
-  bool Verify(::flatbuffers::VerifierTemplate<B> &verifier) const {
+  bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_ROOM_ID, 4) &&
            VerifyOffsetRequired(verifier, VT_MESSAGE) &&
@@ -317,8 +312,7 @@ struct GetRoomListRequest FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table
   uint32_t limit() const {
     return GetField<uint32_t>(VT_LIMIT, 100);
   }
-  template <bool B = false>
-  bool Verify(::flatbuffers::VerifierTemplate<B> &verifier) const {
+  bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_OFFSET, 4) &&
            VerifyField<uint32_t>(verifier, VT_LIMIT, 4) &&

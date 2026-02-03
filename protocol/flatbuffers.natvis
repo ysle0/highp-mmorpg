@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+
+  <!-- flatbuffers::Offset<T> - Show the offset value -->
+  <Type Name="flatbuffers::Offset&lt;*&gt;">
+    <DisplayString>Offset={o}</DisplayString>
+    <Expand>
+      <Item Name="[offset]">o</Item>
+    </Expand>
+  </Type>
+
+  <!-- flatbuffers::String - Show the string content -->
+  <Type Name="flatbuffers::String">
+    <DisplayString>{(const char*)(this + 1),[size()]s}</DisplayString>
+    <StringView>(const char*)(this + 1),[size()]s</StringView>
+    <Expand>
+      <Item Name="[length]">size()</Item>
+      <ArrayItems>
+        <Size>size()</Size>
+        <ValuePointer>(const char*)(this + 1)</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+
+  <!-- flatbuffers::Vector<T> - Show vector size and elements -->
+  <Type Name="flatbuffers::Vector&lt;*&gt;">
+    <DisplayString>Vector[{size()}]</DisplayString>
+    <Expand>
+      <Item Name="[size]">size()</Item>
+      <ArrayItems>
+        <Size>size()</Size>
+        <ValuePointer>($T1*)(data_)</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+
+  <!-- flatbuffers::FlatBufferBuilder - Show buffer state -->
+  <Type Name="flatbuffers::FlatBufferBuilder">
+    <DisplayString>FlatBufferBuilder (size={buf_.size()})</DisplayString>
+    <Expand>
+      <Item Name="[buffer size]">buf_.size()</Item>
+      <Item Name="[capacity]">buf_.capacity()</Item>
+      <Item Name="[minalign]">minalign_</Item>
+      <Item Name="[finished]">finished</Item>
+    </Expand>
+  </Type>
+
+  <!-- flatbuffers::Table - Base class for generated tables -->
+  <Type Name="flatbuffers::Table">
+    <DisplayString>Table @ {this}</DisplayString>
+    <Expand>
+      <Item Name="[data]">data_</Item>
+    </Expand>
+  </Type>
+
+  <!-- flatbuffers::Struct - Base class for generated structs -->
+  <Type Name="flatbuffers::Struct">
+    <DisplayString>Struct @ {this}</DisplayString>
+    <Expand>
+      <Item Name="[data]">data_</Item>
+    </Expand>
+  </Type>
+
+</AutoVisualizer>

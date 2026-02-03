@@ -3,8 +3,8 @@
 
 # Configuration
 FLATC_PATH="flatc"
-SCHEMAS_DIR="./serialize/flatbuf/schemas"
-OUTPUT_DIR="./generated"
+SCHEMAS_DIR="../protocol/flatbuf/schemas"
+OUTPUT_DIR="../protocol/gen"
 
 # Colors for output
 ERROR_COLOR="\033[0;31m"    # Red

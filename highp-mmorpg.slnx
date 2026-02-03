@@ -3,7 +3,9 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Folder Name="/exec/" />
+  <Folder Name="/exec/">
+    <Project Path="exec/playground/playground.vcxproj" Id="366635c6-08d5-4d61-a0a1-6e0ec0d5c98e" />
+  </Folder>
   <Folder Name="/exec/chat/">
     <Project Path="exec/chat/chat-client/chat-client.vcxproj" Id="bf4008a1-5fb9-4b4a-897a-183a0b83d112" />
     <Project Path="exec/chat/chat-server/chat-server/chat-server.vcxproj" Id="4aa277d1-5677-4849-b4de-72ed81bb3779" />
@@ -14,9 +16,12 @@
   </Folder>
   <Folder Name="/scripts/">
     <File Path="scripts/embed_config.ps1" />
+    <File Path="scripts/gen_flatbuffers.ps1" />
+    <File Path="scripts/gen_flatbuffers.sh" />
   </Folder>
   <Folder Name="/shared/">
     <Project Path="lib/lib.vcxproj" Id="823faac2-5c85-4820-900b-ea98f10c08b4" />
     <Project Path="network/network.vcxproj" Id="dc3969f5-be2d-46ff-a38f-1d4223bd9b8d" />
+    <Project Path="protocol/protocol.vcxproj" Id="d23bc128-6149-4a73-afa1-6047f35449e7" />
   </Folder>
 </Solution>

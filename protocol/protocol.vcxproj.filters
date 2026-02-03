@@ -1,0 +1,79 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="framework.h" />
+    <ClInclude Include="flatbuf\gen\broadcast_generated.h">
+      <Filter>generated</Filter>
+    </ClInclude>
+    <ClInclude Include="flatbuf\gen\client_generated.h">
+      <Filter>generated</Filter>
+    </ClInclude>
+    <ClInclude Include="flatbuf\gen\common_generated.h">
+      <Filter>generated</Filter>
+    </ClInclude>
+    <ClInclude Include="flatbuf\gen\enum_generated.h">
+      <Filter>generated</Filter>
+    </ClInclude>
+    <ClInclude Include="flatbuf\gen\error_generated.h">
+      <Filter>generated</Filter>
+    </ClInclude>
+    <ClInclude Include="flatbuf\gen\packet_generated.h">
+      <Filter>generated</Filter>
+    </ClInclude>
+    <ClInclude Include="flatbuf\gen\room_generated.h">
+      <Filter>generated</Filter>
+    </ClInclude>
+    <ClInclude Include="flatbuf\gen\server_generated.h">
+      <Filter>generated</Filter>
+    </ClInclude>
+    <ClInclude Include="flatbuf\gen\user_generated.h">
+      <Filter>generated</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="protocol.cpp" />
+    <ClCompile Include="pch.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="generated">
+      <UniqueIdentifier>{34141997-6b34-449c-a6c3-b0ff4b2e6e6f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="flatbuffers">
+      <UniqueIdentifier>{8d487815-76ee-437c-9069-f7056d53ab14}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="flatbuffers\messages">
+      <UniqueIdentifier>{83080bd2-e5cc-4da0-ae5c-aac03ab51f26}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="flatbuf\schemas\user.fbs" />
+    <None Include="flatbuf\schemas\common.fbs">
+      <Filter>flatbuffers</Filter>
+    </None>
+    <None Include="flatbuf\schemas\enum.fbs">
+      <Filter>flatbuffers</Filter>
+    </None>
+    <None Include="flatbuf\schemas\error.fbs">
+      <Filter>flatbuffers</Filter>
+    </None>
+    <None Include="flatbuf\schemas\packet.fbs">
+      <Filter>flatbuffers</Filter>
+    </None>
+    <None Include="flatbuf\schemas\room.fbs">
+      <Filter>flatbuffers</Filter>
+    </None>
+    <None Include="flatbuf\schemas\messages\broadcast.fbs">
+      <Filter>flatbuffers\messages</Filter>
+    </None>
+    <None Include="flatbuf\schemas\messages\client.fbs">
+      <Filter>flatbuffers\messages</Filter>
+    </None>
+    <None Include="flatbuf\schemas\messages\server.fbs">
+      <Filter>flatbuffers\messages</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="flatbuffers.natvis" />
+  </ItemGroup>
+</Project>

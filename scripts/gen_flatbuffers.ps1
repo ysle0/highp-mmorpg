@@ -3,8 +3,8 @@
 
 # Configuration
 $flatcPath = "flatc"
-$schemasDir = ".\serialize\flatbuf\schemas"
-$outputDir = ".\generated"
+$schemasDir = "..\protocol\flatbuf\schemas"
+$outputDir = "..\protocol\flatbuf\gen"
 
 # Colors for output
 $ErrorColor = "Red"

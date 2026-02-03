@@ -9,8 +9,8 @@
 // Ensure the included flatbuffers.h is the same version as when this file was
 // generated, otherwise it may not be compatible.
 static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
-              FLATBUFFERS_VERSION_MINOR == 12 &&
-              FLATBUFFERS_VERSION_REVISION == 19,
+              FLATBUFFERS_VERSION_MINOR == 9 &&
+              FLATBUFFERS_VERSION_REVISION == 23,
              "Non-compatible flatbuffers version included");
 
 #include "common_generated.h"
@@ -41,8 +41,7 @@ struct UserJoinedBroadcast FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Tabl
   const highp::protocol::User *user() const {
     return GetPointer<const highp::protocol::User *>(VT_USER);
   }
-  template <bool B = false>
-  bool Verify(::flatbuffers::VerifierTemplate<B> &verifier) const {
+  bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_ROOM_ID, 4) &&
            VerifyOffsetRequired(verifier, VT_USER) &&
@@ -99,8 +98,7 @@ struct UserLeftBroadcast FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table 
   const ::flatbuffers::String *username() const {
     return GetPointer<const ::flatbuffers::String *>(VT_USERNAME);
   }
-  template <bool B = false>
-  bool Verify(::flatbuffers::VerifierTemplate<B> &verifier) const {
+  bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_ROOM_ID, 4) &&
            VerifyField<uint32_t>(verifier, VT_USER_ID, 4) &&
@@ -180,8 +178,7 @@ struct ChatMessageBroadcast FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Tab
   const highp::protocol::Common::Timestamp *timestamp() const {
     return GetStruct<const highp::protocol::Common::Timestamp *>(VT_TIMESTAMP);
   }
-  template <bool B = false>
-  bool Verify(::flatbuffers::VerifierTemplate<B> &verifier) const {
+  bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_ROOM_ID, 4) &&
            VerifyOffsetRequired(verifier, VT_SENDER) &&
