@@ -145,6 +145,9 @@
       <Project>{dc3969f5-be2d-46ff-a38f-1d4223bd9b8d}</Project>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="..\..\..\flatbuffers.natvis" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
