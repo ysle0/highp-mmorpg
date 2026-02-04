@@ -10,7 +10,11 @@
       "Bash(git commit:*)",
       "Bash(git push:*)",
       "Bash(gh pr create:*)",
-      "Bash(git filter-branch:*)"
+      "Bash(git filter-branch:*)",
+      "Bash(where.exe:*)",
+      "Bash(powershell -ExecutionPolicy Bypass -File gen_flatbuffers.ps1)",
+      "Bash(bash:*)",
+      "Bash(powershell -ExecutionPolicy Bypass -File scripts/gen_flatbuffers.ps1:*)"
     ]
   }
 }
