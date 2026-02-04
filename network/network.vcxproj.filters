@@ -92,6 +92,9 @@
     <ClInclude Include="IocpIoMultiplexer.h">
       <Filter>inc\io\windows</Filter>
     </ClInclude>
+    <ClInclude Include="ServerCore.h">
+      <Filter>inc</Filter>
+    </ClInclude>
     <ClInclude Include="AcceptContext.h">
       <Filter>inc\acceptor</Filter>
     </ClInclude>
@@ -119,6 +122,9 @@
     </ClCompile>
     <ClCompile Include="IocpIoMultiplexer.cpp">
       <Filter>src\io\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="ServerCore.cpp">
+      <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="IocpAcceptor.cpp">
       <Filter>src\acceptor</Filter>

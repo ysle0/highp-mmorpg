@@ -1,6 +1,5 @@
 #include <Client.h>
 #include <Errors.hpp>
-#include <OverlappedExt.h>
 #include "EchoServer.h"
 
 namespace highp::echo_srv {
@@ -21,35 +20,10 @@ EchoServer::EchoServer(std::shared_ptr<Logger> logger, network::NetworkCfg confi
 	, _config(config) {}
 
 EchoServer::Res EchoServer::Start(std::shared_ptr<highp::network::ISocket> asyncSocket) {
-	_iocp = std::make_unique<network::IocpIoMultiplexer>(
-		_logger,
-		std::bind_front(&EchoServer::OnCompletion, this));
+	_core = std::make_unique<network::ServerCore>(_logger, this);
 
-	const auto iocpWorkerCount = std::thread::hardware_concurrency() *
-		_config.thread.maxWorkerThreadMultiplier;
-	if (auto res = _iocp->Initialize(iocpWorkerCount); res.HasErr()) {
+	if (auto res = _core->Start(asyncSocket, _config); res.HasErr()) {
 		return res;
-	}
-
-	_acceptor = std::make_unique<network::IocpAcceptor>(
-		_logger,
-		_config.server.backlog,
-		std::bind_front(&EchoServer::OnAccept, this));
-
-	auto acceptorRes = _acceptor->Initialize(
-		asyncSocket->GetSocketHandle(),
-		_iocp->GetHandle());
-	if (acceptorRes.HasErr()) {
-		return Res::Err(ENetworkError::IocpCreateFailed);
-	}
-
-	for (int i = 0; i < _config.server.maxClients; ++i) {
-		_clientPool.emplace_back(std::make_shared<network::Client>());
-	}
-
-	auto postRes = _acceptor->PostAccepts(_config.server.backlog);
-	if (postRes.HasErr()) {
-		return Res::Err(ENetworkError::ThreadAcceptFailed);
 	}
 
 	_logger->Info("EchoServer started on port {}.", _config.server.port);
@@ -57,117 +31,39 @@ EchoServer::Res EchoServer::Start(std::shared_ptr<highp::network::ISocket> async
 }
 
 void EchoServer::Stop() {
-	if (_acceptor) {
-		_acceptor->Shutdown();
-		_acceptor.reset();
-	}
-
-	if (_iocp) {
-		_iocp->Shutdown();
-		_iocp.reset();
-	}
-
-	_clientPool.clear();
-	_connectedClientCount = 0;
-}
-
-void EchoServer::OnCompletion(network::CompletionEvent event) {
-	switch (event.ioType) {
-		case network::EIoType::Accept:
-		{
-			auto* overlapped = reinterpret_cast<network::OverlappedExt*>(event.overlapped);
-			if (_acceptor) {
-				_logger->Info("[Accept] Socket #{} is accepted", overlapped->clientSocket);
-				_acceptor->OnAcceptComplete(overlapped, event.bytesTransferred);
-			}
-		}
-		break;
-
-		case network::EIoType::Recv:
-		{
-			auto* client = static_cast<network::Client*>(event.completionKey);
-			if (!event.success || event.bytesTransferred == 0) {
-				_logger->Info("[Graceful Disconnect] Socket #{} disconnected.", client->socket);
-				CloseClient(client->shared_from_this(), true);
-				break;
-			}
-
-			auto* overlapped = reinterpret_cast<network::OverlappedExt*>(event.overlapped);
-			overlapped->recvBuffer[event.bytesTransferred] = '\0';
-
-			std::string_view recvData{ overlapped->recvBuffer, event.bytesTransferred };
-			_logger->Info("[Recv] socket #{}, data: {}, bytes: {}",
-				client->socket, recvData, event.bytesTransferred);
-
-			// Echo: 받은 데이터 그대로 전송
-			auto clientPtr = client->shared_from_this();
-			if (auto res = clientPtr->PostSend(recvData); res.HasErr()) {
-				CloseClient(clientPtr, true);
-				break;
-			}
-
-			if (auto res = clientPtr->PostRecv(); res.HasErr()) {
-				CloseClient(clientPtr, true);
-			}
-		}
-		break;
-
-		case network::EIoType::Send:
-		{
-			auto* client = static_cast<network::Client*>(event.completionKey);
-			_logger->Info("[Send] socket #{}, bytes: {}", client->socket, event.bytesTransferred);
-		}
-		break;
-
-		default:
-			_logger->Error("Unknown IO type received.");
-			break;
+	if (_core) {
+		_core->Stop();
+		_core.reset();
 	}
 }
 
-void EchoServer::OnAccept(network::AcceptContext& ctx) {
-	auto client = FindAvailableClient();
-	if (!client) {
-		_logger->Error("Client pool full!");
-		closesocket(ctx.acceptSocket);
+void EchoServer::OnAccept(std::shared_ptr<network::Client> client) {
+	_logger->Info("[EchoServer] Client accepted: socket #{}", client->socket);
+}
+
+void EchoServer::OnRecv(std::shared_ptr<network::Client> client, std::span<const char> data) {
+	std::string_view recvData{ data.data(), data.size() };
+	_logger->Info("[EchoServer] Recv: socket #{}, data: {}, bytes: {}",
+		client->socket, recvData, data.size());
+
+	// Echo: 받은 데이터 그대로 전송
+	if (auto res = client->PostSend(recvData); res.HasErr()) {
+		_core->CloseClient(client, true);
 		return;
 	}
 
-	client->socket = ctx.acceptSocket;
-
-	if (auto res = _iocp->AssociateSocket(client->socket, client.get()); res.HasErr()) {
-		_logger->Error("Failed to associate socket with IOCP.");
-		client->Close(true);
-		return;
-	}
-
+	// 다음 수신 대기
 	if (auto res = client->PostRecv(); res.HasErr()) {
-		_logger->Error("Failed to post initial Recv.");
-		client->Close(true);
-		return;
+		_core->CloseClient(client, true);
 	}
-
-	_connectedClientCount++;
-
-	char clientIp[network::Const::Network::clientIpBufferSize]{ 0 };
-	inet_ntop(AF_INET, &ctx.remoteAddr.sin_addr, clientIp, sizeof(clientIp));
-	_logger->Info("Client connected. socket: {}, ip: {}", client->socket, clientIp);
 }
 
-void EchoServer::CloseClient(std::shared_ptr<network::Client> client, bool forceClose) {
-	client->Close(forceClose);
-	_connectedClientCount--;
+void EchoServer::OnSend(std::shared_ptr<network::Client> client, size_t bytesTransferred) {
+	_logger->Info("[EchoServer] Send: socket #{}, bytes: {}", client->socket, bytesTransferred);
 }
 
-std::shared_ptr<network::Client> EchoServer::FindAvailableClient() {
-	auto found = std::find_if(_clientPool.begin(), _clientPool.end(),
-		[](const std::shared_ptr<network::Client>& c) {
-			return c->socket == INVALID_SOCKET;
-		});
-	if (found != _clientPool.end()) {
-		return *found;
-	}
-	return nullptr;
+void EchoServer::OnDisconnect(std::shared_ptr<network::Client> client) {
+	_logger->Info("[EchoServer] Client disconnected: socket #{}", client->socket);
 }
 
 }

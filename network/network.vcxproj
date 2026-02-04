@@ -148,6 +148,7 @@
     <ClInclude Include="Const.h" />
     <ClInclude Include="EIoType.h" />
     <ClInclude Include="IocpIoMultiplexer.h" />
+    <ClInclude Include="ServerCore.h" />
     <ClInclude Include="OverlappedExt.h" />
     <ClInclude Include="NetworkUtil.hpp" />
     <ClInclude Include="platform.h" />
@@ -165,6 +166,7 @@
     <ClCompile Include="AsyncSocket.cpp" />
     <ClCompile Include="Client.cpp" />
     <ClCompile Include="IocpIoMultiplexer.cpp" />
+    <ClCompile Include="ServerCore.cpp" />
     <ClCompile Include="SocketHelper.cpp" />
     <ClCompile Include="SocketOptionBuilder.cpp" />
     <ClCompile Include="WindowsAsyncSocket.cpp" />
