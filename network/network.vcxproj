@@ -141,13 +141,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AcceptContext.h" />
-    <ClInclude Include="Acceptor.h" />
+    <ClInclude Include="IocpAcceptor.h" />
     <ClInclude Include="AsyncSocket.h" />
     <ClInclude Include="Client.h" />
     <ClInclude Include="ConfigEmbedded.h" />
     <ClInclude Include="Const.h" />
     <ClInclude Include="EIoType.h" />
-    <ClInclude Include="IoCompletionPort.h" />
+    <ClInclude Include="IocpIoMultiplexer.h" />
     <ClInclude Include="OverlappedExt.h" />
     <ClInclude Include="NetworkUtil.hpp" />
     <ClInclude Include="platform.h" />
@@ -161,10 +161,10 @@
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Acceptor.cpp" />
+    <ClCompile Include="IocpAcceptor.cpp" />
     <ClCompile Include="AsyncSocket.cpp" />
     <ClCompile Include="Client.cpp" />
-    <ClCompile Include="IoCompletionPort.cpp" />
+    <ClCompile Include="IocpIoMultiplexer.cpp" />
     <ClCompile Include="SocketHelper.cpp" />
     <ClCompile Include="SocketOptionBuilder.cpp" />
     <ClCompile Include="WindowsAsyncSocket.cpp" />

@@ -1,7 +1,7 @@
 #pragma once
 #include <AcceptContext.h>
-#include <Acceptor.h>
-#include <IoCompletionPort.h>
+#include <IocpAcceptor.h>
+#include <IocpIoMultiplexer.h>
 #include <NetworkError.h>
 #include <ISocket.h>
 #include <NetworkCfg.h>
@@ -22,7 +22,7 @@ namespace highp::echo_srv {
 /// 클라이언트로부터 수신한 메시지를 그대로 반환한다.
 /// </summary>
 /// <remarks>
-/// network::IoCompletionPort와 network::Acceptor를 의존성 주입 방식으로 사용하여 관심사를 분리한다.
+/// network::IocpIoMultiplexer와 network::IocpAcceptor를 의존성 주입 방식으로 사용하여 관심사를 분리한다.
 /// Send/Recv 로직은 network::Client에 위임한다.
 /// </remarks>
 class EchoServer final {
@@ -58,8 +58,8 @@ public:
 	/// <param name="listenSocket">Listen 상태의 소켓. network::ISocket 구현체.</param>
 	/// <returns>성공 시 Ok, 실패 시 에러 코드</returns>
 	/// <remarks>
-	/// 1. network::IoCompletionPort 초기화
-	/// 2. network::Acceptor 초기화 (IOCP 핸들 주입)
+	/// 1. network::IocpIoMultiplexer 초기화
+	/// 2. network::IocpAcceptor 초기화 (IOCP 핸들 주입)
 	/// 3. CompletionHandler, AcceptCallback 콜백 등록
 	/// 4. Client 풀 사전 할당
 	/// 5. PostAccepts() 호출
@@ -78,7 +78,7 @@ private:
 	/// <param name="event">완료 이벤트 정보. network::CompletionEvent 참조.</param>
 	/// <remarks>
 	/// ioType에 따라 분기:
-	/// - Accept: network::Acceptor::OnAcceptComplete() 호출
+	/// - Accept: network::IocpAcceptor::OnAcceptComplete() 호출
 	/// - Recv: Echo 로직 (Client::PostSend 호출)
 	/// - Send: 로깅
 	/// </remarks>
@@ -120,11 +120,11 @@ private:
 	/// <summary>서버 네트워크 설정</summary>
 	network::NetworkCfg _config = network::NetworkCfg::WithDefaults();
 
-	/// <summary>IOCP 관리자. network::IoCompletionPort 인스턴스.</summary>
-	std::unique_ptr<network::IoCompletionPort> _iocp;
+	/// <summary>IOCP 관리자. network::IocpIoMultiplexer 인스턴스.</summary>
+	std::unique_ptr<network::IocpIoMultiplexer> _iocp;
 
-	/// <summary>비동기 Accept 관리자. network::Acceptor 인스턴스.</summary>
-	std::unique_ptr<network::Acceptor> _acceptor;
+	/// <summary>비동기 Accept 관리자. network::IocpAcceptor 인스턴스.</summary>
+	std::unique_ptr<network::IocpAcceptor> _acceptor;
 
 	/// <summary>클라이언트 연결 풀. 사전 할당하여 메모리 재사용.</summary>
 	std::vector<std::shared_ptr<network::Client>> _clientPool;

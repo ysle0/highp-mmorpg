@@ -16,7 +16,7 @@ class SocketOptionBuilder;
 
 /// <summary>
 /// Accept 완료 시 호출되는 콜백 함수 타입.
-/// Acceptor::SetAcceptCallback()으로 등록하며, AcceptContext를 인자로 받는다.
+/// IocpAcceptor::SetAcceptCallback()으로 등록하며, AcceptContext를 인자로 받는다.
 /// </summary>
 using AcceptCallback = std::function<void(AcceptContext&)>;
 
@@ -32,19 +32,19 @@ using AcceptCallback = std::function<void(AcceptContext&)>;
 /// 4. IOCP Worker에서 Accept 완료 시 OnAcceptComplete() 호출
 /// 5. Shutdown()으로 정리
 /// </remarks>
-class Acceptor final {
+class IocpAcceptor final {
 public:
-	/// <summary>Acceptor 작업 결과 타입</summary>
+	/// <summary>IocpAcceptor 작업 결과 타입</summary>
 	using Res = fn::Result<void, err::ENetworkError>;
 
 	/// <summary>
-	/// Acceptor 생성자.
+	/// IocpAcceptor 생성자.
 	/// </summary>
 	/// <param name="logger">로깅에 사용할 Logger 인스턴스</param>
 	/// <param name="socketOptionBuilder">소켓 옵션 설정을 위한 빌더 (선택적)</param>
 	/// <param name="preAllocCount">사전 할당할 Overlapped 개수. 기본값 10.</param>
 	/// <param name="onAfterAccept">Accept 완료 콜백 (선택적). RAII 원칙에 따라 생성 시 설정 권장.</param>
-	explicit Acceptor(
+	explicit IocpAcceptor(
 		std::shared_ptr<log::Logger> logger,
 		std::shared_ptr<SocketOptionBuilder> socketOptionBuilder = nullptr,
 		int preAllocCount = 10,
@@ -53,15 +53,15 @@ public:
 	/// <summary>
 	/// 소멸자. Shutdown()을 호출하여 리소스 정리.
 	/// </summary>
-	~Acceptor() noexcept;
+	~IocpAcceptor() noexcept;
 
-	Acceptor(const Acceptor&) = delete;
-	Acceptor& operator=(const Acceptor&) = delete;
-	Acceptor(Acceptor&&) = delete;
-	Acceptor& operator=(Acceptor&&) = delete;
+	IocpAcceptor(const IocpAcceptor&) = delete;
+	IocpAcceptor& operator=(const IocpAcceptor&) = delete;
+	IocpAcceptor(IocpAcceptor&&) = delete;
+	IocpAcceptor& operator=(IocpAcceptor&&) = delete;
 
 	/// <summary>
-	/// Acceptor를 초기화한다.
+	/// IocpAcceptor를 초기화한다.
 	/// Listen 소켓을 IOCP에 연결하고 AcceptEx 함수 포인터를 로드한다.
 	/// </summary>
 	/// <param name="listenSocket">Listen 상태의 소켓 핸들</param>
@@ -111,7 +111,7 @@ public:
 	void SetAcceptCallback(AcceptCallback callback);
 
 	/// <summary>
-	/// Acceptor를 종료하고 리소스를 정리한다.
+	/// IocpAcceptor를 종료하고 리소스를 정리한다.
 	/// </summary>
 	void Shutdown();
 

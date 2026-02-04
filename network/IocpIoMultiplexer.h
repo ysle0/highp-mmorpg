@@ -39,7 +39,7 @@ struct CompletionEvent {
 
 /// <summary>
 /// IOCP 완료 이벤트 처리 콜백 함수 타입.
-/// IoCompletionPort::SetCompletionHandler()로 등록한다.
+/// IocpIoMultiplexer::SetCompletionHandler()로 등록한다.
 /// </summary>
 /// <remark>
 /// CompletionEvent 는 sink argument 로 copy&move 는 호출측에서 결정
@@ -47,7 +47,7 @@ struct CompletionEvent {
 using CompletionHandler = std::function<void(CompletionEvent)>;
 
 /// <summary>
-/// Windows I/O Completion Port를 관리하는 클래스.
+/// Windows I/O Completion Port 기반 I/O 멀티플렉서.
 /// IOCP 커널 객체 생성, Worker 스레드 풀 관리, 소켓 연결을 담당한다.
 /// </summary>
 /// <remarks>
@@ -57,29 +57,29 @@ using CompletionHandler = std::function<void(CompletionEvent)>;
 /// 3. AssociateSocket()으로 소켓을 IOCP에 연결
 /// 4. Shutdown()으로 정리
 /// </remarks>
-class IoCompletionPort final {
+class IocpIoMultiplexer final {
 public:
 	/// <summary>IOCP 작업 결과 타입</summary>
 	using Res = fn::Result<void, err::ENetworkError>;
 
 	/// <summary>
-	/// IoCompletionPort 생성자.
+	/// IocpIoMultiplexer 생성자.
 	/// </summary>
 	/// <param name="logger">로깅에 사용할 Logger 인스턴스</param>
 	/// <param name="handler">완료 이벤트 처리 콜백 (선택적). RAII 원칙에 따라 생성 시 설정 권장.</param>
-	explicit IoCompletionPort(
+	explicit IocpIoMultiplexer(
 		std::shared_ptr<log::Logger> logger,
 		CompletionHandler handler = nullptr);
 
 	/// <summary>
 	/// 소멸자. Shutdown()을 호출하여 리소스 정리.
 	/// </summary>
-	~IoCompletionPort() noexcept;
+	~IocpIoMultiplexer() noexcept;
 
-	IoCompletionPort(const IoCompletionPort&) = delete;
-	IoCompletionPort& operator=(const IoCompletionPort&) = delete;
-	IoCompletionPort(IoCompletionPort&&) = delete;
-	IoCompletionPort& operator=(IoCompletionPort&&) = delete;
+	IocpIoMultiplexer(const IocpIoMultiplexer&) = delete;
+	IocpIoMultiplexer& operator=(const IocpIoMultiplexer&) = delete;
+	IocpIoMultiplexer(IocpIoMultiplexer&&) = delete;
+	IocpIoMultiplexer& operator=(IocpIoMultiplexer&&) = delete;
 
 	/// <summary>
 	/// IOCP를 초기화하고 Worker 스레드를 시작한다.
@@ -124,7 +124,13 @@ public:
 	/// </remarks>
 	Res PostCompletion(DWORD bytes, void* key, LPOVERLAPPED overlapped);
 
-	/// <summary>IOCP 커널 핸들을 반환한다. Acceptor::Initialize()에 전달용.</summary>
+	/// <summary>
+	/// IOCP 완료 이벤트 처리 콜백을 등록한다.
+	/// </summary>
+	/// <param name="handler">완료 이벤트 발생 시 호출될 콜백 함수</param>
+	void SetCompletionHandler(CompletionHandler handler);
+
+	/// <summary>IOCP 커널 핸들을 반환한다. IocpAcceptor::Initialize()에 전달용.</summary>
 	/// <returns>IOCP 핸들</returns>
 	HANDLE GetHandle() const noexcept { return _handle; }
 
@@ -139,8 +145,6 @@ private:
 	/// </summary>
 	/// <param name="st">스레드 중지 토큰 (std::jthread 제공)</param>
 	void WorkerLoop(std::stop_token st);
-
-	void AwakeGetQueuedCompletionStatus();
 
 private:
 	/// <summary>로거 인스턴스</summary>

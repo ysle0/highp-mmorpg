@@ -1,26 +1,24 @@
 #include "pch.h"
-#include "Acceptor.h"
-#include "SocketOptionBuilder.h"
+#include "IocpAcceptor.h"
+#include <Errors.hpp>
 
 namespace highp::network {
 
-Acceptor::Acceptor(
+IocpAcceptor::IocpAcceptor(
 	std::shared_ptr<log::Logger> logger,
-	std::shared_ptr<SocketOptionBuilder> socketOptionBuilder,
 	int preAllocCount,
 	AcceptCallback onAfterAccept)
-	: _logger(logger)
-	, _socketOptionBuilder(socketOptionBuilder)
+	: _logger(std::move(logger))
 	, _overlappedPool(preAllocCount)
 	, _acceptCallback(std::move(onAfterAccept))
 {
 }
 
-Acceptor::~Acceptor() {
+IocpAcceptor::~IocpAcceptor() {
 	Shutdown();
 }
 
-Acceptor::Res Acceptor::Initialize(SocketHandle listenSocket, HANDLE iocpHandle) {
+IocpAcceptor::Res IocpAcceptor::Initialize(SocketHandle listenSocket, HANDLE iocpHandle) {
 	_listenSocket = listenSocket;
 	_iocpHandle = iocpHandle;
 
@@ -53,11 +51,11 @@ Acceptor::Res Acceptor::Initialize(SocketHandle listenSocket, HANDLE iocpHandle)
 	// 2) macro GUARD(expr)
 	GUARD(LoadAcceptExFunctions());
 
-	_logger->Info("Acceptor initialized. listen socket associated with IOCP. pre-allocated overlappeds: {}", _overlappedPool.AvailableCount());
+	_logger->Info("IocpAcceptor initialized. listen socket associated with IOCP. pre-allocated overlappeds: {}", _overlappedPool.AvailableCount());
 	return Res::Ok();
 }
 
-Acceptor::Res Acceptor::LoadAcceptExFunctions() {
+IocpAcceptor::Res IocpAcceptor::LoadAcceptExFunctions() {
 	GUID guidAcceptEx = WSAID_ACCEPTEX;
 	GUID guidGetAcceptExSockAddrs = WSAID_GETACCEPTEXSOCKADDRS;
 	DWORD bytes = 0;
@@ -98,7 +96,7 @@ Acceptor::Res Acceptor::LoadAcceptExFunctions() {
 	return Res::Ok();
 }
 
-SocketHandle Acceptor::CreateAcceptSocket() {
+SocketHandle IocpAcceptor::CreateAcceptSocket() {
 	SocketHandle socket = WSASocketW(
 		AF_INET,
 		SOCK_STREAM,
@@ -110,16 +108,16 @@ SocketHandle Acceptor::CreateAcceptSocket() {
 	return socket;
 }
 
-AcceptOverlapped* Acceptor::AcquireOverlapped() {
+OverlappedExt* IocpAcceptor::AcquireOverlapped() {
 	return _overlappedPool.Acquire();
 }
 
-void Acceptor::ReleaseOverlapped(AcceptOverlapped* overlapped) {
+void IocpAcceptor::ReleaseOverlapped(OverlappedExt* overlapped) {
 	_overlappedPool.Release(overlapped);
 }
 
-Acceptor::Res Acceptor::PostAccept() {
-	auto* overlapped = AcquireOverlapped();
+IocpAcceptor::Res IocpAcceptor::PostAccept() {
+	OverlappedExt* overlapped = AcquireOverlapped();
 
 	SocketHandle acceptSocket = CreateAcceptSocket();
 	if (acceptSocket == InvalidSocket) {
@@ -136,11 +134,11 @@ Acceptor::Res Acceptor::PostAccept() {
 	constexpr DWORD addrLen = sizeof(SOCKADDR_IN) + 16;
 
 	// overlapped->overlapped이 첫 번째 멤버이므로
-	// SendOverlapped* 를 직접 LPOVERLAPPED로 캐스팅 가능
+	// OverlappedExt* 를 직접 LPOVERLAPPED로 캐스팅 가능
 	BOOL result = _fnAcceptEx(
 		_listenSocket,
 		acceptSocket,
-		overlapped->buf,
+		overlapped->sendBuffer,
 		0,
 		addrLen,
 		addrLen,
@@ -160,7 +158,7 @@ Acceptor::Res Acceptor::PostAccept() {
 	return Res::Ok();
 }
 
-Acceptor::Res Acceptor::PostAccepts(int count) {
+IocpAcceptor::Res IocpAcceptor::PostAccepts(int count) {
 	for (int i = 0; i < count; ++i) {
 		GUARD(PostAccept());
 	}
@@ -168,29 +166,24 @@ Acceptor::Res Acceptor::PostAccepts(int count) {
 	return Res::Ok();
 }
 
-Acceptor::Res Acceptor::OnAcceptComplete(AcceptOverlapped* overlapped, DWORD bytesTransferred) {
+IocpAcceptor::Res IocpAcceptor::OnAcceptComplete(OverlappedExt* overlapped, DWORD bytesTransferred) {
 	if (overlapped == nullptr || overlapped->ioType != EIoType::Accept) {
 		return Res::Err(err::ENetworkError::SocketAcceptFailed);
 	}
 
-	SocketHandle clientSocket = overlapped->clientSocket;
+	int result = setsockopt(
+		overlapped->clientSocket,
+		SOL_SOCKET,
+		SO_UPDATE_ACCEPT_CONTEXT,
+		reinterpret_cast<char*>(&_listenSocket),
+		sizeof(_listenSocket));
 
-	// After AcceptEx() - 소켓 컨텍스트 업데이트
-	if (!_socketOptionBuilder->SetUpdateAcceptContext(clientSocket, _listenSocket)) {
-		closesocket(clientSocket);
+	if (result == SOCKET_ERROR) {
+		_logger->Error("SO_UPDATE_ACCEPT_CONTEXT failed. error: {}", WSAGetLastError());
+		closesocket(overlapped->clientSocket);
 		ReleaseOverlapped(overlapped);
 		return Res::Err(err::ENetworkError::SocketAcceptFailed);
 	}
-
-	// On connected socket - 연결된 소켓 옵션 설정
-	_socketOptionBuilder->SetTcpNoDelay(clientSocket, true);
-
-	tcp_keepalive keepAlive = {
-		.onoff = 1,
-		.keepalivetime = 30000,
-		.keepaliveinterval = 5000
-	};
-	_socketOptionBuilder->SetKeepAlive(clientSocket, keepAlive);
 
 	SOCKADDR_IN* localAddr = nullptr;
 	SOCKADDR_IN* remoteAddr = nullptr;
@@ -199,7 +192,7 @@ Acceptor::Res Acceptor::OnAcceptComplete(AcceptOverlapped* overlapped, DWORD byt
 	constexpr DWORD addrLen = sizeof(SOCKADDR_IN) + 16;
 
 	_fnGetAcceptExSockAddrs(
-		overlapped->buf,
+		overlapped->sendBuffer,
 		0,
 		addrLen,
 		addrLen,
@@ -228,15 +221,15 @@ Acceptor::Res Acceptor::OnAcceptComplete(AcceptOverlapped* overlapped, DWORD byt
 	return Res::Ok();
 }
 
-void Acceptor::SetAcceptCallback(AcceptCallback callback) {
+void IocpAcceptor::SetAcceptCallback(AcceptCallback callback) {
 	_acceptCallback = std::move(callback);
 }
 
-void Acceptor::Shutdown() {
+void IocpAcceptor::Shutdown() {
 	_overlappedPool.Clear();
 	_fnAcceptEx = nullptr;
 	_fnGetAcceptExSockAddrs = nullptr;
-	_logger->Info("Acceptor shutdown complete.");
+	_logger->Info("IocpAcceptor shutdown complete.");
 }
 
 }

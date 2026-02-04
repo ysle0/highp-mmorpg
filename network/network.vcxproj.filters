@@ -89,13 +89,13 @@
     <ClInclude Include="OverlappedExt.h">
       <Filter>inc\client\windows</Filter>
     </ClInclude>
-    <ClInclude Include="IoCompletionPort.h">
+    <ClInclude Include="IocpIoMultiplexer.h">
       <Filter>inc\io\windows</Filter>
     </ClInclude>
     <ClInclude Include="AcceptContext.h">
       <Filter>inc\acceptor</Filter>
     </ClInclude>
-    <ClInclude Include="Acceptor.h">
+    <ClInclude Include="IocpAcceptor.h">
       <Filter>inc\acceptor</Filter>
     </ClInclude>
     <ClInclude Include="NetworkCfg.h">
@@ -117,10 +117,10 @@
     <ClCompile Include="Client.cpp">
       <Filter>src\client\windows</Filter>
     </ClCompile>
-    <ClCompile Include="IoCompletionPort.cpp">
+    <ClCompile Include="IocpIoMultiplexer.cpp">
       <Filter>src\io\windows</Filter>
     </ClCompile>
-    <ClCompile Include="Acceptor.cpp">
+    <ClCompile Include="IocpAcceptor.cpp">
       <Filter>src\acceptor</Filter>
     </ClCompile>
     <ClCompile Include="SocketHelper.cpp" />
