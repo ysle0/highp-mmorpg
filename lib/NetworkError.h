@@ -45,6 +45,8 @@ enum class ENetworkError {
 	SocketListenFailed,
 	/// <summary>accept() 호출 실패</summary>
 	SocketAcceptFailed,
+	/// <summary>connect() 호출 실패</summary>
+	SocketConnectFailed,
 	/// <summary>AcceptEx() 호출 실패</summary>
 	SocketPostAcceptFailed,
 
@@ -93,6 +95,7 @@ constexpr std::string_view ToString(ENetworkError e) {
 		case ENetworkError::SocketBindFailed: return "Bind failed.";
 		case ENetworkError::SocketListenFailed: return "Listen failed.";
 		case ENetworkError::SocketAcceptFailed: return "Accept failed.";
+		case ENetworkError::SocketConnectFailed: return "Connect failed.";
 		case ENetworkError::SocketPostAcceptFailed: return "Post accept failed.";
 
 		// IOCP 관련

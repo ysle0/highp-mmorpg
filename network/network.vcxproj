@@ -152,10 +152,13 @@
     <ClInclude Include="ServerLifecycle.h" />
     <ClInclude Include="OverlappedExt.h" />
     <ClInclude Include="NetworkUtil.hpp" />
+    <ClInclude Include="PacketStream.h" />
     <ClInclude Include="platform.h" />
     <ClInclude Include="SocketHelper.h" />
     <ClInclude Include="SocketOptionBuilder.h" />
+    <ClInclude Include="TcpClientSocket.h" />
     <ClInclude Include="WindowsAsyncSocket.h" />
+    <ClInclude Include="WsaSession.h" />
     <ClInclude Include="ISocket.h" />
     <ClInclude Include="NetworkCfg.h" />
     <ClInclude Include="NetworkTransport.hpp" />
@@ -167,10 +170,13 @@
     <ClCompile Include="AsyncSocket.cpp" />
     <ClCompile Include="Client.cpp" />
     <ClCompile Include="IocpIoMultiplexer.cpp" />
+    <ClCompile Include="PacketStream.cpp" />
     <ClCompile Include="ServerLifecycle.cpp" />
     <ClCompile Include="SocketHelper.cpp" />
     <ClCompile Include="SocketOptionBuilder.cpp" />
+    <ClCompile Include="TcpClientSocket.cpp" />
     <ClCompile Include="WindowsAsyncSocket.cpp" />
+    <ClCompile Include="WsaSession.cpp" />
     <ClCompile Include="network.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

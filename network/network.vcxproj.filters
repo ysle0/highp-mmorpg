@@ -113,6 +113,15 @@
     <ClInclude Include="SocketOptionBuilder.h">
       <Filter>inc\socket</Filter>
     </ClInclude>
+    <ClInclude Include="WsaSession.h">
+      <Filter>inc\client</Filter>
+    </ClInclude>
+    <ClInclude Include="TcpClientSocket.h">
+      <Filter>inc\client</Filter>
+    </ClInclude>
+    <ClInclude Include="PacketStream.h">
+      <Filter>inc\client</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="network.cpp" />
@@ -140,6 +149,15 @@
     </ClCompile>
     <ClCompile Include="SocketOptionBuilder.cpp">
       <Filter>src\socket</Filter>
+    </ClCompile>
+    <ClCompile Include="WsaSession.cpp">
+      <Filter>src\client</Filter>
+    </ClCompile>
+    <ClCompile Include="TcpClientSocket.cpp">
+      <Filter>src\client</Filter>
+    </ClCompile>
+    <ClCompile Include="PacketStream.cpp">
+      <Filter>src\client</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
