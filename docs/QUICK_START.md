@@ -74,7 +74,7 @@ highp-mmorpg/
 ├── network/               # IOCP async I/O library
 │   ├── IocpIoMultiplexer  # IOCP + worker threads
 │   ├── IocpAcceptor       # AcceptEx async accept
-│   ├── ServerCore         # Lifecycle management
+│   ├── ServerLifeCycle   # Lifecycle management
 │   └── Client             # Per-connection state
 ├── exec/echo/             # Echo server implementation
 │   ├── echo-server/       # Server executable
@@ -152,3 +152,4 @@ $env:SERVER_PORT = "9090"
 ---
 
 **See Full Documentation:** [INDEX.md](INDEX.md)
+

@@ -228,8 +228,8 @@ msbuild network/network.vcxproj /p:Configuration=Debug /p:Platform=x64
 **Output**: `x64\Debug\network.lib`
 
 **Key Components**:
-- `IoCompletionPort`: IOCP wrapper and worker thread management
-- `Acceptor`: AcceptEx-based async connection acceptance
+- `IocpIoMultiplexer`: IOCP wrapper and worker thread management
+- `IocpAcceptor`: AcceptEx-based async connection acceptance
 - `Client`: Per-connection state and I/O operations
 
 ### Echo Server (Executable)
@@ -1104,3 +1104,4 @@ msbuild highp-mmorpg.slnx /p:Configuration=Debug /p:Platform=x64 /m
 # Run client (new terminal)
 .\x64\Debug\echo-client.exe
 ```
+

@@ -35,7 +35,7 @@ Comprehensive visual reference for system architecture, data flow, and component
 ┌───────────────────────────┼──────────────────────────────────────┐
 │                      Network Layer                               │
 │         ┌─────────────────▼─────────────────┐                    │
-│         │       ServerCore                  │                    │
+│         │       ServerLifeCycle                  │                    │
 │         │   (Lifecycle Management)          │                    │
 │         └────┬──────────────────────┬───────┘                    │
 │              │                      │                            │
@@ -72,7 +72,7 @@ Comprehensive visual reference for system architecture, data flow, and component
 ```
 EchoServer (Application)
   │
-  ├─ owns unique_ptr<ServerCore>
+  ├─ owns unique_ptr<ServerLifeCycle>
   │    │
   │    ├─ owns unique_ptr<IocpIoMultiplexer>
   │    │    └─ owns vector<jthread> (worker threads)
@@ -96,7 +96,7 @@ EchoServer (Application)
 New Client Connection Flow:
 
 ┌────────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-│   Client   │────>│ IocpAcceptor │────>│   ServerCore │────>│ IServerHandler│
+│   Client   │────>│ IocpAcceptor │────>│   ServerLifeCycle │────>│ IServerHandler│
 │  (remote)  │     │  (AcceptEx)  │     │ (orchestrate)│     │ (EchoServer) │
 └────────────┘     └──────────────┘     └──────────────┘     └──────────────┘
       │                   │                     │                     │
@@ -154,14 +154,14 @@ New Client Connection Flow:
        │
        ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│ 6. ServerCore::OnCompletion()                                   │
+│ 6. ServerLifeCycle::OnCompletion()                                   │
 │    - Route by ioType (Accept, Recv, Send)                       │
 │    - Extract Client* from completionKey                         │
 └─────────────────────────────────────────────────────────────────┘
        │
        ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│ 7. ServerCore::HandleRecv()                                     │
+│ 7. ServerLifeCycle::HandleRecv()                                     │
 │    - Extract data from RecvOverlapped.buf                       │
 │    - Call IServerHandler::OnRecv(client, data)                  │
 └─────────────────────────────────────────────────────────────────┘
@@ -222,7 +222,7 @@ New Client Connection Flow:
                      ▼
          ┌────────────────────────┐
          │  CompletionHandler     │
-         │  ServerCore::OnCompletion()
+         │  ServerLifeCycle::OnCompletion()
          └────────────────────────┘
                      │
          ┌───────────┼───────────┐
@@ -296,7 +296,7 @@ while (!shutdownRequested) {
                   ▼
     ┌────────────────────────────────────────┐
     │  Invoke CompletionHandler              │
-    │  - ServerCore::OnCompletion(event)     │
+    │  - ServerLifeCycle::OnCompletion(event)     │
     └─────────────┬──────────────────────────┘
                   │
                   └────────────────────────────> (loop back)
@@ -323,7 +323,7 @@ while (!shutdownRequested) {
 ┌───────────────────────────┼─────────────────────────────────────┐
 │                    Network Layer                                │
 │  ┌────────────────────────▼──────────────────────────────┐      │
-│  │           ServerCore (Orchestrator)                   │      │
+│  │           ServerLifeCycle (Orchestrator)                   │      │
 │  │  - Route completions to handlers                      │      │
 │  │  - Manage client lifecycle                            │      │
 │  └────────────┬────────────────────┬─────────────────────┘      │
@@ -449,3 +449,4 @@ Total Memory for 10000 clients: ~50 MB
 ---
 
 **Last Updated:** 2026-02-05
+

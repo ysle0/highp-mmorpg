@@ -534,7 +534,7 @@ Res IocpAcceptor::OnAcceptComplete(AcceptOverlapped* overlapped, DWORD bytesTran
 
 ### ServerLifeCycle
 
-**Location**: `network/ServerCore.h`, `network/ServerCore.cpp`
+**Location**: `network/ServerLifecycle.h`, `network/ServerLifecycle.cpp`
 
 **Purpose**: Orchestrates all network components and manages server lifecycle. Acts as the bridge between low-level network operations and application business logic.
 
@@ -616,7 +616,7 @@ Res ServerLifeCycle::Start(std::shared_ptr<ISocket> listenSocket, const NetworkC
         return res;
     }
 
-    _logger->Info("ServerCore started on port {}.", _config.server.port);
+    _logger->Info("Server started on port {}.", _config.server.port);
     return Res::Ok();
 }
 ```
@@ -1580,7 +1580,7 @@ Res PostAccept() {
 ### Example 1: Complete Server Setup
 
 ```cpp
-#include "ServerLifeCycle.h"
+#include "ServerLifecycle.h"
 #include "IServerHandler.h"
 #include "WindowsAsyncSocket.h"
 #include "NetworkCfg.h"
@@ -2169,3 +2169,4 @@ echo-client.exe
 **Last Updated**: 2026-02-05
 **Version**: 1.0
 **Maintainer**: Network Layer Team
+

@@ -484,7 +484,7 @@ Stops accepting new connections and releases resources.
 High-level server lifecycle manager. Orchestrates IOCP, Acceptor, and client management.
 
 **Namespace:** `highp::network`
-**Header:** `network/ServerCore.h`
+**Header:** `network/ServerLifecycle.h`
 
 #### Constructor
 
@@ -1698,7 +1698,7 @@ if (sock == InvalidSocket) {
 ### Basic Echo Server
 
 ```cpp
-#include <network/ServerCore.h>
+#include <network/ServerLifecycle.h>
 #include <network/WindowsAsyncSocket.h>
 #include <Logger.hpp>
 #include <TextLogger.h>
@@ -1950,3 +1950,4 @@ auto InitChain() -> fn::Result<void, err::ENetworkError> {
 ---
 
 **End of API Reference**
+

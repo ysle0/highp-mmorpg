@@ -154,7 +154,7 @@ Quick reference for technical terms and acronyms used throughout the project.
 
 ## S
 
-**ServerCore (ServerLifeCycle)**
+**ServerLifeCycle**
 - High-level server lifecycle orchestrator
 - Manages IOCP, Acceptor, and client pool
 - Bridges network events to `IServerHandler` callbacks
@@ -224,3 +224,4 @@ Quick reference for technical terms and acronyms used throughout the project.
 ---
 
 **Last Updated:** 2026-02-05
+

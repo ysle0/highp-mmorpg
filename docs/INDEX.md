@@ -43,7 +43,7 @@
 
 | Component | Description | Documentation |
 |-----------|-------------|---------------|
-| **IocpIoMultiplexer** | IOCP handle management and worker thread pool | [Network Layer Guide](NETWORK_LAYER.md#iocpioMultiplexer) |
+| **IocpIoMultiplexer** | IOCP handle management and worker thread pool | [Network Layer Guide](NETWORK_LAYER.md#iocpiomultiplexer) |
 | **IocpAcceptor** | AcceptEx-based async connection acceptance | [Network Layer Guide](NETWORK_LAYER.md#iocpacceptor) |
 | **Client** | Per-connection state and I/O buffers | [Network Layer Guide](NETWORK_LAYER.md#client) |
 | **ServerLifeCycle** | Server lifecycle and common logic | [Network Layer Guide](NETWORK_LAYER.md#serverlifecycle) |
@@ -140,7 +140,7 @@ highp-mmorpg/
 ├── network/              # Network layer (IOCP, async I/O primitives)
 │   ├── IocpIoMultiplexer.h/cpp
 │   ├── IocpAcceptor.h/cpp
-│   ├── ServerCore.h/cpp
+│   ├── ServerLifecycle.h/cpp
 │   ├── Client.h/cpp
 │   ├── OverlappedExt.h
 │   ├── NetworkCfg.h      # Auto-generated runtime config
@@ -258,3 +258,4 @@ The following files are auto-generated and should not be manually edited:
 
 **Last Updated:** 2026-02-05
 **Maintained By:** Project Team
+

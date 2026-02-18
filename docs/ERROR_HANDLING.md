@@ -1303,7 +1303,7 @@ For each error code in `ENetworkError`, verify:
 ### Example 1: Full Initialization Sequence
 
 ```cpp
-// ServerLifeCycle.cpp - Complete startup with error handling
+// ServerLifecycle.cpp - Complete startup with error handling
 
 namespace highp::network {
 
@@ -1351,7 +1351,7 @@ ServerLifeCycle::Res ServerLifeCycle::Start(
         return Res::Err(ENetworkError::ThreadAcceptFailed);
     }
 
-    _logger->Info("ServerCore started on port {}.", _config.server.port);
+    _logger->Info("Server started on port {}.", _config.server.port);
     return Res::Ok();
 }
 
@@ -1544,7 +1544,7 @@ std::shared_ptr<ISocket> SocketHelper::MakeDefaultListener(
 ### Example 6: IOCP Completion Handler
 
 ```cpp
-// ServerLifeCycle.cpp - Complete IOCP event handling
+// ServerLifecycle.cpp - Complete IOCP event handling
 
 namespace highp::network {
 
@@ -1736,3 +1736,4 @@ For questions or clarifications, refer to:
 - `lib/NetworkError.h` - Error code definitions
 - `lib/Errors.hpp` - Error helper functions
 - `network/` - Real-world usage examples
+
