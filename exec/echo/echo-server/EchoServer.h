@@ -1,5 +1,5 @@
 #pragma once
-#include <ServerCore.h>
+#include <ServerLifecycle.h>
 #include <NetworkError.h>
 #include <ISocket.h>
 #include <NetworkCfg.h>
@@ -18,21 +18,12 @@ namespace highp::echo_srv {
 /// network::ServerCore를 멤버로 가지며, network::IServerHandler를 구현하여
 /// Echo 비즈니스 로직만 처리한다.
 /// </remarks>
-class EchoServer final : public network::IServerHandler {
-	/// <summary>EchoServer 작업 결과 타입</summary>
+class Server final : public network::IServerHandler {
+	/// <summary>Server 작업 결과 타입</summary>
 	using Res = highp::fn::Result<void, highp::err::ENetworkError>;
 
 public:
-	~EchoServer() noexcept;
-
-	/// <summary>
-	/// 기본 설정으로 EchoServer를 생성한다. network config 은 WithDefaults().
-	/// </summary>
-	/// <param name="logger">로깅에 사용할 Logger 인스턴스</param>
-	/// <param name="socketOptionBuilder">소켓 옵션 빌더 (선택적)</param>
-	explicit EchoServer(
-		std::shared_ptr<log::Logger> logger,
-		std::shared_ptr<network::SocketOptionBuilder> socketOptionBuilder = nullptr);
+	~Server() noexcept;
 
 	/// <summary>
 	/// 지정된 설정으로 EchoServer를 생성한다.
@@ -40,7 +31,7 @@ public:
 	/// <param name="logger">로깅에 사용할 Logger 인스턴스</param>
 	/// <param name="config">서버 네트워크 설정. network::NetworkCfg 참조.</param>
 	/// <param name="socketOptionBuilder">소켓 옵션 빌더 (선택적)</param>
-	EchoServer(
+	Server(
 		std::shared_ptr<log::Logger> logger,
 		network::NetworkCfg config,
 		std::shared_ptr<network::SocketOptionBuilder> socketOptionBuilder = nullptr);
@@ -68,16 +59,19 @@ private:
 	/// <summary>로거 인스턴스</summary>
 	std::shared_ptr<log::Logger> _logger;
 
+	/// <summary>
+	/// 현재 서버를 호스팅하는 소켓.
+	/// </summary>
 	std::shared_ptr<highp::network::ISocket> _listenSocket;
 
 	/// <summary>소켓 옵션 빌더</summary>
 	std::shared_ptr<network::SocketOptionBuilder> _socketOptionBuilder;
 
 	/// <summary>서버 네트워크 설정</summary>
-	network::NetworkCfg _config = network::NetworkCfg::WithDefaults();
+	network::NetworkCfg _config;
 
 	/// <summary>서버 코어. 공통 네트워크 로직 담당.</summary>
-	std::unique_ptr<network::ServerCore> _core;
+	std::unique_ptr<network::ServerLifeCycle> _core;
 };
 
 }

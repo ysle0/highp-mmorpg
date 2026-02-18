@@ -6,27 +6,22 @@
 #include <SocketOptionBuilder.h>
 #include <TextLogger.h>
 
-using namespace highp::echo_srv;
-using namespace highp::network;
-
-using Logger = highp::log::Logger;
-using TextLogger = highp::log::TextLogger;
+using namespace highp;
 
 int main() {
-	auto logger = Logger::Default<TextLogger>();
-	auto config = NetworkCfg::FromFile("config.runtime.toml");
-	auto transport{ NetworkTransport{ ETransport::TCP } };
+	auto logger = log::Logger::Default<log::TextLogger>();
+	auto config = network::NetworkCfg::FromFile("config.runtime.toml");
+	auto transport{ network::NetworkTransport{ network::ETransport::TCP } };
+	auto socketOptionBuilder = std::make_shared<network::SocketOptionBuilder>(logger);
 
-	auto socketOptionBuilder = std::make_shared<SocketOptionBuilder>(logger);
-
-	auto listenSocket = SocketHelper::MakeDefaultListener(
+	auto listenSocket = network::SocketHelper::MakeDefaultListener(
 		logger,
 		transport,
 		config,
 		socketOptionBuilder);
 
-	EchoServer es(logger, config, socketOptionBuilder);
-	if (auto res = es.Start(listenSocket); res.HasErr()) {
+	echo_srv::Server es(logger, config, socketOptionBuilder);
+	if (!es.Start(listenSocket)) {
 		logger->Error("Failed to start server.");
 		return -1;
 	}

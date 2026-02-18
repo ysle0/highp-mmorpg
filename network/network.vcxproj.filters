@@ -92,7 +92,7 @@
     <ClInclude Include="IocpIoMultiplexer.h">
       <Filter>inc\io\windows</Filter>
     </ClInclude>
-    <ClInclude Include="ServerCore.h">
+    <ClInclude Include="ServerLifecycle.h">
       <Filter>inc</Filter>
     </ClInclude>
     <ClInclude Include="AcceptContext.h">
@@ -105,6 +105,12 @@
       <Filter>inc\config</Filter>
     </ClInclude>
     <ClInclude Include="SocketHelper.h">
+      <Filter>inc\socket</Filter>
+    </ClInclude>
+    <ClInclude Include="IServerHandler.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="SocketOptionBuilder.h">
       <Filter>inc\socket</Filter>
     </ClInclude>
   </ItemGroup>
@@ -123,13 +129,18 @@
     <ClCompile Include="IocpIoMultiplexer.cpp">
       <Filter>src\io\windows</Filter>
     </ClCompile>
-    <ClCompile Include="ServerCore.cpp">
+    <ClCompile Include="ServerLifecycle.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="IocpAcceptor.cpp">
       <Filter>src\acceptor</Filter>
     </ClCompile>
-    <ClCompile Include="SocketHelper.cpp" />
+    <ClCompile Include="SocketHelper.cpp">
+      <Filter>src\socket</Filter>
+    </ClCompile>
+    <ClCompile Include="SocketOptionBuilder.cpp">
+      <Filter>src\socket</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="config.compile.toml" />

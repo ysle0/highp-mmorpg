@@ -139,7 +139,7 @@ private:
 	/// 풀에서 사용 가능한 AcceptOverlapped를 획득한다.
 	/// </summary>
 	/// <returns>사용 가능한 AcceptOverlapped 포인터. 풀이 비어있으면 nullptr.</returns>
-	AcceptOverlapped* AcquireOverlapped();
+	AcceptOverlapped* AcquireAcceptOverlapped();
 
 	/// <summary>
 	/// 사용 완료된 AcceptOverlapped를 풀에 반환한다.

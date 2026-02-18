@@ -6,44 +6,44 @@ namespace highp::echo_srv {
 using namespace highp::err;
 using namespace highp::log;
 
-EchoServer::~EchoServer() noexcept {
+Server::~Server() noexcept {
 	Stop();
-	WSACleanup();
 }
 
-EchoServer::EchoServer(std::shared_ptr<Logger> logger)
-	: _logger(logger)
-	, _config(network::NetworkCfg::WithDefaults()) {}
+Server::Server(
+	std::shared_ptr<log::Logger> logger,
+	network::NetworkCfg config,
+	std::shared_ptr<network::SocketOptionBuilder> socketOptionBuilder
+)
+	: _logger(logger),
+	_config(config),
+	_socketOptionBuilder(socketOptionBuilder) {
+	//
+}
 
-EchoServer::EchoServer(std::shared_ptr<Logger> logger, network::NetworkCfg config)
-	: _logger(logger)
-	, _config(config) {}
+Server::Res Server::Start(std::shared_ptr<highp::network::ISocket> asyncSocket) {
+	_core = std::make_unique<network::ServerLifeCycle>(_logger, _socketOptionBuilder, this);
 
-EchoServer::Res EchoServer::Start(std::shared_ptr<highp::network::ISocket> asyncSocket) {
-	_core = std::make_unique<network::ServerCore>(_logger, this);
+	GUARD(_core->Start(asyncSocket, _config));
 
-	if (auto res = _core->Start(asyncSocket, _config); res.HasErr()) {
-		return res;
-	}
-
-	_logger->Info("EchoServer started on port {}.", _config.server.port);
+	_logger->Info("Server started on port {}.", _config.server.port);
 	return Res::Ok();
 }
 
-void EchoServer::Stop() {
+void Server::Stop() {
 	if (_core) {
 		_core->Stop();
 		_core.reset();
 	}
 }
 
-void EchoServer::OnAccept(std::shared_ptr<network::Client> client) {
-	_logger->Info("[EchoServer] Client accepted: socket #{}", client->socket);
+void Server::OnAccept(std::shared_ptr<network::Client> client) {
+	_logger->Info("[Server::OnAccept] Client accepted: socket #{}", client->socket);
 }
 
-void EchoServer::OnRecv(std::shared_ptr<network::Client> client, std::span<const char> data) {
+void Server::OnRecv(std::shared_ptr<network::Client> client, std::span<const char> data) {
 	std::string_view recvData{ data.data(), data.size() };
-	_logger->Info("[EchoServer] Recv: socket #{}, data: {}, bytes: {}",
+	_logger->Info("[Server::OnRecv] Recv: socket #{}, data: {}, bytes: {}",
 		client->socket, recvData, data.size());
 
 	// Echo: 받은 데이터 그대로 전송
@@ -58,12 +58,12 @@ void EchoServer::OnRecv(std::shared_ptr<network::Client> client, std::span<const
 	}
 }
 
-void EchoServer::OnSend(std::shared_ptr<network::Client> client, size_t bytesTransferred) {
-	_logger->Info("[EchoServer] Send: socket #{}, bytes: {}", client->socket, bytesTransferred);
+void Server::OnSend(std::shared_ptr<network::Client> client, size_t bytesTransferred) {
+	_logger->Info("[Server::OnSend] Send: socket #{}, bytes: {}", client->socket, bytesTransferred);
 }
 
-void EchoServer::OnDisconnect(std::shared_ptr<network::Client> client) {
-	_logger->Info("[EchoServer] Client disconnected: socket #{}", client->socket);
+void Server::OnDisconnect(std::shared_ptr<network::Client> client) {
+	_logger->Info("[Server::OnDisconnect] Client disconnected: socket #{}", client->socket);
 }
 
 }

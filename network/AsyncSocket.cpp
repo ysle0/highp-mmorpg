@@ -2,7 +2,9 @@
 #include "AsyncSocket.h"
 
 namespace highp::network {
-AsyncSocket::AsyncSocket(std::shared_ptr<log::Logger> logger) : _logger{ logger } {}
+AsyncSocket::AsyncSocket(std::shared_ptr<log::Logger> logger)
+	: _socketHandle{ InvalidSocket }
+	, _logger{ logger } {}
 
 ISocket::Res AsyncSocket::Initialize() {
 	return Res::Ok();

@@ -1,14 +1,17 @@
 #include "pch.h"
 #include "IocpAcceptor.h"
-#include <Errors.hpp>
+#include "SocketOptionBuilder.h"
 
 namespace highp::network {
 
 IocpAcceptor::IocpAcceptor(
 	std::shared_ptr<log::Logger> logger,
+	std::shared_ptr<SocketOptionBuilder> socketOptionsBuilder,
 	int preAllocCount,
-	AcceptCallback onAfterAccept)
-	: _logger(std::move(logger))
+	AcceptCallback onAfterAccept
+)
+	: _logger(logger)
+	, _socketOptionBuilder(socketOptionsBuilder)
 	, _overlappedPool(preAllocCount)
 	, _acceptCallback(std::move(onAfterAccept))
 {
@@ -108,16 +111,16 @@ SocketHandle IocpAcceptor::CreateAcceptSocket() {
 	return socket;
 }
 
-OverlappedExt* IocpAcceptor::AcquireOverlapped() {
+AcceptOverlapped* IocpAcceptor::AcquireAcceptOverlapped() {
 	return _overlappedPool.Acquire();
 }
 
-void IocpAcceptor::ReleaseOverlapped(OverlappedExt* overlapped) {
+void IocpAcceptor::ReleaseOverlapped(AcceptOverlapped* overlapped) {
 	_overlappedPool.Release(overlapped);
 }
 
 IocpAcceptor::Res IocpAcceptor::PostAccept() {
-	OverlappedExt* overlapped = AcquireOverlapped();
+	auto* overlapped = AcquireAcceptOverlapped();
 
 	SocketHandle acceptSocket = CreateAcceptSocket();
 	if (acceptSocket == InvalidSocket) {
@@ -138,7 +141,7 @@ IocpAcceptor::Res IocpAcceptor::PostAccept() {
 	BOOL result = _fnAcceptEx(
 		_listenSocket,
 		acceptSocket,
-		overlapped->sendBuffer,
+		overlapped->buf,
 		0,
 		addrLen,
 		addrLen,
@@ -166,7 +169,7 @@ IocpAcceptor::Res IocpAcceptor::PostAccepts(int count) {
 	return Res::Ok();
 }
 
-IocpAcceptor::Res IocpAcceptor::OnAcceptComplete(OverlappedExt* overlapped, DWORD bytesTransferred) {
+IocpAcceptor::Res IocpAcceptor::OnAcceptComplete(AcceptOverlapped* overlapped, DWORD bytesTransferred) {
 	if (overlapped == nullptr || overlapped->ioType != EIoType::Accept) {
 		return Res::Err(err::ENetworkError::SocketAcceptFailed);
 	}
@@ -192,7 +195,7 @@ IocpAcceptor::Res IocpAcceptor::OnAcceptComplete(OverlappedExt* overlapped, DWOR
 	constexpr DWORD addrLen = sizeof(SOCKADDR_IN) + 16;
 
 	_fnGetAcceptExSockAddrs(
-		overlapped->sendBuffer,
+		overlapped->buf,
 		0,
 		addrLen,
 		addrLen,

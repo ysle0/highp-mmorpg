@@ -9,14 +9,20 @@ WindowsAsyncSocket::WindowsAsyncSocket(
 ) : AsyncSocket{ logger } {}
 
 WindowsAsyncSocket::~WindowsAsyncSocket() {
-	WSACleanup();
+	Cleanup();
 }
 
 WindowsAsyncSocket::Res WindowsAsyncSocket::Initialize() {
+	if (_wsaStarted) {
+		return Res::Ok();
+	}
+
 	WSADATA wsaData;
 	if (int res = WSAStartup(MAKEWORD(2, 2), &wsaData); res != 0) {
 		return err::LogErrorWSAWithResult<err::ENetworkError::WsaStartupFailed>(_logger);
 	}
+
+	_wsaStarted = true;
 	return Res::Ok();
 }
 
@@ -68,8 +74,15 @@ WindowsAsyncSocket::Res WindowsAsyncSocket::Listen(int backlog) {
 }
 
 WindowsAsyncSocket::Res WindowsAsyncSocket::Cleanup() {
-	int status = closesocket(_socketHandle);
-	status = WSACleanup();
+	if (_socketHandle != InvalidSocket) {
+		closesocket(_socketHandle);
+		_socketHandle = InvalidSocket;
+	}
+
+	if (_wsaStarted) {
+		WSACleanup();
+		_wsaStarted = false;
+	}
 
 	return Res::Ok();
 }

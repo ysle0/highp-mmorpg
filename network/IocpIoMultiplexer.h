@@ -132,11 +132,11 @@ public:
 
 	/// <summary>IOCP 커널 핸들을 반환한다. IocpAcceptor::Initialize()에 전달용.</summary>
 	/// <returns>IOCP 핸들</returns>
-	HANDLE GetHandle() const noexcept { return _handle; }
+	HANDLE GetHandle() const noexcept;
 
 	/// <summary>IOCP가 실행 중인지 확인한다.</summary>
 	/// <returns>실행 중이면 true</returns>
-	bool IsRunning() const noexcept { return _isRunning.load(); }
+	bool IsRunning() const noexcept;
 
 private:
 	/// <summary>

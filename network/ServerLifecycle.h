@@ -1,49 +1,29 @@
 #pragma once
 
-#include "platform.h"
 #include "IocpIoMultiplexer.h"
 #include "IocpAcceptor.h"
 #include "Client.h"
 #include "NetworkCfg.h"
+#include "IServerHandler.h"
 #include <Logger.hpp>
 #include <Result.hpp>
 #include <NetworkError.h>
-#include <functional>
 #include <memory>
-#include <span>
 #include <vector>
 
 namespace highp::network {
 
-/// <summary>
-/// 서버 이벤트 핸들러 인터페이스.
-/// 앱 레이어에서 구현하여 ServerCore에 주입한다.
-/// </summary>
-struct IServerHandler {
-	virtual ~IServerHandler() = default;
-
-	/// <summary>새 클라이언트 연결 시 호출</summary>
-	virtual void OnAccept(std::shared_ptr<Client> client) = 0;
-
-	/// <summary>데이터 수신 시 호출</summary>
-	virtual void OnRecv(std::shared_ptr<Client> client, std::span<const char> data) = 0;
-
-	/// <summary>데이터 송신 완료 시 호출</summary>
-	virtual void OnSend(std::shared_ptr<Client> client, size_t bytesTransferred) = 0;
-
-	/// <summary>클라이언트 연결 해제 시 호출</summary>
-	virtual void OnDisconnect(std::shared_ptr<Client> client) = 0;
-};
+class ISocket;
 
 /// <summary>
 /// IOCP 기반 서버 공통 로직을 담당하는 클래스.
 /// I/O 멀티플렉서, Acceptor, 클라이언트 관리 등을 캡슐화한다.
 /// </summary>
 /// <remarks>
-/// 앱 서버(EchoServer, ChatServer 등)는 ServerCore를 멤버로 가지고,
+/// 앱 서버(Server, ChatServer 등)는 ServerCore를 멤버로 가지고,
 /// IServerHandler를 구현하여 비즈니스 로직만 처리한다.
 /// </remarks>
-class ServerCore final {
+class ServerLifeCycle final {
 public:
 	using Res = fn::Result<void, err::ENetworkError>;
 
@@ -52,16 +32,17 @@ public:
 	/// </summary>
 	/// <param name="logger">로깅에 사용할 Logger 인스턴스</param>
 	/// <param name="handler">서버 이벤트 핸들러. 앱 레이어에서 구현.</param>
-	explicit ServerCore(
+	explicit ServerLifeCycle(
 		std::shared_ptr<log::Logger> logger,
+		std::shared_ptr<SocketOptionBuilder> socketOptionBuilder,
 		IServerHandler* handler);
 
-	~ServerCore() noexcept;
+	~ServerLifeCycle() noexcept;
 
-	ServerCore(const ServerCore&) = delete;
-	ServerCore& operator=(const ServerCore&) = delete;
-	ServerCore(ServerCore&&) = delete;
-	ServerCore& operator=(ServerCore&&) = delete;
+	ServerLifeCycle(const ServerLifeCycle&) = delete;
+	ServerLifeCycle& operator=(const ServerLifeCycle&) = delete;
+	ServerLifeCycle(ServerLifeCycle&&) = delete;
+	ServerLifeCycle& operator=(ServerLifeCycle&&) = delete;
 
 	/// <summary>
 	/// 서버를 시작한다.
@@ -84,10 +65,10 @@ public:
 	void CloseClient(std::shared_ptr<Client> client, bool force = true);
 
 	/// <summary>현재 연결된 클라이언트 수</summary>
-	size_t GetConnectedClientCount() const noexcept { return _connectedClientCount.load(); }
+	size_t GetConnectedClientCount() const noexcept;
 
 	/// <summary>서버가 실행 중인지 확인</summary>
-	bool IsRunning() const noexcept { return _iocp && _iocp->IsRunning(); }
+	bool IsRunning() const noexcept;
 
 private:
 	/// <summary>IOCP 완료 이벤트 핸들러</summary>
@@ -107,13 +88,14 @@ private:
 
 private:
 	std::shared_ptr<log::Logger> _logger;
+	std::shared_ptr<SocketOptionBuilder> _socketOptionBuilder;
 	IServerHandler* _handler = nullptr;
 
 	std::unique_ptr<IocpIoMultiplexer> _iocp;
 	std::unique_ptr<IocpAcceptor> _acceptor;
 
 	std::vector<std::shared_ptr<Client>> _clientPool;
-	std::atomic<size_t> _connectedClientCount{0};
+	std::atomic<size_t> _connectedClientCount{ 0 };
 
 	NetworkCfg _config;
 };

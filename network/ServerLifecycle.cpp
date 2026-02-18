@@ -1,46 +1,50 @@
 #include "pch.h"
-#include "ServerCore.h"
+#include "ServerLifecycle.h"
 #include "OverlappedExt.h"
 #include "Const.h"
-#include <Errors.hpp>
+#include "ISocket.h"
 
 namespace highp::network {
 
-ServerCore::ServerCore(
+ServerLifeCycle::ServerLifeCycle(
 	std::shared_ptr<log::Logger> logger,
-	IServerHandler* handler)
-	: _logger(std::move(logger))
-	, _handler(handler)
-{
-}
+	std::shared_ptr<SocketOptionBuilder> socketOptionBuilder,
+	IServerHandler* handler
+)
+	: _logger(logger)
+	, _socketOptionBuilder(socketOptionBuilder)
+	, _handler(handler) {}
 
-ServerCore::~ServerCore() noexcept {
+ServerLifeCycle::~ServerLifeCycle() noexcept {
 	Stop();
 }
 
-ServerCore::Res ServerCore::Start(std::shared_ptr<ISocket> listenSocket, const NetworkCfg& config) {
+ServerLifeCycle::Res ServerLifeCycle::Start(
+	std::shared_ptr<ISocket> listenSocket,
+	const NetworkCfg& config
+) {
 	_config = config;
 
 	// IOCP 초기화
 	_iocp = std::make_unique<IocpIoMultiplexer>(
 		_logger,
-		std::bind_front(&ServerCore::OnCompletion, this));
+		std::bind_front(&ServerLifeCycle::OnCompletion, this));
 
 	const auto workerCount = std::thread::hardware_concurrency() *
 		_config.thread.maxWorkerThreadMultiplier;
-	if (auto res = _iocp->Initialize(workerCount); res.HasErr()) {
-		return res;
-	}
+
+	GUARD(_iocp->Initialize(workerCount));
 
 	// Acceptor 초기화
 	_acceptor = std::make_unique<IocpAcceptor>(
 		_logger,
+		_socketOptionBuilder,
 		_config.server.backlog,
-		std::bind_front(&ServerCore::OnAcceptInternal, this));
+		std::bind_front(&ServerLifeCycle::OnAcceptInternal, this));
 
-	if (auto res = _acceptor->Initialize(listenSocket->GetSocketHandle(), _iocp->GetHandle()); res.HasErr()) {
+	GUARD_EFFECT(_acceptor->Initialize(listenSocket->GetSocketHandle(), _iocp->GetHandle()), [this]() {
 		return Res::Err(err::ENetworkError::IocpCreateFailed);
-	}
+	});
 
 	// Client 풀 사전 할당
 	_clientPool.reserve(_config.server.maxClients);
@@ -49,15 +53,15 @@ ServerCore::Res ServerCore::Start(std::shared_ptr<ISocket> listenSocket, const N
 	}
 
 	// Accept 요청 등록
-	if (auto res = _acceptor->PostAccepts(_config.server.backlog); res.HasErr()) {
+	GUARD_EFFECT(_acceptor->PostAccepts(_config.server.backlog), [this]() {
 		return Res::Err(err::ENetworkError::ThreadAcceptFailed);
-	}
+	});
 
 	_logger->Info("ServerCore started on port {}.", _config.server.port);
 	return Res::Ok();
 }
 
-void ServerCore::Stop() {
+void ServerLifeCycle::Stop() {
 	if (_acceptor) {
 		_acceptor->Shutdown();
 		_acceptor.reset();
@@ -72,39 +76,45 @@ void ServerCore::Stop() {
 	_connectedClientCount = 0;
 }
 
-void ServerCore::CloseClient(std::shared_ptr<Client> client, bool force) {
+void ServerLifeCycle::CloseClient(std::shared_ptr<Client> client, bool force) {
 	if (client && client->socket != INVALID_SOCKET) {
 		client->Close(force);
 		_connectedClientCount--;
 	}
 }
 
-void ServerCore::OnCompletion(CompletionEvent event) {
+size_t ServerLifeCycle::GetConnectedClientCount() const noexcept {
+	return _connectedClientCount.load();
+}
+
+bool ServerLifeCycle::IsRunning() const noexcept {
+	return _iocp && _iocp->IsRunning();
+}
+
+void ServerLifeCycle::OnCompletion(CompletionEvent event) {
 	switch (event.ioType) {
 		case EIoType::Accept:
-		{
-			auto* overlapped = reinterpret_cast<OverlappedExt*>(event.overlapped);
-			if (_acceptor) {
-				_acceptor->OnAcceptComplete(overlapped, event.bytesTransferred);
-			}
+		if (_acceptor) {
+			auto* overlapped = reinterpret_cast<AcceptOverlapped*>(event.overlapped);
+			_acceptor->OnAcceptComplete(overlapped, event.bytesTransferred);
 		}
 		break;
 
 		case EIoType::Recv:
-			HandleRecv(event);
-			break;
+		HandleRecv(event);
+		break;
 
 		case EIoType::Send:
-			HandleSend(event);
-			break;
+		HandleSend(event);
+		break;
 
 		default:
-			_logger->Error("Unknown IO type received.");
-			break;
+		_logger->Error("Unknown IO type received.");
+		break;
 	}
 }
 
-void ServerCore::OnAcceptInternal(AcceptContext& ctx) {
+void ServerLifeCycle::OnAcceptInternal(AcceptContext& ctx) {
 	auto client = FindAvailableClient();
 	if (!client) {
 		_logger->Error("Client pool full!");
@@ -128,7 +138,7 @@ void ServerCore::OnAcceptInternal(AcceptContext& ctx) {
 
 	_connectedClientCount++;
 
-	char clientIp[Const::Network::clientIpBufferSize]{ 0 };
+	char clientIp[Const::Buffer::clientIpBufferSize]{ 0 };
 	inet_ntop(AF_INET, &ctx.remoteAddr.sin_addr, clientIp, sizeof(clientIp));
 	_logger->Info("Client connected. socket: {}, ip: {}", client->socket, clientIp);
 
@@ -138,7 +148,7 @@ void ServerCore::OnAcceptInternal(AcceptContext& ctx) {
 	}
 }
 
-void ServerCore::HandleRecv(CompletionEvent& event) {
+void ServerLifeCycle::HandleRecv(CompletionEvent& event) {
 	auto* client = static_cast<Client*>(event.completionKey);
 	if (!client) return;
 
@@ -154,8 +164,8 @@ void ServerCore::HandleRecv(CompletionEvent& event) {
 		return;
 	}
 
-	auto* overlapped = reinterpret_cast<OverlappedExt*>(event.overlapped);
-	std::span<const char> data{ overlapped->recvBuffer, event.bytesTransferred };
+	auto* overlapped = reinterpret_cast<RecvOverlapped*>(event.overlapped);
+	std::span<const char> data{ overlapped->buf, event.bytesTransferred };
 
 	// 앱 레이어에 통지
 	if (_handler) {
@@ -163,7 +173,7 @@ void ServerCore::HandleRecv(CompletionEvent& event) {
 	}
 }
 
-void ServerCore::HandleSend(CompletionEvent& event) {
+void ServerLifeCycle::HandleSend(CompletionEvent& event) {
 	auto* client = static_cast<Client*>(event.completionKey);
 	if (!client) return;
 
@@ -175,11 +185,11 @@ void ServerCore::HandleSend(CompletionEvent& event) {
 	}
 }
 
-std::shared_ptr<Client> ServerCore::FindAvailableClient() {
+std::shared_ptr<Client> ServerLifeCycle::FindAvailableClient() {
 	auto found = std::find_if(_clientPool.begin(), _clientPool.end(),
 		[](const std::shared_ptr<Client>& c) {
-			return c->socket == INVALID_SOCKET;
-		});
+		return c->socket == INVALID_SOCKET;
+	});
 	if (found != _clientPool.end()) {
 		return *found;
 	}

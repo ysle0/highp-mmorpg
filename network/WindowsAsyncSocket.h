@@ -42,6 +42,9 @@ public:
 private:
 	/// <summary>바인딩된 소켓 주소 정보</summary>
 	SOCKADDR_IN _sockaddr;
+
+	/// <summary>이 인스턴스가 WSAStartup을 성공했는지 여부</summary>
+	bool _wsaStarted = false;
 };
 }
 

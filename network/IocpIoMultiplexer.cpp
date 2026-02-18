@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "IocpIoMultiplexer.h"
-#include "OverlappedExt.h"
 
 namespace highp::network {
 
@@ -8,9 +7,7 @@ IocpIoMultiplexer::IocpIoMultiplexer(
 	std::shared_ptr<log::Logger> logger,
 	CompletionHandler handler)
 	: _logger(std::move(logger))
-	, _completionHandler(std::move(handler))
-{
-}
+	, _completionHandler(std::move(handler)) {}
 
 IocpIoMultiplexer::~IocpIoMultiplexer() noexcept {
 	Shutdown();
@@ -91,6 +88,14 @@ void IocpIoMultiplexer::SetCompletionHandler(CompletionHandler handler) {
 	_completionHandler = std::move(handler);
 }
 
+HANDLE IocpIoMultiplexer::GetHandle() const noexcept {
+	return _handle;
+}
+
+bool IocpIoMultiplexer::IsRunning() const noexcept {
+	return _isRunning.load();
+}
+
 void IocpIoMultiplexer::WorkerLoop(std::stop_token st) {
 	while (!st.stop_requested() && _isRunning.load()) {
 		DWORD bytesTransferred = 0;
@@ -117,7 +122,7 @@ void IocpIoMultiplexer::WorkerLoop(std::stop_token st) {
 		};
 
 		if (overlapped != nullptr) {
-			auto* ext = reinterpret_cast<OverlappedExt*>(overlapped);
+			auto* ext = reinterpret_cast<OverlappedBase*>(overlapped);
 			event.ioType = ext->ioType;
 		}
 
