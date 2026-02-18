@@ -23,7 +23,9 @@ public:
 	/// EchoClient 생성자.
 	/// </summary>
 	/// <param name="logger">로깅에 사용할 Logger 인스턴스</param>
-	explicit EchoClient(std::shared_ptr<Logger> logger) : _logger(logger) {}
+	explicit EchoClient(std::shared_ptr<Logger> logger);
+
+	~EchoClient() noexcept;
 
 	/// <summary>
 	/// Echo 서버에 연결한다.
@@ -37,7 +39,7 @@ public:
 	/// 서버 연결을 종료한다.
 	/// </summary>
 	/// <returns>종료 성공 시 true</returns>
-	bool Disconnect();
+	[[nodiscard]] bool Disconnect();
 
 	/// <summary>
 	/// 서버에 메시지를 전송한다.

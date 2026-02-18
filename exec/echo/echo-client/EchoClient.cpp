@@ -2,22 +2,41 @@
 #include "EchoClient.h"
 
 namespace highp::echo_cli {
+
+EchoClient::EchoClient(std::shared_ptr<Logger> logger)
+	: _logger(logger) {
+	//
+}
+
+EchoClient::~EchoClient() noexcept {
+	if (_serverSocket != INVALID_SOCKET) {
+		closesocket(_serverSocket);
+		_serverSocket = INVALID_SOCKET;
+	}
+
+}
+
 bool EchoClient::Connect(const char* ipAddress, unsigned short port) {
+	_serverSocket = INVALID_SOCKET;
+
 	WSADATA wsaData;
+	// 1. WSA Startup.
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
 		_logger->Error("WSAStartup failed. error: {}", WSAGetLastError());
 		return false;
 	}
 
+	// 2. Create Echo Client Socket.
+	// - TCP
 	SOCKET serverSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (serverSocket == INVALID_SOCKET) {
 		_logger->Error("Create socket failed. error: {}", WSAGetLastError());
 		WSACleanup();
 		return false;
 	}
-
 	_logger->Info("Connecting to {}:{}", ipAddress, port);
 
+	// 3. Connect with Internet Address.
 	SOCKADDR_IN addr{
 		.sin_family = AF_INET,
 		.sin_port = htons(port),
@@ -31,6 +50,7 @@ bool EchoClient::Connect(const char* ipAddress, unsigned short port) {
 		return false;
 	}
 
+	// 4. Now the socket is connected to the server.
 	_logger->Info("Connected to {}:{}", ipAddress, port);
 	_serverSocket = serverSocket;
 	return true;
