@@ -14,7 +14,12 @@
       "Bash(where.exe:*)",
       "Bash(powershell -ExecutionPolicy Bypass -File gen_flatbuffers.ps1)",
       "Bash(bash:*)",
-      "Bash(powershell -ExecutionPolicy Bypass -File scripts/gen_flatbuffers.ps1:*)"
+      "Bash(powershell -ExecutionPolicy Bypass -File scripts/gen_flatbuffers.ps1:*)",
+      "Bash(dir:*)",
+      "Bash(findstr:*)",
+      "Bash(Get-ChildItem -Recurse -Include *.cpp,*.h,*.hpp,*.toml,*.md -File)",
+      "Bash(Where-Object {$_FullName -notlike \"*\\\\.git\\\\*\"})",
+      "Bash(Select-Object -ExpandProperty FullName)"
     ]
   }
 }

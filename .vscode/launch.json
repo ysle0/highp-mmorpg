@@ -1,0 +1,17 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug EchoServer",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/EchoServer.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/exec/echo/echo-server",
+            "environment": [],
+            "console": "externalTerminal",
+            "preLaunchTask": "Build EchoServer"
+        }
+    ]
+}

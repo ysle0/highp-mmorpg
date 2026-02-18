@@ -67,10 +67,12 @@ Client sends → GQCS wakes worker → OnRecv → PostSend(echo) → PostRecv()
 ## Configuration System
 
 **Compile-time** (`network/config.compile.toml` → `network/Const.h`):
+
 - Buffer sizes (recv: 4096, send: 1024)
 - Run `parse_compile_cfg.ps1` after changes
 
 **Runtime** (`echo/echo-server/config.runtime.toml` → `network/NetworkCfg.h`):
+
 - Server port, max clients, thread counts
 - Supports env var overrides: `SERVER_PORT`, `SERVER_MAX_CLIENTS`
 - Run `parse_network_cfg.ps1` after changes

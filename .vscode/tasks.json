@@ -1,0 +1,60 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Create PCH",
+            "type": "shell",
+            "command": "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.42.34433/bin/Hostx64/x64/cl.exe",
+            "args": [
+                "/Zi",
+                "/EHsc",
+                "/nologo",
+                "/std:c++20",
+                "/I", "${workspaceFolder}/network",
+                "/I", "${workspaceFolder}/lib",
+                "/c", "${workspaceFolder}/network/pch.cpp",
+                "/Yc\"pch.h\"",
+                "/Fp:\"${workspaceFolder}/bin/pch.pch\"",
+                "/Fo:\"${workspaceFolder}/bin/pch.obj\""
+            ],
+            "problemMatcher": [
+                "$msCompile"
+            ]
+        },
+        {
+            "label": "Build EchoServer",
+            "type": "shell",
+            "command": "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.42.34433/bin/Hostx64/x64/cl.exe",
+            "dependsOn": [
+                "Create PCH"
+            ],
+            "args": [
+                "/Zi",
+                "/EHsc",
+                "/nologo",
+                "/std:c++20",
+                "/I", "${workspaceFolder}/network",
+                "/I", "${workspaceFolder}/lib",
+                "/I", "${workspaceFolder}/exec/echo/echo-server",
+                "/Yu\"pch.h\"",
+                "/Fp:\"${workspaceFolder}/bin/pch.pch\"",
+                "/FI\"pch.h\"",
+                "${workspaceFolder}/exec/echo/echo-server/*.cpp",
+                "${workspaceFolder}/network/*.cpp",
+                "${workspaceFolder}/bin/pch.obj",
+                "/Fe:", "${workspaceFolder}/bin/EchoServer.exe",
+                "/Fo:", "${workspaceFolder}/bin/",
+                "/link",
+                "ws2_32.lib",
+                "mswsock.lib"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [
+                "$msCompile"
+            ]
+        }
+    ]
+}
