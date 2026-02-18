@@ -39,6 +39,16 @@ Use Developer PowerShell/Command Prompt for VS 2022.
 - Record test commands and observed behavior in PRs.
 - If you add automated tests, place them with the relevant module and document execution in `docs/BUILD_AND_TEST.md`.
 
+## Documentation References
+- `docs/INDEX.md`: documentation entry point and navigation map.
+- `docs/QUICK_START.md`: fastest local setup and run sequence.
+- `docs/BUILD_AND_TEST.md`: build matrix, troubleshooting, and test workflow.
+- `docs/ARCHITECTURE.md`: layer boundaries, ownership model, and data flow.
+- `docs/NETWORK_LAYER.md`: IOCP internals (`IocpIoMultiplexer`, `IocpAcceptor`, `ServerLifeCycle`).
+- `docs/CONFIGURATION.md`: compile-time/runtime config and regeneration behavior.
+- `docs/CODE_STYLE.md`: naming, formatting, and error-handling conventions.
+- `docs/PROTOCOL.md`: FlatBuffers schema and message contract details.
+
 ## Commit & Pull Request Guidelines
 - Match existing history style: `feat(scope): ...`, `refactor(scope): ...`, `chore(scope): ...`, `docs: ...`, `cfg: ...`, `script: ...`.
 - Keep commits small and single-purpose.

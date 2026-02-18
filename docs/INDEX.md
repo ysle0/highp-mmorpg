@@ -18,6 +18,7 @@
 
 ### Core Documentation
 - **[Quick Start Guide](QUICK_START.md)** - Get running in under 5 minutes ⚡
+- **[Repository Guidelines](../AGENTS.md)** - Contributor workflow, coding/testing expectations, and PR conventions
 - **[Architecture Overview](ARCHITECTURE.md)** - System architecture, design patterns, and layer separation
 - **[API Reference](API_REFERENCE.md)** - Complete API documentation for all classes and functions
 - **[Network Layer Guide](NETWORK_LAYER.md)** - IOCP, async I/O, and network primitives
@@ -53,7 +54,7 @@
 
 | Topic | Documentation |
 |-------|---------------|
-| **Getting Started** | [README.md](../README.md), [CLAUDE.md](../CLAUDE.md) |
+| **Getting Started** | [README.md](../README.md), [AGENTS.md](../AGENTS.md), [CLAUDE.md](../CLAUDE.md) |
 | **IOCP Concepts** | [IOCP Echo Server Architecture](IOCP_EchoServer_Architecture.md) |
 | **Async I/O Flow** | [Echo Server Sequence Diagrams](EchoServer_Sequence_diagram.md) |
 | **Protocol Design** | [Protocol Specification](PROTOCOL.md) |
@@ -251,11 +252,12 @@ The following files are auto-generated and should not be manually edited:
 - [FlatBuffers Documentation](https://google.github.io/flatbuffers/)
 
 ### Internal References
+- [AGENTS.md](../AGENTS.md) - Repository contributor guide
 - [CLAUDE.md](../CLAUDE.md) - Claude Code guidance
 - [README.md](../README.md) - Project overview
 
 ---
 
-**Last Updated:** 2026-02-05
+**Last Updated:** 2026-02-18
 **Maintained By:** Project Team
 
