@@ -113,7 +113,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)lib;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)lib;$(SolutionDir)protocol;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -149,6 +149,7 @@
     <ClInclude Include="EIoType.h" />
     <ClInclude Include="IocpIoMultiplexer.h" />
     <ClInclude Include="IServerHandler.h" />
+    <ClInclude Include="PacketServerHandler.h" />
     <ClInclude Include="ServerLifecycle.h" />
     <ClInclude Include="OverlappedExt.h" />
     <ClInclude Include="NetworkUtil.hpp" />
@@ -170,6 +171,7 @@
     <ClCompile Include="AsyncSocket.cpp" />
     <ClCompile Include="Client.cpp" />
     <ClCompile Include="IocpIoMultiplexer.cpp" />
+    <ClCompile Include="PacketServerHandler.cpp" />
     <ClCompile Include="PacketStream.cpp" />
     <ClCompile Include="ServerLifecycle.cpp" />
     <ClCompile Include="SocketHelper.cpp" />
@@ -188,6 +190,9 @@
   <ItemGroup>
     <ProjectReference Include="..\lib\lib.vcxproj">
       <Project>{823faac2-5c85-4820-900b-ea98f10c08b4}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\protocol\protocol.vcxproj">
+      <Project>{d23bc128-6149-4a73-afa1-6047f35449e7}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

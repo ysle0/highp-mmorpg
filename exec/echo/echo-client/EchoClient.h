@@ -5,12 +5,13 @@
 #include <TcpClientSocket.h>
 #include <WsaSession.h>
 
+using namespace highp;
+
 // Forward declaration
 namespace highp::log {
 class Logger;
 }
 
-namespace highp::echo_cli {
 using highp::log::Logger;
 
 /// <summary>
@@ -60,4 +61,3 @@ private:
 	/// <summary>패킷 프레이밍 래퍼</summary>
 	std::unique_ptr<network::PacketStream> _packetStream;
 };
-}

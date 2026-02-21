@@ -4,11 +4,11 @@
 #include <ISocket.h>
 #include <NetworkCfg.h>
 
+using namespace highp;
+
 namespace highp::log {
 class Logger;
 }
-
-namespace highp::echo_srv {
 
 /// <summary>
 /// IOCP 기반 비동기 Echo 서버.
@@ -31,7 +31,7 @@ public:
 	/// <param name="logger">로깅에 사용할 Logger 인스턴스</param>
 	/// <param name="config">서버 네트워크 설정. network::NetworkCfg 참조.</param>
 	/// <param name="socketOptionBuilder">소켓 옵션 빌더 (선택적)</param>
-	Server(
+	explicit Server(
 		std::shared_ptr<log::Logger> logger,
 		network::NetworkCfg config,
 		std::shared_ptr<network::SocketOptionBuilder> socketOptionBuilder = nullptr);
@@ -74,4 +74,3 @@ private:
 	std::unique_ptr<network::ServerLifeCycle> _core;
 };
 
-}

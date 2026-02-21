@@ -4,8 +4,6 @@
 #include <vector>
 #include "EchoClient.h"
 
-namespace highp::echo_cli {
-
 EchoClient::EchoClient(std::shared_ptr<Logger> logger)
 	: _logger(logger) {
 	//
@@ -87,5 +85,4 @@ void EchoClient::Send(std::string_view message) {
 		recvBuffer.size()
 	};
 	_logger->Info("Received: {}", recvData);
-}
 }

@@ -2,10 +2,6 @@
 #include <Errors.hpp>
 #include "EchoServer.h"
 
-namespace highp::echo_srv {
-using namespace highp::err;
-using namespace highp::log;
-
 Server::~Server() noexcept {
 	Stop();
 }
@@ -64,6 +60,4 @@ void Server::OnSend(std::shared_ptr<network::Client> client, size_t bytesTransfe
 
 void Server::OnDisconnect(std::shared_ptr<network::Client> client) {
 	_logger->Info("[Server::OnDisconnect] Client disconnected: socket #{}", client->socket);
-}
-
 }
