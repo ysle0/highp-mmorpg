@@ -113,7 +113,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)lib;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)lib;$(SolutionDir)protocol;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -149,13 +149,17 @@
     <ClInclude Include="EIoType.h" />
     <ClInclude Include="IocpIoMultiplexer.h" />
     <ClInclude Include="IServerHandler.h" />
+    <ClInclude Include="PacketServerHandler.h" />
     <ClInclude Include="ServerLifecycle.h" />
     <ClInclude Include="OverlappedExt.h" />
     <ClInclude Include="NetworkUtil.hpp" />
+    <ClInclude Include="PacketStream.h" />
     <ClInclude Include="platform.h" />
     <ClInclude Include="SocketHelper.h" />
     <ClInclude Include="SocketOptionBuilder.h" />
+    <ClInclude Include="TcpClientSocket.h" />
     <ClInclude Include="WindowsAsyncSocket.h" />
+    <ClInclude Include="WsaSession.h" />
     <ClInclude Include="ISocket.h" />
     <ClInclude Include="NetworkCfg.h" />
     <ClInclude Include="NetworkTransport.hpp" />
@@ -167,10 +171,14 @@
     <ClCompile Include="AsyncSocket.cpp" />
     <ClCompile Include="Client.cpp" />
     <ClCompile Include="IocpIoMultiplexer.cpp" />
+    <ClCompile Include="PacketServerHandler.cpp" />
+    <ClCompile Include="PacketStream.cpp" />
     <ClCompile Include="ServerLifecycle.cpp" />
     <ClCompile Include="SocketHelper.cpp" />
     <ClCompile Include="SocketOptionBuilder.cpp" />
+    <ClCompile Include="TcpClientSocket.cpp" />
     <ClCompile Include="WindowsAsyncSocket.cpp" />
+    <ClCompile Include="WsaSession.cpp" />
     <ClCompile Include="network.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -182,6 +190,9 @@
   <ItemGroup>
     <ProjectReference Include="..\lib\lib.vcxproj">
       <Project>{823faac2-5c85-4820-900b-ea98f10c08b4}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\protocol\protocol.vcxproj">
+      <Project>{d23bc128-6149-4a73-afa1-6047f35449e7}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

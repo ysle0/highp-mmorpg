@@ -1,7 +1,8 @@
 #include <Logger.hpp>
+#include <span>
+#include <utility>
+#include <vector>
 #include "EchoClient.h"
-
-namespace highp::echo_cli {
 
 EchoClient::EchoClient(std::shared_ptr<Logger> logger)
 	: _logger(logger) {
@@ -9,87 +10,79 @@ EchoClient::EchoClient(std::shared_ptr<Logger> logger)
 }
 
 EchoClient::~EchoClient() noexcept {
-	if (_serverSocket != INVALID_SOCKET) {
-		closesocket(_serverSocket);
-		_serverSocket = INVALID_SOCKET;
-	}
-
+	Disconnect();
 }
 
 bool EchoClient::Connect(const char* ipAddress, unsigned short port) {
-	_serverSocket = INVALID_SOCKET;
+	Disconnect();
 
-	WSADATA wsaData;
-	// 1. WSA Startup.
-	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
-		_logger->Error("WSAStartup failed. error: {}", WSAGetLastError());
+	auto sessionRes = network::WsaSession::Create(_logger);
+	if (sessionRes.HasErr()) {
+		_logger->Error("Failed to initialize WSA session.");
 		return false;
 	}
 
-	// 2. Create Echo Client Socket.
-	// - TCP
-	SOCKET serverSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (serverSocket == INVALID_SOCKET) {
-		_logger->Error("Create socket failed. error: {}", WSAGetLastError());
-		WSACleanup();
-		return false;
-	}
 	_logger->Info("Connecting to {}:{}", ipAddress, port);
 
-	// 3. Connect with Internet Address.
-	SOCKADDR_IN addr{
-		.sin_family = AF_INET,
-		.sin_port = htons(port),
-	};
-	addr.sin_addr.s_addr = inet_addr(ipAddress);
-
-	if (connect(serverSocket, (SOCKADDR*)&addr, sizeof(SOCKADDR_IN)) == SOCKET_ERROR) {
-		_logger->Error("Connect failed. error: {}", WSAGetLastError());
-		closesocket(serverSocket);
-		WSACleanup();
+	auto wsaSession = sessionRes.Data();
+	auto socket = std::make_unique<network::TcpClientSocket>(_logger, wsaSession);
+	if (auto res = socket->Connect(ipAddress, port); res.HasErr()) {
+		_logger->Error("Connect failed.");
 		return false;
 	}
 
-	// 4. Now the socket is connected to the server.
+	_wsaSession = std::move(wsaSession);
+	_tcpClientSocket = std::move(socket);
+	_packetStream = std::make_unique<network::PacketStream>(*_tcpClientSocket);
+
 	_logger->Info("Connected to {}:{}", ipAddress, port);
-	_serverSocket = serverSocket;
 	return true;
 }
 
 bool EchoClient::Disconnect() {
-	if (_serverSocket == INVALID_SOCKET) {
+	if (!_tcpClientSocket) {
 		return false;
 	}
 
-	closesocket(_serverSocket);
-	_serverSocket = INVALID_SOCKET;
-	WSACleanup();
+	_packetStream.reset();
+	_tcpClientSocket->Close();
+	_tcpClientSocket.reset();
+	_wsaSession.reset();
+
 	_logger->Info("Disconnected from server.");
 	return true;
 }
 
 void EchoClient::Send(std::string_view message) {
-	if (_serverSocket == INVALID_SOCKET) {
+	if (!_tcpClientSocket || !_packetStream || !_tcpClientSocket->IsConnected()) {
 		_logger->Error("Not connected to server.");
 		return;
 	}
 
-	const int sendBytes = send(_serverSocket, message.data(), static_cast<int>(message.size()), 0);
-	if (sendBytes == SOCKET_ERROR) {
-		_logger->Error("Send failed. error: {}", WSAGetLastError());
+	auto msgSpan = std::span{
+		reinterpret_cast<const uint8_t*>(message.data()),
+		message.size()
+	};
+	if (!_packetStream->SendFrame(msgSpan)) {
+		_logger->Error("Send failed.");
 		return;
 	}
 	_logger->Info("Sent: {}", message);
 
-	char recvBuf[4096]{ 0, };
-	const int recvBytes = recv(_serverSocket, recvBuf, sizeof(recvBuf) - 1, 0);
-	if (recvBytes > 0) {
-		recvBuf[recvBytes] = '\0';
-		_logger->Info("Received: {}", std::string_view(recvBuf, recvBytes));
-	} else if (recvBytes == 0) {
-		_logger->Info("Connection closed by server.");
-	} else {
-		_logger->Error("Recv failed. error: {}", WSAGetLastError());
+	std::vector<uint8_t> recvBuffer;
+	if (!_packetStream->RecvFrame(recvBuffer)) {
+		_logger->Error("Recv failed.");
+		return;
 	}
-}
+
+	if (recvBuffer.empty()) {
+		_logger->Info("Received: ");
+		return;
+	}
+
+	std::string_view recvData{
+		reinterpret_cast<const char*>(recvBuffer.data()),
+		recvBuffer.size()
+	};
+	_logger->Info("Received: {}", recvData);
 }

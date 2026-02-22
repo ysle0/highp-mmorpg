@@ -1,16 +1,17 @@
 #pragma once
-#define _WINSOCK_DEPRECATED_NO_WARNINGS
-#pragma comment(lib, "ws2_32.lib")
 #include <memory>
 #include <string_view>
-#include <WinSock2.h>
+#include <PacketStream.h>
+#include <TcpClientSocket.h>
+#include <WsaSession.h>
+
+using namespace highp;
 
 // Forward declaration
 namespace highp::log {
 class Logger;
 }
 
-namespace highp::echo_cli {
 using highp::log::Logger;
 
 /// <summary>
@@ -51,7 +52,12 @@ private:
 	/// <summary>로거 인스턴스</summary>
 	std::shared_ptr<Logger> _logger;
 
-	/// <summary>서버 연결 소켓</summary>
-	SOCKET _serverSocket = INVALID_SOCKET;
+	/// <summary>Winsock 세션 핸들러</summary>
+	std::shared_ptr<network::WsaSession> _wsaSession;
+
+	/// <summary>서버 연결 소켓 래퍼</summary>
+	std::unique_ptr<network::TcpClientSocket> _tcpClientSocket;
+
+	/// <summary>패킷 프레이밍 래퍼</summary>
+	std::unique_ptr<network::PacketStream> _packetStream;
 };
-}

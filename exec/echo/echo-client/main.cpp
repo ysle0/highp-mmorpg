@@ -6,12 +6,10 @@
 
 using namespace std::chrono_literals;
 
-using highp::log::Logger;
-using highp::log::TextLogger;
-using highp::echo_cli::EchoClient;
+using namespace highp;
 
 int main() {
-	auto logger = Logger::Default<TextLogger>();
+	auto logger = log::Logger::Default<log::TextLogger>();
 	logger->Info("hello, echo clientSocket {}!", 1);
 
 	EchoClient ec(logger);
