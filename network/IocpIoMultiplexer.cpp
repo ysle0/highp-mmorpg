@@ -1,5 +1,8 @@
 #include "pch.h"
 #include "IocpIoMultiplexer.h"
+#include <chrono>
+
+using namespace std::chrono_literals;
 
 namespace highp::network {
     IocpIoMultiplexer::IocpIoMultiplexer(
@@ -92,6 +95,22 @@ namespace highp::network {
                 INFINITE);
             if (completionKey == 0 && overlapped == nullptr) {
                 break;
+            }
+
+            if (ok == FALSE) {
+                const DWORD err = GetLastError();
+                if (bool isIoPendingCanceled = err == ERROR_OPERATION_ABORTED) {
+                    constexpr auto workerShutdownGracePeriodMs = std::chrono::milliseconds(
+                        Const::Io::workerIoPendingCancelGracePeriodMs);
+
+                    _logger->Info(
+                        "[IocpIoMultiplexer::WorkerLoop] GetQueuedCompletionStatus canceled. I/O pending canceled by CancelIoEx().. exit WorkerLoop In {}ms",
+                        workerShutdownGracePeriodMs);
+
+                    std::this_thread::sleep_for(workerShutdownGracePeriodMs);
+
+                    break;
+                }
             }
 
             CompletionEvent event{

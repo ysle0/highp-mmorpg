@@ -21,6 +21,7 @@
       "Bash(Where-Object {$_FullName -notlike \"*\\\\.git\\\\*\"})",
       "Bash(Select-Object -ExpandProperty FullName)",
       "Bash(cd:*)"
+      "Bash(powershell:*)"
     ]
   }
 }
