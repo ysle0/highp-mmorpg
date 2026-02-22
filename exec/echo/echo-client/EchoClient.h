@@ -1,9 +1,9 @@
 #pragma once
 #include <memory>
 #include <string_view>
-#include <PacketStream.h>
-#include <TcpClientSocket.h>
-#include <WsaSession.h>
+#include <client/PacketStream.h>
+#include <client/TcpClientSocket.h>
+#include <client/WsaSession.h>
 
 using namespace highp;
 

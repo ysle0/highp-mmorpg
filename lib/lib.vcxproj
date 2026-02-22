@@ -79,6 +79,7 @@
             <LanguageStandard>stdcpp20</LanguageStandard>
             <PrecompiledHeader>Use</PrecompiledHeader>
             <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+            <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)inc;</AdditionalIncludeDirectories>
         </ClCompile>
         <Link>
             <SubSystem>
@@ -97,6 +98,7 @@
             <LanguageStandard>stdcpp20</LanguageStandard>
             <PrecompiledHeader>Use</PrecompiledHeader>
             <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+            <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)inc;</AdditionalIncludeDirectories>
         </ClCompile>
         <Link>
             <SubSystem>
@@ -113,7 +115,7 @@
             <LanguageStandard>stdcpp20</LanguageStandard>
             <PrecompiledHeader>Use</PrecompiledHeader>
             <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-            <AdditionalIncludeDirectories>$(ProjectDir)inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+            <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)inc;</AdditionalIncludeDirectories>
         </ClCompile>
         <Link>
             <SubSystem>
@@ -132,6 +134,7 @@
             <LanguageStandard>stdcpp20</LanguageStandard>
             <PrecompiledHeader>Use</PrecompiledHeader>
             <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+            <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)inc;</AdditionalIncludeDirectories>
         </ClCompile>
         <Link>
             <SubSystem>
@@ -140,26 +143,28 @@
         </Link>
     </ItemDefinitionGroup>
     <ItemGroup>
-        <ClInclude Include="compileTime\Config.hpp"/>
-        <ClInclude Include="compileTime\StringUtils.hpp"/>
-        <ClInclude Include="compileTime\TomlEntry.hpp"/>
-        <ClInclude Include="compileTime\TomlParser.hpp"/>
-        <ClInclude Include="Errors.hpp"/>
-        <ClInclude Include="NetworkError.h"/>
-        <ClInclude Include="runTime\Config.hpp"/>
-        <ClInclude Include="runTime\StringUtils.hpp"/>
-        <ClInclude Include="runTime\TomlEntry.hpp"/>
-        <ClInclude Include="runTime\TomlParser.hpp"/>
-        <ClInclude Include="ELoggerVerbosity.h"/>
+        <ClInclude Include="inc\config\compileTime\Config.hpp"/>
+        <ClInclude Include="inc\config\compileTime\StringUtils.hpp"/>
+        <ClInclude Include="inc\config\compileTime\TomlEntry.hpp"/>
+        <ClInclude Include="inc\config\compileTime\TomlParser.hpp"/>
+        <ClInclude Include="inc\error\Errors.hpp"/>
+        <ClInclude Include="inc\error\NetworkError.h"/>
+        <ClInclude Include="inc\config\runTime\Config.hpp"/>
+        <ClInclude Include="inc\config\runTime\StringUtils.hpp"/>
+        <ClInclude Include="inc\config\runTime\TomlEntry.hpp"/>
+        <ClInclude Include="inc\config\runTime\TomlParser.hpp"/>
+        <ClInclude Include="inc\logger\ELoggerVerbosity.h"/>
         <ClInclude Include="framework.h"/>
-        <ClInclude Include="ILogger.h"/>
-        <ClInclude Include="Logger.hpp"/>
-        <ClInclude Include="LoggerOptions.h"/>
-        <ClInclude Include="macro.h"/>
+        <ClInclude Include="inc\logger\ILogger.h"/>
+        <ClInclude Include="inc\logger\Logger.hpp"/>
+        <ClInclude Include="inc\logger\LoggerOptions.h"/>
+        <ClInclude Include="inc\macro\macro.h"/>
         <ClInclude Include="pch.h"/>
-        <ClInclude Include="Result.hpp"/>
-        <ClInclude Include="TextLogger.h"/>
-        <ClInclude Include="ThreadLocalPool.hpp"/>
+        <ClInclude Include="inc\functional\Result.hpp"/>
+        <ClInclude Include="inc\logger\TextLogger.h"/>
+        <ClInclude Include="inc\memory\ThreadLocalPool.hpp"/>
+        <ClInclude Include="inc\memory\LockObjectPool.hpp"/>
+        <ClInclude Include="inc\memory\HybridObjectPool.hpp"/>
     </ItemGroup>
     <ItemGroup>
         <ClCompile Include="lib.cpp"/>
@@ -169,7 +174,7 @@
             <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
             <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
         </ClCompile>
-        <ClCompile Include="TextLogger.cpp"/>
+        <ClCompile Include="src\logger\TextLogger.cpp"/>
     </ItemGroup>
     <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets"/>
     <ImportGroup Label="ExtensionTargets">

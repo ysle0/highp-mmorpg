@@ -1,6 +1,6 @@
 #include <chrono>
-#include <Logger.hpp>
-#include <TextLogger.h>
+#include <logger/Logger.hpp>
+#include <logger/TextLogger.h>
 #include <thread>
 #include "EchoClient.h"
 

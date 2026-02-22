@@ -6,7 +6,7 @@ $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ProjectRoot = Split-Path -Parent $ScriptDir
 
 $TomlPath = Join-Path $ProjectRoot "network\config.compile.toml"
-$OutputPath = Join-Path $ProjectRoot "network\Const.h"
+$OutputPath = Join-Path $ProjectRoot "network\inc\config\Const.h"
 
 # Convert snake_case to PascalCase
 function ConvertTo-PascalCase

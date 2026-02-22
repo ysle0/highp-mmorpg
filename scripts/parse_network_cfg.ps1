@@ -6,7 +6,7 @@ $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ProjectRoot = Split-Path -Parent $ScriptDir
 
 $TomlPath = Join-Path $ProjectRoot "exec\echo\echo-server\config.runtime.toml"
-$OutputPath = Join-Path $ProjectRoot "network\NetworkCfg.h"
+$OutputPath = Join-Path $ProjectRoot "network\inc\config\NetworkCfg.h"
 
 # Convert snake_case to PascalCase
 function ConvertTo-PascalCase
@@ -115,7 +115,7 @@ $code = @"
 // Do not edit manually. Run scripts/parse_network_cfg.ps1 to regenerate.
 
 #include <filesystem>
-#include <runTime/Config.hpp>
+#include <config/runTime/Config.hpp>
 #include <stdexcept>
 #include <Windows.h>
 

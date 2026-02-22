@@ -1,6 +1,6 @@
 #include "Server.h"
-#include <Client.h>
-#include <Errors.hpp>
+#include <client/windows/Client.h>
+#include <error/Errors.hpp>
 
 Server::~Server() noexcept { Stop(); }
 

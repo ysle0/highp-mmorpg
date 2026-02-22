@@ -1,9 +1,9 @@
 #include "Server.h"
-#include <Logger.hpp>
-#include <NetworkCfg.h>
-#include <SocketHelper.h>
-#include <SocketOptionBuilder.h>
-#include <TextLogger.h>
+#include <logger/Logger.hpp>
+#include <config/NetworkCfg.h>
+#include <socket/SocketHelper.h>
+#include <socket/SocketOptionBuilder.h>
+#include <logger/TextLogger.h>
 #include <iostream>
 
 using namespace highp;

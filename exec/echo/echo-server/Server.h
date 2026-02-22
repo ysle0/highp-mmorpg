@@ -1,8 +1,8 @@
 #pragma once
-#include <ISocket.h>
-#include <NetworkCfg.h>
-#include <NetworkError.h>
-#include <ServerLifecycle.h>
+#include <socket/ISocket.h>
+#include <config/NetworkCfg.h>
+#include <error/NetworkError.h>
+#include <server/ServerLifecycle.h>
 
 using namespace highp;
 
