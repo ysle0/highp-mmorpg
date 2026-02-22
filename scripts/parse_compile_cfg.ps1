@@ -9,69 +9,92 @@ $TomlPath = Join-Path $ProjectRoot "network\config.compile.toml"
 $OutputPath = Join-Path $ProjectRoot "network\Const.h"
 
 # Convert snake_case to PascalCase
-function ConvertTo-PascalCase {
+function ConvertTo-PascalCase
+{
     param([string]$text)
     $parts = $text -split '_'
     $result = ($parts | ForEach-Object {
-        if ($_.Length -gt 0) {
-            $_.Substring(0,1).ToUpper() + $_.Substring(1).ToLower()
+        if ($_.Length -gt 0)
+        {
+            $_.Substring(0, 1).ToUpper() + $_.Substring(1).ToLower()
         }
     }) -join ''
     return $result
 }
 
 # Convert snake_case to camelCase
-function ConvertTo-CamelCase {
+function ConvertTo-CamelCase
+{
     param([string]$text)
     $pascal = ConvertTo-PascalCase $text
-    if ($pascal.Length -gt 0) {
-        return $pascal.Substring(0,1).ToLower() + $pascal.Substring(1)
+    if ($pascal.Length -gt 0)
+    {
+        return $pascal.Substring(0, 1).ToLower() + $pascal.Substring(1)
     }
     return $pascal
 }
 
 # Infer C++ type from TOML value
-function Get-CppType {
+function Get-CppType
+{
     param([string]$value)
-    if ($value -match '^-?\d+$') { return "INT" }
-    if ($value -match '^-?\d+\.\d+$') { return "double" }
-    if ($value -eq 'true' -or $value -eq 'false') { return "bool" }
+    if ($value -match '^-?\d+$')
+    {
+        return "INT"
+    }
+    if ($value -match '^-?\d+\.\d+$')
+    {
+        return "double"
+    }
+    if ($value -eq 'true' -or $value -eq 'false')
+    {
+        return "bool"
+    }
     return "const char*"
 }
 
 # Format value for C++
-function Format-CppValue {
+function Format-CppValue
+{
     param([string]$value, [string]$type)
-    if ($type -eq "const char*") {
+    if ($type -eq "const char*")
+    {
         return "`"$value`""
     }
     return $value
 }
 
-if (-not (Test-Path $TomlPath)) {
+if (-not (Test-Path $TomlPath))
+{
     Write-Error "TOML file not found: $TomlPath"
     exit 1
 }
 
 $lines = Get-Content -Path $TomlPath
-$sections = @{}
+$sections = @{ }
 $currentSection = $null
 
-foreach ($line in $lines) {
+foreach ($line in $lines)
+{
     $line = $line.Trim()
 
     # Skip empty lines and comments
-    if ($line -eq '' -or $line.StartsWith('#')) { continue }
+    if ($line -eq '' -or $line.StartsWith('#'))
+    {
+        continue
+    }
 
     # Section header
-    if ($line -match '^\[(\w+)\]$') {
+    if ($line -match '^\[(\w+)\]$')
+    {
         $currentSection = $Matches[1]
         $sections[$currentSection] = @()
         continue
     }
 
     # Key-value pair
-    if ($line -match '^(\w+)\s*=\s*(.+)$' -and $currentSection) {
+    if ($line -match '^(\w+)\s*=\s*(.+)$' -and $currentSection)
+    {
         $key = $Matches[1]
         $value = $Matches[2].Trim().Trim('"')
         $sections[$currentSection] += @{
@@ -102,7 +125,8 @@ struct Const {
 
 "@
 
-foreach ($sectionName in $sections.Keys | Sort-Object) {
+foreach ($sectionName in $sections.Keys | Sort-Object)
+{
     $structName = ConvertTo-PascalCase $sectionName
     $entries = $sections[$sectionName]
 
@@ -112,7 +136,8 @@ foreach ($sectionName in $sections.Keys | Sort-Object) {
 
 "@
 
-    foreach ($entry in $entries) {
+    foreach ($entry in $entries)
+    {
         $fieldName = ConvertTo-CamelCase $entry.Key
         $cppType = $entry.CppType
         $cppValue = Format-CppValue $entry.Value $cppType

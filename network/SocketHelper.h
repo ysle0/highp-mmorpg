@@ -5,19 +5,17 @@
 #include "NetworkTransport.hpp"
 
 namespace highp::network {
+    class SocketOptionBuilder;
 
-class SocketOptionBuilder;
+    class SocketHelper {
+    public:
+        SocketHelper() = delete;
 
-class SocketHelper {
-public:
-	SocketHelper() = delete;
-
-	static std::shared_ptr<ISocket> MakeDefaultListener(
-		std::shared_ptr<log::Logger> logger,
-		NetworkTransport netTransport,
-		NetworkCfg networkCfg,
-		std::shared_ptr<SocketOptionBuilder> socketOptionBuilder = nullptr
-	);
-};
+        static std::shared_ptr<ISocket> MakeDefaultListener(
+            std::shared_ptr<log::Logger> logger,
+            NetworkTransport netTransport,
+            NetworkCfg networkCfg,
+            std::shared_ptr<SocketOptionBuilder> socketOptionBuilder = nullptr
+        );
+    };
 }
-

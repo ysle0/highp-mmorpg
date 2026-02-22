@@ -9,69 +9,92 @@ $TomlPath = Join-Path $ProjectRoot "exec\echo\echo-server\config.runtime.toml"
 $OutputPath = Join-Path $ProjectRoot "network\NetworkCfg.h"
 
 # Convert snake_case to PascalCase
-function ConvertTo-PascalCase {
+function ConvertTo-PascalCase
+{
     param([string]$text)
     $parts = $text -split '_'
     $result = ($parts | ForEach-Object {
-        if ($_.Length -gt 0) {
-            $_.Substring(0,1).ToUpper() + $_.Substring(1).ToLower()
+        if ($_.Length -gt 0)
+        {
+            $_.Substring(0, 1).ToUpper() + $_.Substring(1).ToLower()
         }
     }) -join ''
     return $result
 }
 
 # Convert snake_case to camelCase
-function ConvertTo-CamelCase {
+function ConvertTo-CamelCase
+{
     param([string]$text)
     $pascal = ConvertTo-PascalCase $text
-    if ($pascal.Length -gt 0) {
-        return $pascal.Substring(0,1).ToLower() + $pascal.Substring(1)
+    if ($pascal.Length -gt 0)
+    {
+        return $pascal.Substring(0, 1).ToLower() + $pascal.Substring(1)
     }
     return $pascal
 }
 
 # Infer C++ type from TOML value
-function Get-CppType {
+function Get-CppType
+{
     param([string]$value)
-    if ($value -match '^-?\d+$') { return "INT" }
-    if ($value -match '^-?\d+\.\d+$') { return "double" }
-    if ($value -eq 'true' -or $value -eq 'false') { return "bool" }
+    if ($value -match '^-?\d+$')
+    {
+        return "INT"
+    }
+    if ($value -match '^-?\d+\.\d+$')
+    {
+        return "double"
+    }
+    if ($value -eq 'true' -or $value -eq 'false')
+    {
+        return "bool"
+    }
     return "std::string"
 }
 
 # Format value for C++
-function Format-CppValue {
+function Format-CppValue
+{
     param([string]$value, [string]$type)
-    if ($type -eq "std::string") {
+    if ($type -eq "std::string")
+    {
         return "`"$value`""
     }
     return $value
 }
 
-if (-not (Test-Path $TomlPath)) {
+if (-not (Test-Path $TomlPath))
+{
     Write-Error "TOML file not found: $TomlPath"
     exit 1
 }
 
 $lines = Get-Content -Path $TomlPath
-$sections = [ordered]@{}
+$sections = [ordered]@{ }
 $currentSection = $null
 
-foreach ($line in $lines) {
+foreach ($line in $lines)
+{
     $line = $line.Trim()
 
     # Skip empty lines and comments
-    if ($line -eq '' -or $line.StartsWith('#')) { continue }
+    if ($line -eq '' -or $line.StartsWith('#'))
+    {
+        continue
+    }
 
     # Section header
-    if ($line -match '^\[(\w+)\]$') {
+    if ($line -match '^\[(\w+)\]$')
+    {
         $currentSection = $Matches[1]
         $sections[$currentSection] = @()
         continue
     }
 
     # Key-value pair
-    if ($line -match '^(\w+)\s*=\s*(.+)$' -and $currentSection) {
+    if ($line -match '^(\w+)\s*=\s*(.+)$' -and $currentSection)
+    {
         $key = $Matches[1]
         $value = $Matches[2].Trim().Trim('"')
         $sections[$currentSection] += @{
@@ -107,7 +130,8 @@ struct NetworkCfg {
 "@
 
 # Generate nested structs for each section
-foreach ($sectionName in $sections.Keys) {
+foreach ($sectionName in $sections.Keys)
+{
     $structName = ConvertTo-PascalCase $sectionName
     $entries = $sections[$sectionName]
 
@@ -118,9 +142,10 @@ foreach ($sectionName in $sections.Keys) {
 "@
 
     # Member variables
-    foreach ($entry in $entries) {
+    foreach ($entry in $entries)
+    {
         $code += @"
-		$($entry.CppType) $($entry.CamelCase);
+        $( $entry.CppType ) $( $entry.CamelCase );
 
 "@
     }
@@ -131,10 +156,11 @@ foreach ($sectionName in $sections.Keys) {
 		struct Defaults {
 
 "@
-    foreach ($entry in $entries) {
+    foreach ($entry in $entries)
+    {
         $cppValue = Format-CppValue $entry.Value $entry.CppType
         $code += @"
-			static constexpr $($entry.CppType) $($entry.CamelCase) = $cppValue;
+			static constexpr $( $entry.CppType ) $( $entry.CamelCase ) = $cppValue;
 
 "@
     }
@@ -164,7 +190,8 @@ $code += @"
 "@
 
 # Generate FromCfg initializers
-foreach ($sectionName in $sections.Keys) {
+foreach ($sectionName in $sections.Keys)
+{
     $structName = ConvertTo-PascalCase $sectionName
     $entries = $sections[$sectionName]
 
@@ -172,11 +199,12 @@ foreach ($sectionName in $sections.Keys) {
 			.$sectionName = {
 
 "@
-    foreach ($entry in $entries) {
-        $tomlKey = "$sectionName.$($entry.Key)"
+    foreach ($entry in $entries)
+    {
+        $tomlKey = "$sectionName.$( $entry.Key )"
         $envVar = ($sectionName.ToUpper() + "_" + $entry.Key.ToUpper())
         $code += @"
-				.$($entry.CamelCase) = cfg.Int("$tomlKey", $structName::Defaults::$($entry.CamelCase), "$envVar"),
+				.$( $entry.CamelCase ) = cfg.Int("$tomlKey", $structName::Defaults::$( $entry.CamelCase ), "$envVar"),
 
 "@
     }
@@ -197,7 +225,8 @@ $code += @"
 "@
 
 # Generate WithDefaults initializers
-foreach ($sectionName in $sections.Keys) {
+foreach ($sectionName in $sections.Keys)
+{
     $structName = ConvertTo-PascalCase $sectionName
     $entries = $sections[$sectionName]
 
@@ -205,9 +234,10 @@ foreach ($sectionName in $sections.Keys) {
 			.$sectionName = {
 
 "@
-    foreach ($entry in $entries) {
+    foreach ($entry in $entries)
+    {
         $code += @"
-				.$($entry.CamelCase) = $structName::Defaults::$($entry.CamelCase),
+				.$( $entry.CamelCase ) = $structName::Defaults::$( $entry.CamelCase ),
 
 "@
     }

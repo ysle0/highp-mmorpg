@@ -1,82 +1,82 @@
 #include "pch.h"
+
 #include "Client.h"
 
 namespace highp::network {
+    Client::Client() {
+        ZeroMemory(&recvOverlapped, sizeof(RecvOverlapped));
+        ZeroMemory(&sendOverlapped, sizeof(SendOverlapped));
+    }
 
-Client::Client() {
-	ZeroMemory(&recvOverlapped, sizeof(RecvOverlapped));
-	ZeroMemory(&sendOverlapped, sizeof(SendOverlapped));
-}
+    Client::~Client() noexcept {
+        Close(true);
+    }
 
-Client::Res Client::PostRecv() {
-	ZeroMemory(&recvOverlapped.overlapped, sizeof(WSAOVERLAPPED));
-	recvOverlapped.bufDesc.buf = recvOverlapped.buf;
-	recvOverlapped.bufDesc.len = std::size(recvOverlapped.buf);
-	recvOverlapped.ioType = EIoType::Recv;
+    Client::Res Client::PostRecv() {
+        ZeroMemory(&recvOverlapped.overlapped, sizeof(WSAOVERLAPPED));
+        recvOverlapped.bufDesc.buf = recvOverlapped.buf;
+        recvOverlapped.bufDesc.len = std::size(recvOverlapped.buf);
+        recvOverlapped.ioType = EIoType::Recv;
 
-	DWORD flags = 0;
-	DWORD recvNumBytes = 0;
+        DWORD flags = 0;
+        DWORD recvNumBytes = 0;
 
-	int result = WSARecv(
-		socket,
-		&recvOverlapped.bufDesc,
-		1,
-		&recvNumBytes,
-		&flags,
-		reinterpret_cast<LPWSAOVERLAPPED>(&recvOverlapped),
-		nullptr);
+        const int result = WSARecv(
+            socket,
+            &recvOverlapped.bufDesc,
+            1,
+            &recvNumBytes,
+            &flags,
+            reinterpret_cast<LPWSAOVERLAPPED>(&recvOverlapped),
+            nullptr);
+        if (result == SOCKET_ERROR && WSAGetLastError() != ERROR_IO_PENDING) {
+            return Res::Err(err::ENetworkError::WsaRecvFailed);
+        }
 
-	if (result == SOCKET_ERROR && WSAGetLastError() != ERROR_IO_PENDING) {
-		return Res::Err(err::ENetworkError::WsaRecvFailed);
-	}
+        return Res::Ok();
+    }
 
-	return Res::Ok();
-}
+    Client::Res Client::PostSend(std::string_view data) {
+        ZeroMemory(&sendOverlapped.overlapped, sizeof(WSAOVERLAPPED));
 
-Client::Res Client::PostSend(std::string_view data) {
-	ZeroMemory(&sendOverlapped.overlapped, sizeof(WSAOVERLAPPED));
+        const auto len = static_cast<ULONG>(data.size());
+        CopyMemory(sendOverlapped.buf, data.data(), len);
+        sendOverlapped.bufDesc.buf = sendOverlapped.buf;
+        sendOverlapped.bufDesc.len = len;
+        sendOverlapped.ioType = EIoType::Send;
 
-	auto len = static_cast<ULONG>(data.size());
-	CopyMemory(sendOverlapped.buf, data.data(), len);
-	sendOverlapped.bufDesc.buf = sendOverlapped.buf;
-	sendOverlapped.bufDesc.len = len;
-	sendOverlapped.ioType = EIoType::Send;
+        DWORD sendNumBytes = 0;
 
-	DWORD sendNumBytes = 0;
+        const int result = WSASend(
+            socket,
+            &sendOverlapped.bufDesc,
+            1,
+            &sendNumBytes,
+            0,
+            reinterpret_cast<LPWSAOVERLAPPED>(&sendOverlapped),
+            nullptr);
+        if (result == SOCKET_ERROR && WSAGetLastError() != ERROR_IO_PENDING) {
+            return Res::Err(err::ENetworkError::WsaSendFailed);
+        }
 
-	int result = WSASend(
-		socket,
-		&sendOverlapped.bufDesc,
-		1,
-		&sendNumBytes,
-		0,
-		reinterpret_cast<LPWSAOVERLAPPED>(&sendOverlapped),
-		nullptr);
+        return Res::Ok();
+    }
 
-	if (result == SOCKET_ERROR && WSAGetLastError() != ERROR_IO_PENDING) {
-		return Res::Err(err::ENetworkError::WsaSendFailed);
-	}
+    void Client::Close(bool isFireAndForget) {
+        // linger linger{ 0, 0 };
+        // if (isFireAndForget) {
+        //	linger.l_onoff = 1;
+        // }
 
-	return Res::Ok();
-}
+        // setsockopt(socket,
+        //	SOL_SOCKET,
+        //	SO_LINGER,
+        //	(char*)&linger,
+        //	sizeof(linger));
 
-void Client::Close(bool isFireAndForget) {
-	//linger linger{ 0, 0 };
-	//if (isFireAndForget) {
-	//	linger.l_onoff = 1;
-	//}
+        shutdown(socket, SD_BOTH);
+        closesocket(socket);
 
-
-	//setsockopt(socket,
-	//	SOL_SOCKET,
-	//	SO_LINGER,
-	//	(char*)&linger,
-	//	sizeof(linger));
-
-	shutdown(socket, SD_BOTH);
-	closesocket(socket);
-
-	socket = INVALID_SOCKET;
-}
-
-}
+        socket = INVALID_SOCKET;
+    }
+} // namespace highp::network

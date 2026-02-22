@@ -2,134 +2,131 @@
 #include "IocpIoMultiplexer.h"
 
 namespace highp::network {
+    IocpIoMultiplexer::IocpIoMultiplexer(
+        std::shared_ptr<log::Logger> logger,
+        CompletionHandler handler
+    ) : _logger(std::move(logger)),
+        _completionHandler(std::move(handler)) {
+    }
 
-IocpIoMultiplexer::IocpIoMultiplexer(
-	std::shared_ptr<log::Logger> logger,
-	CompletionHandler handler)
-	: _logger(std::move(logger))
-	, _completionHandler(std::move(handler)) {}
+    IocpIoMultiplexer::~IocpIoMultiplexer() noexcept { Shutdown(); }
 
-IocpIoMultiplexer::~IocpIoMultiplexer() noexcept {
-	Shutdown();
-}
+    IocpIoMultiplexer::Res IocpIoMultiplexer::Initialize(int workerThreadCount) {
+        _handle = CreateIoCompletionPort(
+            INVALID_HANDLE_VALUE,
+            nullptr,
+            NULL,
+            workerThreadCount);
+        if (_handle == nullptr) {
+            return Res::Err(err::ENetworkError::IocpCreateFailed);
+        }
 
-IocpIoMultiplexer::Res IocpIoMultiplexer::Initialize(int workerThreadCount) {
-	_handle = CreateIoCompletionPort(
-		INVALID_HANDLE_VALUE,
-		nullptr,
-		NULL,
-		workerThreadCount);
+        _isRunning = true;
 
-	if (_handle == NULL) {
-		return Res::Err(err::ENetworkError::IocpCreateFailed);
-	}
+        for (int i = 0; i < workerThreadCount; ++i) {
+            _workerThreads.emplace_back([this](std::stop_token st) { WorkerLoop(st); });
+        }
 
-	_isRunning = true;
+        _logger->Info("IocpIoMultiplexer initialized. worker threads: {}",
+                      workerThreadCount);
+        return Res::Ok();
+    }
 
-	for (int i = 0; i < workerThreadCount; ++i) {
-		_workerThreads.emplace_back([this](std::stop_token st) {
-			WorkerLoop(st);
-		});
-	}
+    void IocpIoMultiplexer::Shutdown() {
+        if (!_isRunning.exchange(false)) {
+            return;
+        }
 
-	_logger->Info("IocpIoMultiplexer initialized. worker threads: {}", workerThreadCount);
-	return Res::Ok();
-}
+        for (auto& worker : _workerThreads) {
+            worker.request_stop();
+            PostQueuedCompletionStatus(_handle, 0, 0, nullptr);
+        }
 
-void IocpIoMultiplexer::Shutdown() {
-	if (!_isRunning.exchange(false)) {
-		return;
-	}
+        _workerThreads.clear();
 
-	for (auto& worker : _workerThreads) {
-		worker.request_stop();
-		PostQueuedCompletionStatus(_handle, 0, 0, nullptr);
-	}
+        if (_handle != INVALID_HANDLE_VALUE) {
+            CloseHandle(_handle);
+            _handle = INVALID_HANDLE_VALUE;
+        }
 
-	_workerThreads.clear();
+        _logger->Info("IocpIoMultiplexer shutdown complete.");
+    }
 
-	if (_handle != INVALID_HANDLE_VALUE) {
-		CloseHandle(_handle);
-		_handle = INVALID_HANDLE_VALUE;
-	}
+    IocpIoMultiplexer::Res IocpIoMultiplexer::AssociateSocket(
+        SocketHandle socket,
+        void* completionKey
+    ) {
+        HANDLE result = CreateIoCompletionPort(
+            reinterpret_cast<HANDLE>(socket),
+            _handle,
+            reinterpret_cast<ULONG_PTR>(completionKey),
+            0);
 
-	_logger->Info("IocpIoMultiplexer shutdown complete.");
-}
+        if (result == nullptr || result != _handle) {
+            return Res::Err(err::ENetworkError::IocpConnectFailed);
+        }
 
-IocpIoMultiplexer::Res IocpIoMultiplexer::AssociateSocket(SocketHandle socket, void* completionKey) {
-	HANDLE result = CreateIoCompletionPort(
-		reinterpret_cast<HANDLE>(socket),
-		_handle,
-		reinterpret_cast<ULONG_PTR>(completionKey),
-		0);
+        return Res::Ok();
+    }
 
-	if (result == NULL || result != _handle) {
-		return Res::Err(err::ENetworkError::IocpConnectFailed);
-	}
+    IocpIoMultiplexer::Res IocpIoMultiplexer::PostCompletion(
+        DWORD bytes,
+        void* key,
+        LPOVERLAPPED overlapped
+    ) {
+        BOOL result = PostQueuedCompletionStatus(
+            _handle,
+            bytes,
+            reinterpret_cast<ULONG_PTR>(key),
+            overlapped);
 
-	return Res::Ok();
-}
+        if (result == FALSE) {
+            return Res::Err(err::ENetworkError::IocpInternalError);
+        }
 
-IocpIoMultiplexer::Res IocpIoMultiplexer::PostCompletion(DWORD bytes, void* key, LPOVERLAPPED overlapped) {
-	BOOL result = PostQueuedCompletionStatus(
-		_handle,
-		bytes,
-		reinterpret_cast<ULONG_PTR>(key),
-		overlapped);
+        return Res::Ok();
+    }
 
-	if (result == FALSE) {
-		return Res::Err(err::ENetworkError::IocpInternalError);
-	}
+    void IocpIoMultiplexer::SetCompletionHandler(CompletionHandler handler) {
+        _completionHandler = std::move(handler);
+    }
 
-	return Res::Ok();
-}
+    HANDLE IocpIoMultiplexer::GetHandle() const noexcept { return _handle; }
 
-void IocpIoMultiplexer::SetCompletionHandler(CompletionHandler handler) {
-	_completionHandler = std::move(handler);
-}
+    bool IocpIoMultiplexer::IsRunning() const noexcept { return _isRunning.load(); }
 
-HANDLE IocpIoMultiplexer::GetHandle() const noexcept {
-	return _handle;
-}
+    void IocpIoMultiplexer::WorkerLoop(std::stop_token st) {
+        while (!st.stop_requested() && _isRunning.load()) {
+            DWORD bytesTransferred = 0;
+            ULONG_PTR completionKey = 0;
+            LPOVERLAPPED overlapped = nullptr;
 
-bool IocpIoMultiplexer::IsRunning() const noexcept {
-	return _isRunning.load();
-}
+            const BOOL ok = GetQueuedCompletionStatus(
+                _handle,
+                &bytesTransferred,
+                &completionKey,
+                &overlapped,
+                INFINITE);
+            if (completionKey == 0 && overlapped == nullptr) {
+                break;
+            }
 
-void IocpIoMultiplexer::WorkerLoop(std::stop_token st) {
-	while (!st.stop_requested() && _isRunning.load()) {
-		DWORD bytesTransferred = 0;
-		ULONG_PTR completionKey = 0;
-		LPOVERLAPPED overlapped = nullptr;
+            CompletionEvent event{
+                .completionKey = reinterpret_cast<void*>(completionKey),
+                .overlapped = overlapped,
+                .bytesTransferred = bytesTransferred,
+                .success = ok == TRUE,
+                .errorCode = ok == FALSE ? GetLastError() : 0,
+            };
 
-		BOOL ok = GetQueuedCompletionStatus(
-			_handle,
-			&bytesTransferred,
-			&completionKey,
-			&overlapped,
-			INFINITE);
+            if (overlapped != nullptr) {
+                const auto* ext = reinterpret_cast<OverlappedBase*>(overlapped);
+                event.ioType = ext->ioType;
+            }
 
-		if (completionKey == 0 && overlapped == nullptr) {
-			break;
-		}
-
-		CompletionEvent event{
-			.completionKey = reinterpret_cast<void*>(completionKey),
-			.overlapped = overlapped,
-			.bytesTransferred = bytesTransferred,
-			.success = (ok == TRUE),
-			.errorCode = (ok == FALSE) ? GetLastError() : 0,
-		};
-
-		if (overlapped != nullptr) {
-			auto* ext = reinterpret_cast<OverlappedBase*>(overlapped);
-			event.ioType = ext->ioType;
-		}
-
-		if (_completionHandler) {
-			_completionHandler(event);
-		}
-	}
-}
-
-}
+            if (_completionHandler) {
+                _completionHandler(event);
+            }
+        }
+    }
+} // namespace highp::network
