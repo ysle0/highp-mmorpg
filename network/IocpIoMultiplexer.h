@@ -1,5 +1,6 @@
 #pragma once
 
+#include "CompletionTarget.hpp"
 #include "EIoType.h"
 #include "platform.h"
 #include <Logger.hpp>
@@ -21,7 +22,7 @@ namespace highp::network {
         EIoType ioType;
 
         /// <summary>소켓 연결 시 등록한 완료 키. 일반적으로 Client 포인터.</summary>
-        void* completionKey;
+        ICompletionTarget* target;
 
         /// <summary>비동기 I/O에 사용된 OVERLAPPED 구조체 포인터. OverlappedExt로
         /// 캐스팅 가능.</summary>
@@ -109,7 +110,21 @@ namespace highp::network {
         /// 포인터.</param> <returns>성공 시 Ok, 실패 시 에러 코드</returns> <remarks>
         /// 이 함수 호출 후 해당 소켓의 비동기 I/O 완료가 IOCP로 통지된다.
         /// </remarks>
-        Res AssociateSocket(SocketHandle socket, void* completionKey);
+
+        template <typename T>
+            requires std::derived_from<T, ICompletionTarget>
+        Res AssociateSocket(SocketHandle socket, ICompletionTarget* completionKey) const {
+            HANDLE result = CreateIoCompletionPort(
+                reinterpret_cast<HANDLE>(socket),
+                _handle,
+                reinterpret_cast<ULONG_PTR>(completionKey), 0);
+
+            if (result == nullptr || result != _handle) {
+                return Res::Err(err::ENetworkError::IocpConnectFailed);
+            }
+
+            return Res::Ok();
+        }
 
         /// <summary>
         /// 수동으로 완료 이벤트를 IOCP 큐에 추가한다.
@@ -121,7 +136,7 @@ namespace highp::network {
         /// <remarks>
         /// 주로 Worker 스레드 종료 신호 전달에 사용.
         /// </remarks>
-        Res PostCompletion(DWORD bytes, void* key, LPOVERLAPPED overlapped);
+        Res PostCompletion(DWORD bytes, ICompletionTarget* key, LPOVERLAPPED overlapped);
 
         /// <summary>
         /// IOCP 완료 이벤트 처리 콜백을 등록한다.

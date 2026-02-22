@@ -5,7 +5,7 @@ namespace highp::network {
     IocpIoMultiplexer::IocpIoMultiplexer(
         std::shared_ptr<log::Logger> logger,
         CompletionHandler handler
-    ) : _logger(std::move(logger)),
+    ) : _logger(logger),
         _completionHandler(std::move(handler)) {
     }
 
@@ -52,32 +52,15 @@ namespace highp::network {
         _logger->Info("IocpIoMultiplexer shutdown complete.");
     }
 
-    IocpIoMultiplexer::Res IocpIoMultiplexer::AssociateSocket(
-        SocketHandle socket,
-        void* completionKey
-    ) {
-        HANDLE result = CreateIoCompletionPort(
-            reinterpret_cast<HANDLE>(socket),
-            _handle,
-            reinterpret_cast<ULONG_PTR>(completionKey),
-            0);
-
-        if (result == nullptr || result != _handle) {
-            return Res::Err(err::ENetworkError::IocpConnectFailed);
-        }
-
-        return Res::Ok();
-    }
-
     IocpIoMultiplexer::Res IocpIoMultiplexer::PostCompletion(
         DWORD bytes,
-        void* key,
+        ICompletionTarget* key,
         LPOVERLAPPED overlapped
     ) {
         BOOL result = PostQueuedCompletionStatus(
             _handle,
             bytes,
-            reinterpret_cast<ULONG_PTR>(key),
+            key->AsCompletionKey(),
             overlapped);
 
         if (result == FALSE) {
@@ -112,7 +95,7 @@ namespace highp::network {
             }
 
             CompletionEvent event{
-                .completionKey = reinterpret_cast<void*>(completionKey),
+                .target = ICompletionTarget::FromCompletionKey(completionKey),
                 .overlapped = overlapped,
                 .bytesTransferred = bytesTransferred,
                 .success = ok == TRUE,

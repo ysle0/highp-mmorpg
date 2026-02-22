@@ -141,6 +141,7 @@
     </ItemDefinitionGroup>
     <ItemGroup>
         <ClInclude Include="AcceptContext.h"/>
+        <ClInclude Include="CompletionTarget.hpp"/>
         <ClInclude Include="IocpAcceptor.h"/>
         <ClInclude Include="AsyncSocket.h"/>
         <ClInclude Include="Client.h"/>
