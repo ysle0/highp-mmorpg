@@ -3,7 +3,7 @@
 
 #include <logger/Logger.hpp>
 
-namespace highp::network {
+namespace highp::net {
     WsaSession::WsaSession(std::shared_ptr<log::Logger> logger)
         : _logger(std::move(logger)) {
         //

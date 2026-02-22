@@ -12,7 +12,7 @@
 #include <thread>
 #include <vector>
 
-namespace highp::network {
+namespace highp::net::internal {
     /// <summary>
     /// IOCP 완료 이벤트 정보를 담는 구조체.
     /// WorkerLoop()에서 GetQueuedCompletionStatus() 결과를 래핑하여 전달한다.
@@ -176,4 +176,4 @@ namespace highp::network {
         /// <summary>완료 이벤트 처리 콜백</summary>
         CompletionHandler _completionHandler;
     };
-} // namespace highp::network
+} // namespace highp::net::internal

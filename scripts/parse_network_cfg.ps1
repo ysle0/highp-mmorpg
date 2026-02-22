@@ -119,7 +119,7 @@ $code = @"
 #include <stdexcept>
 #include <Windows.h>
 
-namespace highp::network {
+namespace highp::net {
 
 /// <summary>
 /// Runtime network configuration.
@@ -252,7 +252,7 @@ $code += @"
 	}
 };
 
-} // namespace highp::network
+} // namespace highp::net
 "@
 
 $code | Out-File -FilePath $OutputPath -Encoding UTF8 -NoNewline

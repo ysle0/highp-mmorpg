@@ -1,7 +1,7 @@
 #pragma once
 #include "AsyncSocket.h"
 
-namespace highp::network {
+namespace highp::net::internal {
     /// <summary>
     /// Windows 플랫폼용 비동기 소켓 구현체.
     /// AsyncSocket을 상속하여 Windows Winsock2 API를 사용한 소켓 기능을 제공한다.

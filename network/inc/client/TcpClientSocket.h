@@ -11,7 +11,7 @@ namespace highp::log {
     class Logger;
 }
 
-namespace highp::network {
+namespace highp::net {
     class WsaSession;
 
     class TcpClientSocket final {

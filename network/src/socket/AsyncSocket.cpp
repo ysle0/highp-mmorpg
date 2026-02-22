@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "socket/AsyncSocket.h"
 
-namespace highp::network {
+namespace highp::net {
     AsyncSocket::AsyncSocket(std::shared_ptr<log::Logger> logger)
         : _socketHandle{InvalidSocket}
           , _logger{logger} {

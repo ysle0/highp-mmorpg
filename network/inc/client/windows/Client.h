@@ -9,7 +9,7 @@
 
 #include "io/CompletionTarget.hpp"
 
-namespace highp::network {
+namespace highp::net {
     /// <summary>
     /// 클라이언트 연결 상태 및 I/O 버퍼를 관리하는 구조체.
     /// std::enable_shared_from_this를 상속하여 콜백에서 안전하게 shared_ptr 획득 가능.
@@ -49,9 +49,9 @@ namespace highp::network {
         SocketHandle socket = INVALID_SOCKET;
 
         /// <summary>수신 작업용 SendOverlapped 구조체</summary>
-        RecvOverlapped recvOverlapped;
+        internal::RecvOverlapped recvOverlapped;
 
         /// <summary>송신 작업용 SendOverlapped 구조체</summary>
-        SendOverlapped sendOverlapped;
+        internal::SendOverlapped sendOverlapped;
     };
 }

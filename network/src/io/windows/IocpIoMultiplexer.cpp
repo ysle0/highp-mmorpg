@@ -4,7 +4,7 @@
 
 using namespace std::chrono_literals;
 
-namespace highp::network {
+namespace highp::net::internal {
     IocpIoMultiplexer::IocpIoMultiplexer(
         std::shared_ptr<log::Logger> logger,
         CompletionHandler handler
@@ -131,4 +131,4 @@ namespace highp::network {
             }
         }
     }
-} // namespace highp::network
+} // namespace highp::net::internal

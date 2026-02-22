@@ -3,7 +3,7 @@
 #include <error/Errors.hpp>
 #include "socket/WindowsAsyncSocket.h"
 
-namespace highp::network {
+namespace highp::net::internal {
     WindowsAsyncSocket::WindowsAsyncSocket(
         std::shared_ptr<log::Logger> logger
     ) : AsyncSocket{logger} {

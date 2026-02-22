@@ -6,7 +6,7 @@
 #include "util/NetworkUtil.hpp"
 #include "client/WsaSession.h"
 
-namespace highp::network {
+namespace highp::net {
     TcpClientSocket::TcpClientSocket(
         std::shared_ptr<log::Logger> logger,
         std::shared_ptr<WsaSession> wsaSession

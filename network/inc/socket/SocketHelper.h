@@ -4,7 +4,7 @@
 #include "config/NetworkCfg.h"
 #include "transport/NetworkTransport.hpp"
 
-namespace highp::network {
+namespace highp::net {
     class SocketOptionBuilder;
 
     class SocketHelper {

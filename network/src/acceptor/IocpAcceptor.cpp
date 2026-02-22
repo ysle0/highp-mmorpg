@@ -3,7 +3,7 @@
 #include "acceptor/IocpAcceptor.h"
 #include "socket/SocketOptionBuilder.h"
 
-namespace highp::network {
+namespace highp::net::internal {
     IocpAcceptor::IocpAcceptor(
         std::shared_ptr<log::Logger> logger,
         std::shared_ptr<SocketOptionBuilder> socketOptionsBuilder,

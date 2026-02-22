@@ -4,7 +4,7 @@
 #include "client/PacketStream.h"
 #include "client/TcpClientSocket.h"
 
-namespace highp::network {namespace {
+namespace highp::net {namespace {
         // 프레임 헤더는 payload 길이를 담는 uint32 4바이트 고정.
         constexpr size_t kFrameHeaderSize = sizeof(uint32_t);
         constexpr uint32_t kMaxFramePayloadSize = 0xFFFFFFFFu;

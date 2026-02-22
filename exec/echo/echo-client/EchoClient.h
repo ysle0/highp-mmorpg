@@ -53,11 +53,11 @@ private:
     std::shared_ptr<Logger> _logger;
 
     /// <summary>Winsock 세션 핸들러</summary>
-    std::shared_ptr<network::WsaSession> _wsaSession;
+    std::shared_ptr<net::WsaSession> _wsaSession;
 
     /// <summary>서버 연결 소켓 래퍼</summary>
-    std::unique_ptr<network::TcpClientSocket> _tcpClientSocket;
+    std::unique_ptr<net::TcpClientSocket> _tcpClientSocket;
 
     /// <summary>패킷 프레이밍 래퍼</summary>
-    std::unique_ptr<network::PacketStream> _packetStream;
+    std::unique_ptr<net::PacketStream> _packetStream;
 };

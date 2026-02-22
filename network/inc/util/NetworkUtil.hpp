@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-namespace highp::network {
+namespace highp::net {
     /// <summary>
     /// port 가 바른 범위에 있는지 확인 (unsigned short)
     /// </summary>

@@ -4,7 +4,7 @@
 #include "socket/ISocket.h"
 #include "client/windows/OverlappedExt.h"
 
-namespace highp::network {
+namespace highp::net {
     ServerLifeCycle::ServerLifeCycle(
         std::shared_ptr<log::Logger> logger,
         std::shared_ptr<SocketOptionBuilder> socketOptionBuilder,
@@ -23,7 +23,7 @@ namespace highp::network {
         _config = config;
 
         // IOCP 초기화
-        _iocp = std::make_unique<IocpIoMultiplexer>(
+        _iocp = std::make_unique<internal::IocpIoMultiplexer>(
             _logger,
             std::bind_front(&ServerLifeCycle::OnCompletion, this)
         );
@@ -34,7 +34,7 @@ namespace highp::network {
         GUARD(_iocp->Initialize(workerCount));
 
         // Acceptor 초기화
-        _acceptor = std::make_unique<IocpAcceptor>(
+        _acceptor = std::make_unique<internal::IocpAcceptor>(
             _logger,
             _socketOptionBuilder,
             std::bind_front(&ServerLifeCycle::SetupClient, this)
@@ -90,34 +90,33 @@ namespace highp::network {
         return _iocp && _iocp->IsRunning();
     }
 
-    void ServerLifeCycle::OnCompletion(CompletionEvent event) {
+    void ServerLifeCycle::OnCompletion(internal::CompletionEvent event) {
         switch (event.ioType) {
-        case EIoType::Accept:
+        case internal::EIoType::Accept:
             if (_acceptor) {
-                auto* overlapped = reinterpret_cast<AcceptOverlapped*>(event.overlapped);
+                auto* overlapped = reinterpret_cast<internal::AcceptOverlapped*>(event.overlapped);
                 if (!_acceptor->OnAcceptComplete(overlapped, event.bytesTransferred)) {
                     _logger->Error("Failed to complete AcceptEx.");
-                    return;
                 }
             }
             break;
 
-        case EIoType::Recv:
+        case internal::EIoType::Recv:
             HandleRecv(event);
             break;
 
-        case EIoType::Send:
+        case internal::EIoType::Send:
             HandleSend(event);
             break;
 
-        case EIoType::Disconnect:
+        case internal::EIoType::Disconnect:
         default:
             _logger->Error("Unknown IO type received.");
             break;
         }
     }
 
-    void ServerLifeCycle::SetupClient(AcceptContext& ctx) {
+    void ServerLifeCycle::SetupClient(internal::AcceptContext& ctx) {
         const std::shared_ptr<Client> client = FindAvailableClient();
         if (!client) {
             _logger->Error("Client pool full!");
@@ -152,7 +151,7 @@ namespace highp::network {
         }
     }
 
-    void ServerLifeCycle::HandleRecv(CompletionEvent& event) {
+    void ServerLifeCycle::HandleRecv(internal::CompletionEvent& event) {
         auto* client = event.target->CopyTo<Client>();
         if (!client)
             return;
@@ -170,7 +169,7 @@ namespace highp::network {
             return;
         }
 
-        auto* overlapped = reinterpret_cast<RecvOverlapped*>(event.overlapped);
+        auto* overlapped = reinterpret_cast<internal::RecvOverlapped*>(event.overlapped);
         std::span<const char> data{overlapped->buf, event.bytesTransferred};
 
         // 앱 레이어에 통지
@@ -179,7 +178,7 @@ namespace highp::network {
         }
     }
 
-    void ServerLifeCycle::HandleSend(CompletionEvent& event) {
+    void ServerLifeCycle::HandleSend(internal::CompletionEvent& event) {
         auto* client = static_cast<Client*>(event.target);
         if (!client)
             return;
@@ -202,4 +201,4 @@ namespace highp::network {
         }
         return nullptr;
     }
-} // namespace highp::network
+} // namespace highp::net

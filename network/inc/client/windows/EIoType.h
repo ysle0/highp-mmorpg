@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 
-namespace highp::network {
+namespace highp::net::internal {
     /// <summary>
     /// 비동기 I/O 작업 유형을 구분하는 열거형.
     /// Overlapped::ioType에 설정되어 CompletionEvent 처리 시 작업 종류를 식별한다.

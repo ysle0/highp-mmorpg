@@ -7,7 +7,7 @@
 #include <error/NetworkError.h>
 #include <functional/Result.hpp>
 
-namespace highp::network {
+namespace highp::net {
     class TcpClientSocket;
 
     /// <summary>

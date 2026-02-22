@@ -5,7 +5,7 @@ namespace highp::log {
     class Logger;
 }
 
-namespace highp::network {
+namespace highp::net {
     /// <summary>소켓 옵션을 설정하는 빌더 클래스</summary>
     class SocketOptionBuilder final {
     public:

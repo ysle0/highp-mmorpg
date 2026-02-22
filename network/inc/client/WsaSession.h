@@ -8,7 +8,7 @@ namespace highp::log {
     class Logger;
 }
 
-namespace highp::network {
+namespace highp::net {
     class WsaSession final {
     public:
         using Res = fn::Result<void, err::ENetworkError>;

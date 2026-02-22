@@ -4,7 +4,7 @@
 #include <error/NetworkError.h>
 #include "transport/NetworkTransport.hpp"
 
-namespace highp::network {
+namespace highp::net {
     /// <summary>
     /// 소켓 추상화 인터페이스.
     /// TCP/UDP 등 전송 프로토콜에 관계없이 일관된 소켓 API를 제공한다.

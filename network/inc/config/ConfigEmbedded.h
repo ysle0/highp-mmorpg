@@ -2,7 +2,7 @@
 // Auto-generated from: echo\echo-server\config.compile.toml
 // Do not edit manually. Run embed_config.ps1 to regenerate.
 
-namespace highp::network {
+namespace highp::net::internal {
     inline constexpr auto NETWORK_CONFIG = R"TOML(
 # Echo Server Compile-time Configuration
 # These values are embedded at compile time for static buffer sizes.
@@ -14,4 +14,4 @@ buffer_size = 4096
 [network]
 client_ip_buffer_size = 32
 )TOML";
-} // namespace highp::echo_srv
+} // namespace highp::net::internal

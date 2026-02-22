@@ -11,7 +11,7 @@
 #include <memory>
 #include <vector>
 
-namespace highp::network {
+namespace highp::net {
     class ISocket;
 
     /// <summary>
@@ -71,16 +71,16 @@ namespace highp::network {
 
     private:
         /// <summary>IOCP 완료 이벤트 핸들러</summary>
-        void OnCompletion(CompletionEvent event);
+        void OnCompletion(internal::CompletionEvent event);
 
         /// <summary>Accept 후 클라이언트 초기화 (IocpAcceptor 콜백)</summary>
-        void SetupClient(AcceptContext& ctx);
+        void SetupClient(internal::AcceptContext& ctx);
 
         /// <summary>Recv 완료 핸들러</summary>
-        void HandleRecv(CompletionEvent& event);
+        void HandleRecv(internal::CompletionEvent& event);
 
         /// <summary>Send 완료 핸들러</summary>
-        void HandleSend(CompletionEvent& event);
+        void HandleSend(internal::CompletionEvent& event);
 
         /// <summary>Client 풀에서 사용 가능한 슬롯을 찾는다</summary>
         std::shared_ptr<Client> FindAvailableClient();
@@ -89,12 +89,12 @@ namespace highp::network {
         std::shared_ptr<SocketOptionBuilder> _socketOptionBuilder;
         IServerHandler* _handler = nullptr;
 
-        std::unique_ptr<IocpIoMultiplexer> _iocp;
-        std::unique_ptr<IocpAcceptor> _acceptor;
+        std::unique_ptr<internal::IocpIoMultiplexer> _iocp;
+        std::unique_ptr<internal::IocpAcceptor> _acceptor;
 
         std::vector<std::shared_ptr<Client>> _clientPool;
         std::atomic<size_t> _connectedClientCount{0};
 
         NetworkCfg _config;
     };
-} // namespace highp::network
+} // namespace highp::net

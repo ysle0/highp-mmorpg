@@ -1,6 +1,6 @@
 #pragma once
 
-namespace highp::network {
+namespace highp::net {
     class ICompletionTarget {
     public:
         virtual ~ICompletionTarget() = default;
@@ -20,4 +20,4 @@ namespace highp::network {
 
         ULONG_PTR AsCompletionKey() const noexcept { return reinterpret_cast<ULONG_PTR>(this); }
     };
-} // namespace highp::network
+} // namespace highp::net

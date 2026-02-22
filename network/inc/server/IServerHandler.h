@@ -3,7 +3,7 @@
 #include "client/windows/Client.h"
 #include <span>
 
-namespace highp::network {
+namespace highp::net {
     /// <summary>
     /// 서버 이벤트 핸들러 인터페이스.
     /// 앱 레이어에서 구현하여 ServerCore에 주입한다.

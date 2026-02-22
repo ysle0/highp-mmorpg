@@ -1,7 +1,7 @@
 #pragma once
-#include "framework.h"
+#include "platform.h"
 
-namespace highp::network {
+namespace highp::net {
     /// <summary>
     /// 전송 프로토콜 유형 열거형.
     /// </summary>

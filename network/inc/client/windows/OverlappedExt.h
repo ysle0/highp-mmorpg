@@ -3,7 +3,7 @@
 #include "EIoType.h"
 #include "config/Const.h"
 
-namespace highp::network {
+namespace highp::net::internal {
     struct OverlappedBase {
         WSAOVERLAPPED overlapped;
         EIoType ioType;

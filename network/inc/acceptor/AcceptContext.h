@@ -1,7 +1,7 @@
 #pragma once
 #include "platform.h"
 
-namespace highp::network {
+namespace highp::net::internal {
     /// <summary>
     /// AcceptEx 완료 후 전달되는 연결 정보 구조체.
     /// Acceptor::OnAcceptComplete()에서 생성되어 AcceptCallback으로 전달된다.

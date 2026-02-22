@@ -2,7 +2,7 @@
 #include "ISocket.h"
 #include <logger/Logger.hpp>
 
-namespace highp::network {
+namespace highp::net {
     /// <summary>
     /// 비동기 소켓 기본 구현 클래스.
     /// ISocket 인터페이스의 공통 구현을 제공하며, 플랫폼별 구현체의 기반 클래스로 사용된다.

@@ -2,7 +2,7 @@
 #include "socket/SocketOptionBuilder.h"
 #include <logger/Logger.hpp>
 
-namespace highp::network {
+namespace highp::net {
     SocketOptionBuilder::SocketOptionBuilder(
         std::shared_ptr<log::Logger> logger
     ) : _logger(logger) {

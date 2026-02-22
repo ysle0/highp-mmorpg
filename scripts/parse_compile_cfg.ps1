@@ -115,7 +115,7 @@ $code = @"
 
 #include <Windows.h>
 
-namespace highp::network {
+namespace highp::net {
 
 /// <summary>
 /// Compile-time network constants.
@@ -157,7 +157,7 @@ foreach ($sectionName in $sections.Keys | Sort-Object)
 $code += @"
 };
 
-} // namespace highp::network
+} // namespace highp::net
 "@
 
 $code | Out-File -FilePath $OutputPath -Encoding UTF8 -NoNewline

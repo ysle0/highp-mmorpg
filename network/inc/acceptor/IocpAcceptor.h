@@ -11,9 +11,11 @@
 #include <memory>
 #include <set>
 
-namespace highp::network {
+namespace highp::net {
     class SocketOptionBuilder;
+}
 
+namespace highp::net::internal {
     /// <summary>
     /// AcceptEx 기반 비동기 연결 수락을 담당하는 클래스.
     /// WSAIoctl로 AcceptEx 함수 포인터를 획득하여 간접 호출 방식을 사용한다.

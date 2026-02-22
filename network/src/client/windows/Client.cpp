@@ -2,10 +2,10 @@
 
 #include "client/windows/Client.h"
 
-namespace highp::network {
+namespace highp::net {
     Client::Client() {
-        ZeroMemory(&recvOverlapped, sizeof(RecvOverlapped));
-        ZeroMemory(&sendOverlapped, sizeof(SendOverlapped));
+        ZeroMemory(&recvOverlapped, sizeof(internal::RecvOverlapped));
+        ZeroMemory(&sendOverlapped, sizeof(internal::SendOverlapped));
     }
 
     Client::~Client() noexcept {
@@ -16,7 +16,7 @@ namespace highp::network {
         ZeroMemory(&recvOverlapped.overlapped, sizeof(WSAOVERLAPPED));
         recvOverlapped.bufDesc.buf = recvOverlapped.buf;
         recvOverlapped.bufDesc.len = std::size(recvOverlapped.buf);
-        recvOverlapped.ioType = EIoType::Recv;
+        recvOverlapped.ioType = internal::EIoType::Recv;
 
         DWORD flags = 0;
         DWORD recvNumBytes = 0;
@@ -43,7 +43,7 @@ namespace highp::network {
         CopyMemory(sendOverlapped.buf, data.data(), len);
         sendOverlapped.bufDesc.buf = sendOverlapped.buf;
         sendOverlapped.bufDesc.len = len;
-        sendOverlapped.ioType = EIoType::Send;
+        sendOverlapped.ioType = internal::EIoType::Send;
 
         DWORD sendNumBytes = 0;
 
@@ -79,4 +79,4 @@ namespace highp::network {
 
         socket = INVALID_SOCKET;
     }
-} // namespace highp::network
+} // namespace highp::net
