@@ -37,7 +37,6 @@ namespace highp::network {
         _acceptor = std::make_unique<IocpAcceptor>(
             _logger,
             _socketOptionBuilder,
-            _config.server.backlog,
             std::bind_front(&ServerLifeCycle::OnAcceptInternal, this)
         );
 
@@ -96,7 +95,10 @@ namespace highp::network {
         case EIoType::Accept:
             if (_acceptor) {
                 auto* overlapped = reinterpret_cast<AcceptOverlapped*>(event.overlapped);
-                _acceptor->OnAcceptComplete(overlapped, event.bytesTransferred);
+                if (!_acceptor->OnAcceptComplete(overlapped, event.bytesTransferred)) {
+                    _logger->Error("Failed to complete AcceptEx.");
+                    return;
+                }
             }
             break;
 

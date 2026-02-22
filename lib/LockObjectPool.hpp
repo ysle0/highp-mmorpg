@@ -3,6 +3,7 @@
 #include <memory>
 #include <mutex>
 #include <vector>
+#include <concepts>
 
 namespace highp::mem {
     /// <summary>

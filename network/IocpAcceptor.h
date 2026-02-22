@@ -4,20 +4,15 @@
 #include "AcceptContext.h"
 #include "OverlappedExt.h"
 #include <Logger.hpp>
-#include <ObjectPool.hpp>
+#include <HybridObjectPool.hpp>
 #include <Result.hpp>
 #include <NetworkError.h>
 #include <functional>
 #include <memory>
+#include <set>
 
 namespace highp::network {
     class SocketOptionBuilder;
-
-    /// <summary>
-    /// Accept 완료 시 호출되는 콜백 함수 타입.
-    /// IocpAcceptor::SetAcceptCallback()으로 등록하며, AcceptContext를 인자로 받는다.
-    /// </summary>
-    using AcceptCallback = std::function<void(AcceptContext&)>;
 
     /// <summary>
     /// AcceptEx 기반 비동기 연결 수락을 담당하는 클래스.
@@ -26,12 +21,16 @@ namespace highp::network {
     /// <remarks>
     /// 사용 순서:
     /// 1. Initialize()로 Listen 소켓을 IOCP에 연결하고 AcceptEx 함수 로드
-    /// 2. SetAcceptCallback()으로 연결 수락 콜백 등록
     /// 3. PostAccepts()로 비동기 Accept 요청
     /// 4. IOCP Worker에서 Accept 완료 시 OnAcceptComplete() 호출
     /// 5. Shutdown()으로 정리
     /// </remarks>
     class IocpAcceptor final {
+        /// <summary>
+        /// Accept 완료 시 호출되는 콜백 함수 타입.
+        /// </summary>
+        using AcceptCallback = std::function<void(AcceptContext&)>;
+
     public:
         /// <summary>IocpAcceptor 작업 결과 타입</summary>
         using Res = fn::Result<void, err::ENetworkError>;
@@ -41,12 +40,10 @@ namespace highp::network {
         /// </summary>
         /// <param name="logger">로깅에 사용할 Logger 인스턴스</param>
         /// <param name="socketOptionBuilder">소켓 옵션 설정을 위한 빌더 (선택적)</param>
-        /// <param name="preAllocCount">사전 할당할 Overlapped 개수. 기본값 10.</param>
         /// <param name="onAfterAccept">Accept 완료 콜백 (선택적). RAII 원칙에 따라 생성 시 설정 권장.</param>
         explicit IocpAcceptor(
             std::shared_ptr<log::Logger> logger,
             std::shared_ptr<SocketOptionBuilder> socketOptionBuilder = nullptr,
-            int preAllocCount = 10,
             AcceptCallback onAfterAccept = nullptr);
 
         /// <summary>
@@ -104,12 +101,6 @@ namespace highp::network {
         Res OnAcceptComplete(AcceptOverlapped* overlapped, DWORD bytesTransferred);
 
         /// <summary>
-        /// Accept 완료 시 호출될 콜백을 등록한다.
-        /// </summary>
-        /// <param name="onAfterAccept">연결 수락 시 호출될 콜백 함수</param>
-        void SetAcceptCallback(AcceptCallback callback);
-
-        /// <summary>
         /// IocpAcceptor를 종료하고 리소스를 정리한다.
         /// </summary>
         void Shutdown();
@@ -125,27 +116,6 @@ namespace highp::network {
         /// </remarks>
         Res LoadAcceptExFunctions();
 
-        /// <summary>
-        /// Accept용 소켓을 생성한다.
-        /// </summary>
-        /// <returns>생성된 소켓 핸들. 실패 시 InvalidSocket.</returns>
-        /// <remarks>
-        /// WSA_FLAG_OVERLAPPED 플래그로 비동기 I/O 가능한 소켓을 생성한다.
-        /// </remarks>
-        SocketHandle CreateAcceptSocket();
-
-        /// <summary>
-        /// 풀에서 사용 가능한 AcceptOverlapped를 획득한다.
-        /// </summary>
-        /// <returns>사용 가능한 AcceptOverlapped 포인터. 풀이 비어있으면 nullptr.</returns>
-        AcceptOverlapped* AcquireAcceptOverlapped();
-
-        /// <summary>
-        /// 사용 완료된 AcceptOverlapped를 풀에 반환한다.
-        /// </summary>
-        /// <param name="overlapped">반환할 AcceptOverlapped 포인터</param>
-        void ReleaseOverlapped(AcceptOverlapped* overlapped);
-
         std::shared_ptr<log::Logger> _logger;
         std::shared_ptr<SocketOptionBuilder> _socketOptionBuilder;
         SocketHandle _listenSocket = InvalidSocket;
@@ -157,7 +127,10 @@ namespace highp::network {
         /// <summary>GetAcceptExSockAddrs 함수 포인터. WSAIoctl로 획득.</summary>
         LPFN_GETACCEPTEXSOCKADDRS _fnGetAcceptExSockAddrs = nullptr;
 
-        mem::ObjectPool<AcceptOverlapped> _overlappedPool;
         AcceptCallback _acceptCallback;
+
+        std::mutex _ioPendingOverlappedsLock;
+
+        std::set<AcceptOverlapped*> _ioPendingOverlappeds;
     };
 }

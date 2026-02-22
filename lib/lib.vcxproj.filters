@@ -51,11 +51,17 @@
     <ClInclude Include="Errors.hpp">
       <Filter>inc\error</Filter>
     </ClInclude>
-    <ClInclude Include="ObjectPool.hpp">
+    <ClInclude Include="LockObjectPool.hpp">
       <Filter>inc\memory</Filter>
     </ClInclude>
     <ClInclude Include="NetworkError.h">
       <Filter>inc\error</Filter>
+    </ClInclude>
+    <ClInclude Include="ThreadLocalPool.hpp">
+      <Filter>inc\memory</Filter>
+    </ClInclude>
+    <ClInclude Include="HybridObjectPool.hpp">
+      <Filter>inc\memory</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

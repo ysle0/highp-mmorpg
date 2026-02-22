@@ -160,6 +160,7 @@
         <ClInclude Include="pch.h"/>
         <ClInclude Include="Result.hpp"/>
         <ClInclude Include="TextLogger.h"/>
+        <ClInclude Include="ThreadLocalPool.hpp"/>
     </ItemGroup>
     <ItemGroup>
         <ClCompile Include="lib.cpp"/>

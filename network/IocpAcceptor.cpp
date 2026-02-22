@@ -1,4 +1,5 @@
 #include "pch.h"
+
 #include "IocpAcceptor.h"
 #include "SocketOptionBuilder.h"
 
@@ -6,13 +7,10 @@ namespace highp::network {
     IocpAcceptor::IocpAcceptor(
         std::shared_ptr<log::Logger> logger,
         std::shared_ptr<SocketOptionBuilder> socketOptionsBuilder,
-        int preAllocCount,
         AcceptCallback onAfterAccept
-    )
-        : _logger(logger)
-          , _socketOptionBuilder(socketOptionsBuilder)
-          , _overlappedPool(preAllocCount)
-          , _acceptCallback(std::move(onAfterAccept)) {
+    ) : _logger(logger)
+        , _socketOptionBuilder(socketOptionsBuilder)
+        , _acceptCallback(std::move(onAfterAccept)) {
     }
 
     IocpAcceptor::~IocpAcceptor() {
@@ -34,7 +32,6 @@ namespace highp::network {
             return Res::Err(err::ENetworkError::SocketCreateFailed);
         }
 
-
         // 0) 원본 C++17 if with initializer 로 2줄 -> 1줄로 줄이기!
         //if (auto res = LoadAcceptExFunctions(); res.HasErr()) {
         //	return res;
@@ -52,8 +49,7 @@ namespace highp::network {
         // 2) macro GUARD(expr)
         GUARD(LoadAcceptExFunctions());
 
-        _logger->Info("IocpAcceptor initialized. listen socket associated with IOCP. pre-allocated overlappeds: {}",
-                      _overlappedPool.AvailableCount());
+        _logger->Info("IocpAcceptor initialized. listen socket associated with IOCP.");
         return Res::Ok();
     }
 
@@ -98,39 +94,28 @@ namespace highp::network {
         return Res::Ok();
     }
 
-    SocketHandle IocpAcceptor::CreateAcceptSocket() {
-        SocketHandle socket = WSASocketW(
+    IocpAcceptor::Res IocpAcceptor::PostAccept() {
+        SocketHandle acceptSocket = WSASocketW(
             AF_INET,
             SOCK_STREAM,
             IPPROTO_TCP,
             nullptr,
             0,
             WSA_FLAG_OVERLAPPED);
-
-        return socket;
-    }
-
-    AcceptOverlapped* IocpAcceptor::AcquireAcceptOverlapped() {
-        return _overlappedPool.Acquire();
-    }
-
-    void IocpAcceptor::ReleaseOverlapped(AcceptOverlapped* overlapped) {
-        _overlappedPool.Release(overlapped);
-    }
-
-    IocpAcceptor::Res IocpAcceptor::PostAccept() {
-        auto* overlapped = AcquireAcceptOverlapped();
-
-        SocketHandle acceptSocket = CreateAcceptSocket();
         if (acceptSocket == InvalidSocket) {
-            ReleaseOverlapped(overlapped);
             _logger->Error("Failed to create accept socket. error: {}", WSAGetLastError());
             return Res::Err(err::ENetworkError::SocketCreateFailed);
         }
 
+        auto* overlapped = mem::HybridObjectPool<AcceptOverlapped>::Get();
         ZeroMemory(&overlapped->overlapped, sizeof(WSAOVERLAPPED));
         overlapped->ioType = EIoType::Accept;
         overlapped->clientSocket = acceptSocket;
+
+        {
+            std::scoped_lock lock(_ioPendingOverlappedsLock);
+            _ioPendingOverlappeds.insert(overlapped);
+        }
 
         DWORD bytesReceived = 0;
         constexpr DWORD addrLen = sizeof(SOCKADDR_IN) + 16;
@@ -146,12 +131,15 @@ namespace highp::network {
             addrLen,
             &bytesReceived,
             reinterpret_cast<LPOVERLAPPED>(overlapped));
-
         if (result == FALSE) {
-            DWORD err = WSAGetLastError();
-            if (err != ERROR_IO_PENDING) {
+            if (DWORD err = WSAGetLastError(); err != ERROR_IO_PENDING) {
                 closesocket(acceptSocket);
-                ReleaseOverlapped(overlapped);
+                {
+                    std::scoped_lock lock(_ioPendingOverlappedsLock);
+                    _ioPendingOverlappeds.erase(overlapped);
+                }
+                mem::HybridObjectPool<AcceptOverlapped>::Return(overlapped);
+
                 _logger->Error("AcceptEx failed. error: {}", err);
                 return Res::Err(err::ENetworkError::SocketPostAcceptFailed);
             }
@@ -170,20 +158,32 @@ namespace highp::network {
 
     IocpAcceptor::Res IocpAcceptor::OnAcceptComplete(AcceptOverlapped* overlapped, DWORD bytesTransferred) {
         if (overlapped == nullptr || overlapped->ioType != EIoType::Accept) {
+            _logger->Error("Invalid AcceptEx overlapped. actual: {}, expected: Accept.",
+                           EIoTypeHelper::ToString(overlapped->ioType));
+
+            {
+                std::scoped_lock lock(_ioPendingOverlappedsLock);
+                _ioPendingOverlappeds.erase(overlapped);
+            }
+            mem::HybridObjectPool<AcceptOverlapped>::Return(overlapped);
+
             return Res::Err(err::ENetworkError::SocketAcceptFailed);
         }
 
-        int result = setsockopt(
+        const auto result = _socketOptionBuilder->SetUpdateAcceptContext(
             overlapped->clientSocket,
-            SOL_SOCKET,
-            SO_UPDATE_ACCEPT_CONTEXT,
-            reinterpret_cast<char*>(&_listenSocket),
-            sizeof(_listenSocket));
+            _listenSocket);
 
         if (result == SOCKET_ERROR) {
             _logger->Error("SO_UPDATE_ACCEPT_CONTEXT failed. error: {}", WSAGetLastError());
+
             closesocket(overlapped->clientSocket);
-            ReleaseOverlapped(overlapped);
+            {
+                std::scoped_lock lock(_ioPendingOverlappedsLock);
+                _ioPendingOverlappeds.erase(overlapped);
+            }
+            mem::HybridObjectPool<AcceptOverlapped>::Return(overlapped);
+
             return Res::Err(err::ENetworkError::SocketAcceptFailed);
         }
 
@@ -204,31 +204,39 @@ namespace highp::network {
             &remoteAddrLen);
 
         if (_acceptCallback) {
-            AcceptContext ctx;
-            ctx.acceptSocket = overlapped->clientSocket;
-            ctx.listenSocket = _listenSocket;
-            if (localAddr) ctx.localAddr = *localAddr;
-            if (remoteAddr) ctx.remoteAddr = *remoteAddr;
-
+            AcceptContext ctx{
+                .acceptSocket = overlapped->clientSocket,
+                .listenSocket = _listenSocket,
+                .localAddr = localAddr ? *localAddr : SOCKADDR_IN{},
+                .remoteAddr = remoteAddr ? *remoteAddr : SOCKADDR_IN{}
+            };
             _acceptCallback(ctx);
         }
 
-        ReleaseOverlapped(overlapped);
+        {
+            std::scoped_lock lock(_ioPendingOverlappedsLock);
+            _ioPendingOverlappeds.erase(overlapped);
+        }
+        mem::HybridObjectPool<AcceptOverlapped>::Return(overlapped);
 
         // 3) 매크로 처리 + 후속 실행함수 추가
-        GUARD_EFFECT(PostAccept(), [this]() {
+        GUARD_EFFECT(PostAccept(), [this] {
                      _logger->Error("Failed to re-post AcceptEx after completion.");
                      });
 
         return Res::Ok();
     }
 
-    void IocpAcceptor::SetAcceptCallback(AcceptCallback callback) {
-        _acceptCallback = std::move(callback);
-    }
-
     void IocpAcceptor::Shutdown() {
-        _overlappedPool.Clear();
+        _logger->Info("IocpAcceptor shutdown start.");
+        {
+            std::scoped_lock lock(_ioPendingOverlappedsLock);
+            for (auto* o : _ioPendingOverlappeds) {
+                CancelIoEx(reinterpret_cast<HANDLE>(_listenSocket),
+                           &o->overlapped);
+            }
+        }
+        // _overlappedPool.Clear();
         _fnAcceptEx = nullptr;
         _fnGetAcceptExSockAddrs = nullptr;
         _logger->Info("IocpAcceptor shutdown complete.");

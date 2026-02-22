@@ -1,4 +1,5 @@
 #pragma once
+#include <string>
 
 namespace highp::network {
     /// <summary>
@@ -18,5 +19,20 @@ namespace highp::network {
 
         /// <summary>연결 해제 작업</summary>
         Disconnect
+    };
+
+    class EIoTypeHelper {
+    public:
+        EIoTypeHelper() = delete;
+
+        static constexpr std::string ToString(EIoType type) {
+            switch (type) {
+            case EIoType::Accept: return "Accept";
+            case EIoType::Recv: return "Recv";
+            case EIoType::Send: return "Send";
+            case EIoType::Disconnect: return "Disconnect";
+            default: return "Unknown";
+            }
+        }
     };
 }
