@@ -73,8 +73,8 @@ namespace highp::network {
         /// <summary>IOCP 완료 이벤트 핸들러</summary>
         void OnCompletion(CompletionEvent event);
 
-        /// <summary>Accept 완료 핸들러</summary>
-        void OnAcceptInternal(AcceptContext& ctx);
+        /// <summary>Accept 후 클라이언트 초기화 (IocpAcceptor 콜백)</summary>
+        void SetupClient(AcceptContext& ctx);
 
         /// <summary>Recv 완료 핸들러</summary>
         void HandleRecv(CompletionEvent& event);

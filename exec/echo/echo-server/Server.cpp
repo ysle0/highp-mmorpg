@@ -16,19 +16,21 @@ Server::Server(
 
 Server::Res
 Server::Start(std::shared_ptr<network::ISocket> listenSocket) {
-    _core = std::make_unique<network::ServerLifeCycle>(
-        _logger, _socketOptionBuilder, this);
+    _lifecycle = std::make_unique<network::ServerLifeCycle>(
+        _logger,
+        _socketOptionBuilder,
+        this);
 
-    GUARD(_core->Start(listenSocket, _config));
+    GUARD(_lifecycle->Start(listenSocket, _config));
 
     _logger->Info("Server started on port {}.", _config.server.port);
     return Res::Ok();
 }
 
 void Server::Stop() {
-    if (_core) {
-        _core->Stop();
-        _core.reset();
+    if (_lifecycle) {
+        _lifecycle->Stop();
+        _lifecycle.reset();
     }
 }
 
@@ -45,13 +47,13 @@ void Server::OnRecv(std::shared_ptr<network::Client> client,
 
     // Echo: 받은 데이터 그대로 전송
     if (!client->PostSend(recvData)) {
-        _core->CloseClient(client, true);
+        _lifecycle->CloseClient(client, true);
         return;
     }
 
     // 다음 수신 대기
     if (!client->PostRecv()) {
-        _core->CloseClient(client, true);
+        _lifecycle->CloseClient(client, true);
     }
 }
 

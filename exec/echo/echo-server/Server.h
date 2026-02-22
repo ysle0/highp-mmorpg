@@ -74,5 +74,5 @@ private:
     network::NetworkCfg _config;
 
     /// <summary>서버 코어. 공통 네트워크 로직 담당.</summary>
-    std::unique_ptr<network::ServerLifeCycle> _core;
+    std::unique_ptr<network::ServerLifeCycle> _lifecycle;
 };

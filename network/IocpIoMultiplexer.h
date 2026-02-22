@@ -158,7 +158,7 @@ namespace highp::network {
         /// GetQueuedCompletionStatus()로 완료 이벤트를 대기하고 콜백을 호출한다.
         /// </summary>
         /// <param name="st">스레드 중지 토큰 (std::jthread 제공)</param>
-        void WorkerLoop(std::stop_token st);
+        void WorkerLoop(std::stop_token st) const;
 
         /// <summary>로거 인스턴스</summary>
         std::shared_ptr<log::Logger> _logger;

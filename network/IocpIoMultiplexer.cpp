@@ -81,7 +81,7 @@ namespace highp::network {
 
     bool IocpIoMultiplexer::IsRunning() const noexcept { return _isRunning.load(); }
 
-    void IocpIoMultiplexer::WorkerLoop(std::stop_token st) {
+    void IocpIoMultiplexer::WorkerLoop(std::stop_token st) const {
         while (!st.stop_requested() && _isRunning.load()) {
             DWORD bytesTransferred = 0;
             ULONG_PTR completionKey = 0;

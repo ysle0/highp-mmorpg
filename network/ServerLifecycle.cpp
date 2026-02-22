@@ -37,7 +37,7 @@ namespace highp::network {
         _acceptor = std::make_unique<IocpAcceptor>(
             _logger,
             _socketOptionBuilder,
-            std::bind_front(&ServerLifeCycle::OnAcceptInternal, this)
+            std::bind_front(&ServerLifeCycle::SetupClient, this)
         );
 
         GUARD_EFFECT(
@@ -110,13 +110,14 @@ namespace highp::network {
             HandleSend(event);
             break;
 
+        case EIoType::Disconnect:
         default:
             _logger->Error("Unknown IO type received.");
             break;
         }
     }
 
-    void ServerLifeCycle::OnAcceptInternal(AcceptContext& ctx) {
+    void ServerLifeCycle::SetupClient(AcceptContext& ctx) {
         const std::shared_ptr<Client> client = FindAvailableClient();
         if (!client) {
             _logger->Error("Client pool full!");
