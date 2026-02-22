@@ -3,71 +3,71 @@
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="framework.h" />
-    <ClInclude Include="ELoggerVerbosity.h">
+    <ClInclude Include="inc\logger\ELoggerVerbosity.h">
       <Filter>inc\logger</Filter>
     </ClInclude>
-    <ClInclude Include="ILogger.h">
+    <ClInclude Include="inc\logger\ILogger.h">
       <Filter>inc\logger</Filter>
     </ClInclude>
-    <ClInclude Include="LoggerOptions.h">
+    <ClInclude Include="inc\logger\LoggerOptions.h">
       <Filter>inc\logger</Filter>
     </ClInclude>
-    <ClInclude Include="macro.h">
+    <ClInclude Include="inc\macro\macro.h">
       <Filter>inc\macro</Filter>
     </ClInclude>
-    <ClInclude Include="TextLogger.h">
+    <ClInclude Include="inc\logger\TextLogger.h">
       <Filter>inc\logger</Filter>
     </ClInclude>
-    <ClInclude Include="Result.hpp">
+    <ClInclude Include="inc\functional\Result.hpp">
       <Filter>inc\functional</Filter>
     </ClInclude>
-    <ClInclude Include="compileTime\Config.hpp">
+    <ClInclude Include="inc\config\compileTime\Config.hpp">
       <Filter>inc\config\compileTime</Filter>
     </ClInclude>
-    <ClInclude Include="compileTime\StringUtils.hpp">
+    <ClInclude Include="inc\config\compileTime\StringUtils.hpp">
       <Filter>inc\config\compileTime</Filter>
     </ClInclude>
-    <ClInclude Include="compileTime\TomlEntry.hpp">
+    <ClInclude Include="inc\config\compileTime\TomlEntry.hpp">
       <Filter>inc\config\compileTime</Filter>
     </ClInclude>
-    <ClInclude Include="compileTime\TomlParser.hpp">
+    <ClInclude Include="inc\config\compileTime\TomlParser.hpp">
       <Filter>inc\config\compileTime</Filter>
     </ClInclude>
-    <ClInclude Include="runTime\Config.hpp">
+    <ClInclude Include="inc\config\runTime\Config.hpp">
       <Filter>inc\config\runTime</Filter>
     </ClInclude>
-    <ClInclude Include="runTime\StringUtils.hpp">
+    <ClInclude Include="inc\config\runTime\StringUtils.hpp">
       <Filter>inc\config\runTime</Filter>
     </ClInclude>
-    <ClInclude Include="runTime\TomlEntry.hpp">
+    <ClInclude Include="inc\config\runTime\TomlEntry.hpp">
       <Filter>inc\config\runTime</Filter>
     </ClInclude>
-    <ClInclude Include="runTime\TomlParser.hpp">
+    <ClInclude Include="inc\config\runTime\TomlParser.hpp">
       <Filter>inc\config\runTime</Filter>
     </ClInclude>
-    <ClInclude Include="Logger.hpp">
+    <ClInclude Include="inc\logger\Logger.hpp">
       <Filter>inc\logger</Filter>
     </ClInclude>
-    <ClInclude Include="Errors.hpp">
+    <ClInclude Include="inc\error\Errors.hpp">
       <Filter>inc\error</Filter>
     </ClInclude>
-    <ClInclude Include="LockObjectPool.hpp">
+    <ClInclude Include="inc\memory\LockObjectPool.hpp">
       <Filter>inc\memory</Filter>
     </ClInclude>
-    <ClInclude Include="NetworkError.h">
+    <ClInclude Include="inc\error\NetworkError.h">
       <Filter>inc\error</Filter>
     </ClInclude>
-    <ClInclude Include="ThreadLocalPool.hpp">
+    <ClInclude Include="inc\memory\ThreadLocalPool.hpp">
       <Filter>inc\memory</Filter>
     </ClInclude>
-    <ClInclude Include="HybridObjectPool.hpp">
+    <ClInclude Include="inc\memory\HybridObjectPool.hpp">
       <Filter>inc\memory</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="lib.cpp" />
     <ClCompile Include="pch.cpp" />
-    <ClCompile Include="TextLogger.cpp">
+    <ClCompile Include="src\logger\TextLogger.cpp">
       <Filter>src\logger</Filter>
     </ClCompile>
   </ItemGroup>

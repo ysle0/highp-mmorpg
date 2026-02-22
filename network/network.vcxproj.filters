@@ -62,113 +62,116 @@
   <ItemGroup>
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="ISocket.h">
+    <ClInclude Include="inc\socket\ISocket.h">
       <Filter>inc\socket</Filter>
     </ClInclude>
-    <ClInclude Include="WindowsAsyncSocket.h">
+    <ClInclude Include="inc\socket\WindowsAsyncSocket.h">
       <Filter>inc\socket</Filter>
     </ClInclude>
-    <ClInclude Include="AsyncSocket.h">
+    <ClInclude Include="inc\socket\AsyncSocket.h">
       <Filter>inc\socket</Filter>
     </ClInclude>
-    <ClInclude Include="platform.h">
+    <ClInclude Include="inc\platform.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="ConfigEmbedded.h">
+    <ClInclude Include="inc\config\ConfigEmbedded.h">
       <Filter>inc\config</Filter>
     </ClInclude>
-    <ClInclude Include="Const.h">
+    <ClInclude Include="inc\config\Const.h">
       <Filter>inc\config</Filter>
     </ClInclude>
-    <ClInclude Include="NetworkTransport.hpp">
+    <ClInclude Include="inc\transport\NetworkTransport.hpp">
       <Filter>inc\transport</Filter>
     </ClInclude>
-    <ClInclude Include="NetworkUtil.hpp">
+    <ClInclude Include="inc\util\NetworkUtil.hpp">
       <Filter>inc\util</Filter>
     </ClInclude>
-    <ClInclude Include="Client.h">
+    <ClInclude Include="inc\client\windows\Client.h">
       <Filter>inc\client\windows</Filter>
     </ClInclude>
-    <ClInclude Include="EIoType.h">
+    <ClInclude Include="inc\client\windows\EIoType.h">
       <Filter>inc\client\windows</Filter>
     </ClInclude>
-    <ClInclude Include="OverlappedExt.h">
+    <ClInclude Include="inc\client\windows\OverlappedExt.h">
       <Filter>inc\client\windows</Filter>
     </ClInclude>
-    <ClInclude Include="IocpIoMultiplexer.h">
+    <ClInclude Include="inc\io\windows\IocpIoMultiplexer.h">
       <Filter>inc\io\windows</Filter>
     </ClInclude>
-    <ClInclude Include="AcceptContext.h">
+    <ClInclude Include="inc\acceptor\AcceptContext.h">
       <Filter>inc\acceptor</Filter>
     </ClInclude>
-    <ClInclude Include="IocpAcceptor.h">
+    <ClInclude Include="inc\acceptor\IocpAcceptor.h">
       <Filter>inc\acceptor</Filter>
     </ClInclude>
-    <ClInclude Include="NetworkCfg.h">
+    <ClInclude Include="inc\config\NetworkCfg.h">
       <Filter>inc\config</Filter>
     </ClInclude>
-    <ClInclude Include="SocketHelper.h">
+    <ClInclude Include="inc\socket\SocketHelper.h">
       <Filter>inc\socket</Filter>
     </ClInclude>
-    <ClInclude Include="SocketOptionBuilder.h">
+    <ClInclude Include="inc\socket\SocketOptionBuilder.h">
       <Filter>inc\socket</Filter>
     </ClInclude>
-    <ClInclude Include="WsaSession.h">
+    <ClInclude Include="inc\client\WsaSession.h">
       <Filter>inc\client</Filter>
     </ClInclude>
-    <ClInclude Include="TcpClientSocket.h">
+    <ClInclude Include="inc\client\TcpClientSocket.h">
       <Filter>inc\client</Filter>
     </ClInclude>
-    <ClInclude Include="PacketStream.h">
+    <ClInclude Include="inc\client\PacketStream.h">
       <Filter>inc\client</Filter>
     </ClInclude>
-    <ClInclude Include="IServerHandler.h">
+    <ClInclude Include="inc\server\IServerHandler.h">
       <Filter>inc\server</Filter>
     </ClInclude>
-    <ClInclude Include="ServerLifecycle.h">
+    <ClInclude Include="inc\server\ServerLifecycle.h">
       <Filter>inc\server</Filter>
     </ClInclude>
-    <ClInclude Include="PacketServerHandler.h">
+    <ClInclude Include="inc\server\PacketServerHandler.h">
       <Filter>inc\server</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\io\CompletionTarget.hpp">
+      <Filter>inc\io</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="network.cpp" />
     <ClCompile Include="pch.cpp" />
-    <ClCompile Include="WindowsAsyncSocket.cpp">
+    <ClCompile Include="src\socket\WindowsAsyncSocket.cpp">
       <Filter>src\socket</Filter>
     </ClCompile>
-    <ClCompile Include="AsyncSocket.cpp">
+    <ClCompile Include="src\socket\AsyncSocket.cpp">
       <Filter>src\socket</Filter>
     </ClCompile>
-    <ClCompile Include="Client.cpp">
+    <ClCompile Include="src\client\windows\Client.cpp">
       <Filter>src\client\windows</Filter>
     </ClCompile>
-    <ClCompile Include="IocpIoMultiplexer.cpp">
+    <ClCompile Include="src\io\windows\IocpIoMultiplexer.cpp">
       <Filter>src\io\windows</Filter>
     </ClCompile>
-    <ClCompile Include="ServerLifecycle.cpp">
+    <ClCompile Include="src\ServerLifecycle.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="IocpAcceptor.cpp">
+    <ClCompile Include="src\acceptor\IocpAcceptor.cpp">
       <Filter>src\acceptor</Filter>
     </ClCompile>
-    <ClCompile Include="SocketHelper.cpp">
+    <ClCompile Include="src\socket\SocketHelper.cpp">
       <Filter>src\socket</Filter>
     </ClCompile>
-    <ClCompile Include="SocketOptionBuilder.cpp">
+    <ClCompile Include="src\socket\SocketOptionBuilder.cpp">
       <Filter>src\socket</Filter>
     </ClCompile>
-    <ClCompile Include="WsaSession.cpp">
+    <ClCompile Include="src\client\WsaSession.cpp">
       <Filter>src\client</Filter>
     </ClCompile>
-    <ClCompile Include="TcpClientSocket.cpp">
+    <ClCompile Include="src\client\TcpClientSocket.cpp">
       <Filter>src\client</Filter>
     </ClCompile>
-    <ClCompile Include="PacketStream.cpp">
+    <ClCompile Include="src\client\PacketStream.cpp">
       <Filter>src\client</Filter>
     </ClCompile>
-    <ClCompile Include="PacketServerHandler.cpp">
+    <ClCompile Include="src\server\PacketServerHandler.cpp">
       <Filter>src\server</Filter>
     </ClCompile>
   </ItemGroup>

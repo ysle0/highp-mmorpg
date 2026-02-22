@@ -66,12 +66,12 @@ Client sends → GQCS wakes worker → OnRecv → PostSend(echo) → PostRecv()
 
 ## Configuration System
 
-**Compile-time** (`network/config.compile.toml` → `network/Const.h`):
+**Compile-time** (`network/config.compile.toml` → `network/inc/config/Const.h`):
 
 - Buffer sizes (recv: 4096, send: 1024)
 - Run `parse_compile_cfg.ps1` after changes
 
-**Runtime** (`echo/echo-server/config.runtime.toml` → `network/NetworkCfg.h`):
+**Runtime** (`echo/echo-server/config.runtime.toml` → `network/inc/config/NetworkCfg.h`):
 
 - Server port, max clients, thread counts
 - Supports env var overrides: `SERVER_PORT`, `SERVER_MAX_CLIENTS`
@@ -87,10 +87,16 @@ Client sends → GQCS wakes worker → OnRecv → PostSend(echo) → PostRecv()
 ## Project Structure
 
 ```
-network/          # Static library - async I/O primitives
-echo/echo-server/ # Echo server executable
-echo/echo-client/ # Test client executable
-lib/              # Shared utilities (Result, Logger, Errors)
-scripts/          # TOML → C++ header generators
-docs/             # Architecture documentation
+network/                # Static library - async I/O primitives
+  inc/                  #   Public headers (socket/, client/, server/, config/, etc.)
+  src/                  #   Implementation files
+exec/echo/echo-server/  # Echo server executable
+exec/echo/echo-client/  # Test client executable
+exec/chat/chat-server/  # Chat server executable
+lib/                    # Shared utilities
+  inc/                  #   Public headers (logger/, functional/, error/, memory/, etc.)
+  src/                  #   Implementation files
+scripts/                # TOML → C++ header generators
+docs/                   # Architecture documentation
+protocol/               # FlatBuffers schemas and generated code
 ```

@@ -1,4 +1,4 @@
-#include <Logger.hpp>
+#include <logger/Logger.hpp>
 #include <span>
 #include <utility>
 #include <vector>
@@ -16,7 +16,7 @@ EchoClient::~EchoClient() noexcept {
 bool EchoClient::Connect(const char* ipAddress, unsigned short port) {
     Disconnect();
 
-    auto sessionRes = network::WsaSession::Create(_logger);
+    auto sessionRes = net::WsaSession::Create(_logger);
     if (sessionRes.HasErr()) {
         _logger->Error("Failed to initialize WSA session.");
         return false;
@@ -25,7 +25,7 @@ bool EchoClient::Connect(const char* ipAddress, unsigned short port) {
     _logger->Info("Connecting to {}:{}", ipAddress, port);
 
     auto wsaSession = sessionRes.Data();
-    auto socket = std::make_unique<network::TcpClientSocket>(_logger, wsaSession);
+    auto socket = std::make_unique<net::TcpClientSocket>(_logger, wsaSession);
     if (auto res = socket->Connect(ipAddress, port); res.HasErr()) {
         _logger->Error("Connect failed.");
         return false;
@@ -33,7 +33,7 @@ bool EchoClient::Connect(const char* ipAddress, unsigned short port) {
 
     _wsaSession = std::move(wsaSession);
     _tcpClientSocket = std::move(socket);
-    _packetStream = std::make_unique<network::PacketStream>(*_tcpClientSocket);
+    _packetStream = std::make_unique<net::PacketStream>(*_tcpClientSocket);
 
     _logger->Info("Connected to {}:{}", ipAddress, port);
     return true;

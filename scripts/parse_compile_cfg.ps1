@@ -6,7 +6,7 @@ $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ProjectRoot = Split-Path -Parent $ScriptDir
 
 $TomlPath = Join-Path $ProjectRoot "network\config.compile.toml"
-$OutputPath = Join-Path $ProjectRoot "network\Const.h"
+$OutputPath = Join-Path $ProjectRoot "network\inc\config\Const.h"
 
 # Convert snake_case to PascalCase
 function ConvertTo-PascalCase
@@ -115,7 +115,7 @@ $code = @"
 
 #include <Windows.h>
 
-namespace highp::network {
+namespace highp::net {
 
 /// <summary>
 /// Compile-time network constants.
@@ -157,7 +157,7 @@ foreach ($sectionName in $sections.Keys | Sort-Object)
 $code += @"
 };
 
-} // namespace highp::network
+} // namespace highp::net
 "@
 
 $code | Out-File -FilePath $OutputPath -Encoding UTF8 -NoNewline

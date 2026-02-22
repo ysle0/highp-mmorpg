@@ -79,6 +79,7 @@
             <LanguageStandard>stdcpp20</LanguageStandard>
             <PrecompiledHeader>Use</PrecompiledHeader>
             <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+            <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)inc;$(SolutionDir)lib\inc;$(SolutionDir)protocol;</AdditionalIncludeDirectories>
         </ClCompile>
         <Link>
             <SubSystem>
@@ -97,6 +98,7 @@
             <LanguageStandard>stdcpp20</LanguageStandard>
             <PrecompiledHeader>Use</PrecompiledHeader>
             <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+            <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)inc;$(SolutionDir)lib\inc;$(SolutionDir)protocol;</AdditionalIncludeDirectories>
         </ClCompile>
         <Link>
             <SubSystem>
@@ -113,7 +115,7 @@
             <LanguageStandard>stdcpp20</LanguageStandard>
             <PrecompiledHeader>Use</PrecompiledHeader>
             <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-            <AdditionalIncludeDirectories>$(SolutionDir)lib;$(SolutionDir)protocol;</AdditionalIncludeDirectories>
+            <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)inc;$(SolutionDir)lib\inc;$(SolutionDir)protocol;</AdditionalIncludeDirectories>
         </ClCompile>
         <Link>
             <SubSystem>
@@ -132,6 +134,7 @@
             <LanguageStandard>stdcpp20</LanguageStandard>
             <PrecompiledHeader>Use</PrecompiledHeader>
             <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+            <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)inc;$(SolutionDir)lib\inc;$(SolutionDir)protocol;</AdditionalIncludeDirectories>
         </ClCompile>
         <Link>
             <SubSystem>
@@ -140,44 +143,46 @@
         </Link>
     </ItemDefinitionGroup>
     <ItemGroup>
-        <ClInclude Include="AcceptContext.h"/>
-        <ClInclude Include="CompletionTarget.hpp"/>
-        <ClInclude Include="IocpAcceptor.h"/>
-        <ClInclude Include="AsyncSocket.h"/>
-        <ClInclude Include="Client.h"/>
-        <ClInclude Include="ConfigEmbedded.h"/>
-        <ClInclude Include="Const.h"/>
-        <ClInclude Include="EIoType.h"/>
-        <ClInclude Include="IocpIoMultiplexer.h"/>
-        <ClInclude Include="IServerHandler.h"/>
-        <ClInclude Include="ServerLifecycle.h"/>
-        <ClInclude Include="OverlappedExt.h"/>
-        <ClInclude Include="NetworkUtil.hpp"/>
-        <ClInclude Include="PacketStream.h"/>
-        <ClInclude Include="platform.h"/>
-        <ClInclude Include="SocketHelper.h"/>
-        <ClInclude Include="SocketOptionBuilder.h"/>
-        <ClInclude Include="TcpClientSocket.h"/>
-        <ClInclude Include="WindowsAsyncSocket.h"/>
-        <ClInclude Include="WsaSession.h"/>
-        <ClInclude Include="ISocket.h"/>
-        <ClInclude Include="NetworkCfg.h"/>
-        <ClInclude Include="NetworkTransport.hpp"/>
+        <ClInclude Include="inc\acceptor\AcceptContext.h"/>
+        <ClInclude Include="inc\io\CompletionTarget.hpp"/>
+        <ClInclude Include="inc\acceptor\IocpAcceptor.h"/>
+        <ClInclude Include="inc\socket\AsyncSocket.h"/>
+        <ClInclude Include="inc\client\windows\Client.h"/>
+        <ClInclude Include="inc\config\ConfigEmbedded.h"/>
+        <ClInclude Include="inc\config\Const.h"/>
+        <ClInclude Include="inc\client\windows\EIoType.h"/>
+        <ClInclude Include="inc\io\windows\IocpIoMultiplexer.h"/>
+        <ClInclude Include="inc\server\IServerHandler.h"/>
+        <ClInclude Include="inc\server\ServerLifecycle.h"/>
+        <ClInclude Include="inc\client\windows\OverlappedExt.h"/>
+        <ClInclude Include="inc\util\NetworkUtil.hpp"/>
+        <ClInclude Include="inc\client\PacketStream.h"/>
+        <ClInclude Include="inc\platform.h"/>
+        <ClInclude Include="inc\socket\SocketHelper.h"/>
+        <ClInclude Include="inc\socket\SocketOptionBuilder.h"/>
+        <ClInclude Include="inc\client\TcpClientSocket.h"/>
+        <ClInclude Include="inc\socket\WindowsAsyncSocket.h"/>
+        <ClInclude Include="inc\client\WsaSession.h"/>
+        <ClInclude Include="inc\socket\ISocket.h"/>
+        <ClInclude Include="inc\config\NetworkCfg.h"/>
+        <ClInclude Include="inc\transport\NetworkTransport.hpp"/>
+        <ClInclude Include="inc\server\PacketServerHandler.h"/>
         <ClInclude Include="framework.h"/>
         <ClInclude Include="pch.h"/>
     </ItemGroup>
     <ItemGroup>
-        <ClCompile Include="IocpAcceptor.cpp"/>
-        <ClCompile Include="AsyncSocket.cpp"/>
-        <ClCompile Include="Client.cpp"/>
-        <ClCompile Include="IocpIoMultiplexer.cpp"/>
-        <ClCompile Include="PacketStream.cpp"/>
-        <ClCompile Include="ServerLifecycle.cpp"/>
-        <ClCompile Include="SocketHelper.cpp"/>
-        <ClCompile Include="SocketOptionBuilder.cpp"/>
-        <ClCompile Include="TcpClientSocket.cpp"/>
-        <ClCompile Include="WindowsAsyncSocket.cpp"/>
-        <ClCompile Include="WsaSession.cpp"/>
+        <ClCompile Include="src\acceptor\IocpAcceptor.cpp"/>
+        <ClCompile Include="src\socket\AsyncSocket.cpp"/>
+        <ClCompile Include="src\client\windows\Client.cpp"/>
+        <ClCompile Include="src\io\windows\IocpIoMultiplexer.cpp"/>
+        <ClCompile Include="src\client\PacketStream.cpp"/>
+        <ClCompile Include="src\ServerLifecycle.cpp"/>
+        <ClCompile Include="src\socket\SocketHelper.cpp"/>
+        <ClCompile Include="src\socket\SocketOptionBuilder.cpp"/>
+        <ClCompile Include="src\client\TcpClientSocket.cpp"/>
+        <ClCompile Include="src\socket\WindowsAsyncSocket.cpp"/>
+        <ClCompile Include="src\client\WsaSession.cpp"/>
+        <ClCompile Include="src\server\PacketServerHandler.cpp"/>
         <ClCompile Include="network.cpp"/>
         <ClCompile Include="pch.cpp">
             <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

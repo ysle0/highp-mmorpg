@@ -10,8 +10,8 @@
 // add headers that you want to pre-compile here
 #include "framework.h"
 
-#include "Logger.hpp"
-#include "Result.hpp"
-#include "TextLogger.h"
+#include "logger/Logger.hpp"
+#include "functional/Result.hpp"
+#include "logger/TextLogger.h"
 
 #endif //PCH_H

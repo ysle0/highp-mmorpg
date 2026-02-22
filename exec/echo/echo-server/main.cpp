@@ -1,26 +1,26 @@
 #include "Server.h"
-#include <Logger.hpp>
-#include <NetworkCfg.h>
-#include <SocketHelper.h>
-#include <SocketOptionBuilder.h>
-#include <TextLogger.h>
+#include <logger/Logger.hpp>
+#include <config/NetworkCfg.h>
+#include <socket/SocketHelper.h>
+#include <socket/SocketOptionBuilder.h>
+#include <logger/TextLogger.h>
 #include <iostream>
 
 using namespace highp;
 
 int main() {
     auto logger = log::Logger::Default<log::TextLogger>();
-    auto config = network::NetworkCfg::FromFile("config.runtime.toml");
-    auto transport = network::NetworkTransport(network::ETransport::TCP);
-    auto socketOptionBuilder = std::make_shared<network::SocketOptionBuilder>(logger);
+    auto c = net::NetworkCfg::FromFile("config.runtime.toml");
+    auto tp = net::NetworkTransport(net::ETransport::TCP);
+    auto sockOptBuilder = std::make_shared<net::SocketOptionBuilder>(logger);
 
-    auto listenSocket = network::SocketHelper::MakeDefaultListener(
+    auto listenSocket = net::SocketHelper::MakeDefaultListener(
         logger,
-        transport,
-        config,
-        socketOptionBuilder);
+        tp,
+        c,
+        sockOptBuilder);
 
-    Server es(logger, config, socketOptionBuilder);
+    Server es(logger, c, sockOptBuilder);
     if (!es.Start(listenSocket)) {
         logger->Error("Failed to start server.");
         return -1;
