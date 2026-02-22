@@ -19,7 +19,8 @@
       "Bash(findstr:*)",
       "Bash(Get-ChildItem -Recurse -Include *.cpp,*.h,*.hpp,*.toml,*.md -File)",
       "Bash(Where-Object {$_FullName -notlike \"*\\\\.git\\\\*\"})",
-      "Bash(Select-Object -ExpandProperty FullName)"
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(cd:*)"
     ]
   }
 }
