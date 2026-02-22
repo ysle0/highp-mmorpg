@@ -10,6 +10,7 @@ namespace highp.protocol;
 union Payload {
     // Client->Server
     messages.LoginRequest,
+    messages.LogoutRequest,
     messages.CreateRoomRequest,
     messages.JoinRoomRequest,
     messages.LeaveRoomRequest,

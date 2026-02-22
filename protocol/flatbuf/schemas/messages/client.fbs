@@ -8,6 +8,10 @@ table LoginRequest {
     username: string (required);
 }
 
+table LogoutRequest {
+    username: string (required);
+}
+
 // 방생성
 table CreateRoomRequest {
     room_name: string (required);
