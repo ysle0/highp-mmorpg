@@ -362,6 +362,9 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 
+# Benchmark binaries (Linux build output)
+exec/benchmark/pool_benchmark
+
 # Local AI tooling artifacts
 .claude/worktrees/
 /nul
