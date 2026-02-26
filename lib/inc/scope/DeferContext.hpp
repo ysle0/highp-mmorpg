@@ -6,12 +6,19 @@
 
 namespace highp::scope {
     template <typename T>
-    class DeferContext {
+    class [[nodiscard]] DeferContext {
         using DeferFn = std::function<void(T*)>;
 
     public:
-        explicit DeferContext(T* item, DeferFn deferFn)
-            : _item(item) {
+        // copy x, move ok
+        DeferContext(const DeferContext&) = delete;
+        DeferContext& operator=(const DeferContext&) = delete;
+        DeferContext(DeferContext&&) = default;
+        DeferContext& operator=(DeferContext&&) = default;
+
+        // 생성자에 deferFn 을 강제하는 이유는 단순히
+        // DeferContext 생성 이후 defer 호출강제를 언어적으로 지원할 수단이 없어서임.
+        explicit DeferContext(T* item, DeferFn deferFn) : _item(item) {
             _deferLists.emplace_back(std::move(deferFn));
         }
 
