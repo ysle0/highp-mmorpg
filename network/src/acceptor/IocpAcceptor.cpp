@@ -107,14 +107,20 @@ namespace highp::net::internal {
             return Res::Err(err::ENetworkError::SocketCreateFailed);
         }
 
-        auto* overlapped = mem::HybridObjectPool<AcceptOverlapped>::Get();
-        ZeroMemory(&overlapped->overlapped, sizeof(WSAOVERLAPPED));
-        overlapped->ioType = EIoType::Accept;
-        overlapped->clientSocket = acceptSocket;
+        auto overlappedItem = mem::HybridObjectPool<AcceptOverlapped>::Get();
+        overlappedItem.Defer([this](AcceptOverlapped* o) {
+            std::scoped_lock lock(_ioPendingOverlappedsLock);
+            _ioPendingOverlappeds.erase(o);
+        });
+
+        auto* acceptOverlapped = overlappedItem.Get();
+        ZeroMemory(&acceptOverlapped->overlapped, sizeof(WSAOVERLAPPED));
+        acceptOverlapped->ioType = EIoType::Accept;
+        acceptOverlapped->clientSocket = acceptSocket;
 
         {
             std::scoped_lock lock(_ioPendingOverlappedsLock);
-            _ioPendingOverlappeds.insert(overlapped);
+            _ioPendingOverlappeds.insert(acceptOverlapped);
         }
 
         DWORD bytesReceived = 0;
@@ -125,26 +131,22 @@ namespace highp::net::internal {
         BOOL result = _fnAcceptEx(
             _listenSocket,
             acceptSocket,
-            overlapped->buf,
+            acceptOverlapped->buf,
             0,
             addrLen,
             addrLen,
             &bytesReceived,
-            reinterpret_cast<LPOVERLAPPED>(overlapped));
+            reinterpret_cast<LPOVERLAPPED>(acceptOverlapped));
         if (result == FALSE) {
             if (DWORD err = WSAGetLastError(); err != ERROR_IO_PENDING) {
                 closesocket(acceptSocket);
-                {
-                    std::scoped_lock lock(_ioPendingOverlappedsLock);
-                    _ioPendingOverlappeds.erase(overlapped);
-                }
-                mem::HybridObjectPool<AcceptOverlapped>::Return(overlapped);
-
                 _logger->Error("AcceptEx failed. error: {}", err);
                 return Res::Err(err::ENetworkError::SocketPostAcceptFailed);
             }
         }
 
+        _logger->Debug("Posted AcceptEx request.");
+        overlappedItem.PreventReturn();
         return Res::Ok();
     }
 
@@ -157,16 +159,17 @@ namespace highp::net::internal {
     }
 
     IocpAcceptor::Res IocpAcceptor::OnAcceptComplete(AcceptOverlapped* overlapped, DWORD bytesTransferred) {
-        if (overlapped == nullptr || overlapped->ioType != EIoType::Accept) {
-            _logger->Error("Invalid AcceptEx overlapped. actual: {}, expected: Accept.",
-                           EIoTypeHelper::ToString(overlapped->ioType));
-
-            {
+        scope::DeferContext<AcceptOverlapped> overlappedItem{
+            overlapped,
+            [this](AcceptOverlapped* x) {
                 std::scoped_lock lock(_ioPendingOverlappedsLock);
-                _ioPendingOverlappeds.erase(overlapped);
+                _ioPendingOverlappeds.erase(x);
+                mem::HybridObjectPool<AcceptOverlapped>::Return(x);
             }
-            mem::HybridObjectPool<AcceptOverlapped>::Return(overlapped);
+        };
 
+        if (overlapped == nullptr || overlapped->ioType != EIoType::Accept) {
+            _logger->Error("Invalid AcceptEx overlapped. expected: Accept.");
             return Res::Err(err::ENetworkError::SocketAcceptFailed);
         }
 
@@ -176,14 +179,7 @@ namespace highp::net::internal {
 
         if (result == SOCKET_ERROR) {
             _logger->Error("SO_UPDATE_ACCEPT_CONTEXT failed. error: {}", WSAGetLastError());
-
             closesocket(overlapped->clientSocket);
-            {
-                std::scoped_lock lock(_ioPendingOverlappedsLock);
-                _ioPendingOverlappeds.erase(overlapped);
-            }
-            mem::HybridObjectPool<AcceptOverlapped>::Return(overlapped);
-
             return Res::Err(err::ENetworkError::SocketAcceptFailed);
         }
 
@@ -218,6 +214,7 @@ namespace highp::net::internal {
             _ioPendingOverlappeds.erase(overlapped);
         }
         mem::HybridObjectPool<AcceptOverlapped>::Return(overlapped);
+        overlappedItem.PreventReturn();
 
         // 3) 매크로 처리 + 후속 실행함수 추가
         GUARD_EFFECT(PostAccept(), [this] {
