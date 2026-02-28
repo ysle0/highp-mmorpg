@@ -166,7 +166,7 @@
         <ClInclude Include="inc\socket\ISocket.h"/>
         <ClInclude Include="inc\config\NetworkCfg.h"/>
         <ClInclude Include="inc\transport\NetworkTransport.hpp"/>
-        <ClInclude Include="inc\server\PacketServerHandler.h"/>
+        <ClInclude Include="inc\server\PacketHandler.hpp" />
         <ClInclude Include="framework.h"/>
         <ClInclude Include="pch.h"/>
     </ItemGroup>
@@ -182,7 +182,7 @@
         <ClCompile Include="src\client\TcpClientSocket.cpp"/>
         <ClCompile Include="src\socket\WindowsAsyncSocket.cpp"/>
         <ClCompile Include="src\client\WsaSession.cpp"/>
-        <ClCompile Include="src\server\PacketServerHandler.cpp"/>
+        <ClCompile Include="src\server\PacketHandler.cpp" />
         <ClCompile Include="network.cpp"/>
         <ClCompile Include="pch.cpp">
             <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
