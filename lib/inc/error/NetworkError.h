@@ -9,7 +9,7 @@ namespace highp::err {
     /// </summary>
     enum class ENetworkError {
         /// <summary>알 수 없는 에러</summary>
-        UnknownError = 0,
+        Unknown = 0,
 
         // ========== WSA 관련 ==========
         /// <summary>WSAStartup() 호출 실패</summary>
@@ -73,10 +73,10 @@ namespace highp::err {
     /// <summary>
     /// ENetworkError 에러 코드를 문자열로 변환한다.
     /// </summary>
-    /// <param name="e">변환할 ENetworkError 값</param>
+    /// <param name="err">변환할 ENetworkError 값</param>
     /// <returns>에러 설명 문자열</returns>
-    constexpr std::string_view ToString(ENetworkError e) {
-        switch (e) {
+    constexpr std::string_view toString(ENetworkError err) {
+        switch (err) {
         // WSA 관련
         case ENetworkError::WsaStartupFailed: return "WSAStartup failed.";
         case ENetworkError::WsaNotInitialized: return "WSAStartup failed: WSAStartup() is not called.";
@@ -110,7 +110,7 @@ namespace highp::err {
         case ENetworkError::ThreadWorkerFailed: return "Worker thread failed.";
         case ENetworkError::ThreadAcceptFailed: return "Accept thread failed.";
 
-        case ENetworkError::UnknownError:
+        case ENetworkError::Unknown:
         default: return "Unknown error.";
         }
     }

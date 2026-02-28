@@ -30,7 +30,7 @@ namespace highp::net {
         WSADATA wsaData{0};
         const int startupResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
         if (startupResult != 0) {
-            _logger->Error("{}: {}", err::ToString(err::ENetworkError::WsaStartupFailed), startupResult);
+            _logger->Error("{}: {}", err::toString(err::ENetworkError::WsaStartupFailed), startupResult);
             return Res::Err(err::ENetworkError::WsaStartupFailed);
         }
 
