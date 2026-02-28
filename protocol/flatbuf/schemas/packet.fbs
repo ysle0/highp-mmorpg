@@ -9,18 +9,12 @@ namespace highp.protocol;
 // union 으로 모든 메시지 통합
 union Payload {
     // Client->Server
-    messages.LoginRequest,
-    messages.CreateRoomRequest,
     messages.JoinRoomRequest,
     messages.LeaveRoomRequest,
     messages.SendMessageRequest,
-    messages.GetRoomListRequest,
 
     // Server->Client
-    messages.LoginResponse,
-    messages.RoomCreatedResponse,
     messages.JoinedRoomResponse,
-    messages.RoomListResponse,
 
     // Broadcast
     messages.UserJoinedBroadcast,

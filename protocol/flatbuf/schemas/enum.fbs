@@ -4,27 +4,14 @@ enum MessageType : ushort {
 	None = 0,
 
 	// Client->Server (1-99)
-	CS_Login = 1,
-    CS_Logout = 2,
-
-	CS_CreateRoom = 10,
-	CS_JoinRoom = 11,
-	CS_LeaveRoom = 12,
-	CS_GetRoomList = 13,
-	CS_SendMessage = 20,
+	CS_JoinRoom = 1,
+	CS_LeaveRoom = 2,
+	CS_SendMessage = 3,
 
 	// Server->Client (100-199)
-	SC_LoginResult = 101,
-    SC_LogoutResult = 102,  
-
-	SC_RoomCreated = 110,
-	SC_JoinedRoom = 111,
-	SC_LeftRoom = 112,
-	SC_RoomList = 113,
-
-    SC_UserJoined = 120,
-    SC_UserLeft = 121,
-    SC_ChatMessage = 122,
+	SC_UserJoined = 100,
+	SC_UserLeft = 101,
+    SC_ChatMessage = 102,
 
     // Errors (500+)
 	SC_Error = 999
@@ -35,12 +22,7 @@ enum MessageType : ushort {
 */
 enum ErrorCode : ushort {
 	None = 0,
-	InvalidCredentials = 1,
-	RoomFull = 2,
-	RoomNotFound = 3,
-	AlreadyInRoom = 4,
-	NotInRoom = 5,
-    InvalidMessage = 6,
+    InvalidMessage = 1,
     ServerError = 99
 }
 

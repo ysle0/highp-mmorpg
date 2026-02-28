@@ -5,7 +5,6 @@ namespace highp.protocol;
 table Room {
     id: uint32 (key);
     name: string (required);
-    owner_id: uint32;
     current_users: uint16;
     max_users: uint16 = 10;
     created_at: uint64; // UNIX timestamp
