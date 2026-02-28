@@ -5,7 +5,6 @@
 #include "client/TcpClientSocket.h"
 
 namespace highp::net {
-
     PacketStream::PacketStream(TcpClientSocket& socket, size_t maxFrameSize)
     // 소켓은 외부에서 관리하며, PacketStream은 참조만 보관한다.
         : _socket(socket)
@@ -14,13 +13,6 @@ namespace highp::net {
     }
 
     PacketStream::Res PacketStream::SendFrame(std::span<const uint8_t> payload) {
-        // 길이 헤더 타입이 uint32이므로 payload 최대치를 방어한다.
-        if constexpr (sizeof(size_t) > sizeof(uint32_t)) {
-            if (payload.size() > static_cast<size_t>(std::numeric_limits<uint32_t>::max())) {
-                return Res::Err(err::ENetworkError::WsaInvalidArgs);
-            }
-        }
-
         // [length:4 byte][payload:N byte] 연속 메모리 버퍼를 만든다.
         const uint32_t payloadSize = static_cast<uint32_t>(payload.size());
         std::vector<char> frame(kHeaderSize + payload.size(), 0);
@@ -42,10 +34,9 @@ namespace highp::net {
         if (_maxFrameSize == 0) {
             return ResWithSize::Err(err::ENetworkError::WsaInvalidArgs);
         }
-        if constexpr (sizeof(size_t) > sizeof(uint32_t)) {
-            if (_maxFrameSize > static_cast<size_t>(std::numeric_limits<uint32_t>::max())) {
-                return ResWithSize::Err(err::ENetworkError::WsaInvalidArgs);
-            }
+
+        if (_maxFrameSize > Const::Buffer::maxFrameSize) {
+            return ResWithSize::Err(err::ENetworkError::WsaInvalidArgs);
         }
 
         // 1) 길이 헤더(4바이트)를 정확히 수신한다.
