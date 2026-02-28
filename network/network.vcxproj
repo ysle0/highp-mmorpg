@@ -156,6 +156,7 @@
         <ClInclude Include="inc\server\ServerLifecycle.h"/>
         <ClInclude Include="inc\client\windows\OverlappedExt.h"/>
         <ClInclude Include="inc\util\NetworkUtil.hpp"/>
+        <ClInclude Include="inc\client\FrameBuffer.h"/>
         <ClInclude Include="inc\client\PacketStream.h"/>
         <ClInclude Include="inc\platform.h"/>
         <ClInclude Include="inc\socket\SocketHelper.h"/>
@@ -175,6 +176,7 @@
         <ClCompile Include="src\socket\AsyncSocket.cpp"/>
         <ClCompile Include="src\client\windows\Client.cpp"/>
         <ClCompile Include="src\io\windows\IocpIoMultiplexer.cpp"/>
+        <ClCompile Include="src\client\FrameBuffer.cpp"/>
         <ClCompile Include="src\client\PacketStream.cpp"/>
         <ClCompile Include="src\ServerLifecycle.cpp"/>
         <ClCompile Include="src\socket\SocketHelper.cpp"/>

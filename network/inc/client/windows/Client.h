@@ -7,6 +7,7 @@
 #include <memory>
 #include <string_view>
 
+#include "client/FrameBuffer.h"
 #include "io/CompletionTarget.hpp"
 
 namespace highp::net {
@@ -19,7 +20,6 @@ namespace highp::net {
     /// </remarks>
     struct Client : std::enable_shared_from_this<Client>, ICompletionTarget {
         using Res = fn::Result<void, err::ENetworkError>;
-
 
         /// <summary>기본 생성자. 소켓을 INVALID_SOCKET으로 초기화.</summary>
         Client();
@@ -44,6 +44,9 @@ namespace highp::net {
         /// </summary>
         /// <param name="isFireAndForget">true면 linger 없이 즉시 종료</param>
         void Close(bool isFireAndForget);
+        
+        /// <summary>프레임 조립용 누적 버퍼</summary>
+        FrameBuffer& FrameBuf() { return _frameBuf; }
 
         /// <summary>클라이언트 소켓 핸들</summary>
         SocketHandle socket = INVALID_SOCKET;
@@ -53,5 +56,8 @@ namespace highp::net {
 
         /// <summary>송신 작업용 SendOverlapped 구조체</summary>
         internal::SendOverlapped sendOverlapped;
+
+    private:
+        FrameBuffer _frameBuf;
     };
 }
