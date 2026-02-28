@@ -168,6 +168,9 @@
     <ItemGroup>
       <Folder Include="flatbuf\gen\" />
     </ItemGroup>
+    <ItemGroup>
+      <Content Include="flatbuf\flatbuffer-gen-analysis.md" />
+    </ItemGroup>
     <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets"/>
     <ImportGroup Label="ExtensionTargets">
     </ImportGroup>
