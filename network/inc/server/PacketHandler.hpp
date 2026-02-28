@@ -25,8 +25,7 @@ namespace highp::net {
 
     protected:
         // type-erased handler: (shared_ptr<Client>, const protocol::Packet* payload)
-        using PacketHandler = std::function<void(std::shared_ptr<Client>, const protocol::Packet*)>;
-
+        using PacketHandlerFn = std::function<void(std::shared_ptr<Client>, const protocol::Packet*)>;
         using ParseResult = fn::Result<const protocol::Packet*, err::EPacketError>;
         using Res = fn::Result<void, err::EPacketError>;
 
@@ -45,6 +44,6 @@ namespace highp::net {
 
     private:
         std::shared_ptr<log::Logger> _logger;
-        std::unordered_map<protocol::Payload, PacketHandler> _handlers;
+        std::unordered_map<protocol::Payload, PacketHandlerFn> _handlers;
     };
 } // namespace highp::net
