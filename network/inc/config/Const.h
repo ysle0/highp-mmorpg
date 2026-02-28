@@ -5,22 +5,24 @@
 #include <Windows.h>
 
 namespace highp::net {
-    /// <summary>
-    /// Compile-time network constants.
-    /// TOML sections are represented as nested structs.
-    /// </summary>
-    struct Const {
-        /// <summary>[buffer] section</summary>
-        struct Buffer {
-            static constexpr INT recvBufferSize = 4096;
-            static constexpr INT sendBufferSize = 1024;
-            static constexpr INT addressBufferSize = 64;
-            static constexpr INT clientIpBufferSize = 32;
-        };
 
-        /// <summary>[io] section</summary>
-        struct Io {
-            static constexpr INT workerIoPendingCancelGracePeriodMs = 100;
-        };
-    };
+/// <summary>
+/// Compile-time network constants.
+/// TOML sections are represented as nested structs.
+/// </summary>
+struct Const {
+	/// <summary>[buffer] section</summary>
+	struct Buffer {
+		static constexpr INT recvBufferSize = 4096;
+		static constexpr INT sendBufferSize = 1024;
+		static constexpr INT addressBufferSize = 64;
+		static constexpr INT clientIpBufferSize = 32;
+		static constexpr INT maxFrameSize = 65536;
+	};
+	/// <summary>[io] section</summary>
+	struct Io {
+		static constexpr INT workerIoPendingCancelGracePeriodMs = 100;
+	};
+};
+
 } // namespace highp::net
