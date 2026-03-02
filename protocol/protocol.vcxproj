@@ -139,6 +139,15 @@
         </Link>
     </ItemDefinitionGroup>
     <ItemGroup>
+        <ClInclude Include="flatbuf\gen\broadcast_generated.h" />
+        <ClInclude Include="flatbuf\gen\client_generated.h" />
+        <ClInclude Include="flatbuf\gen\common_generated.h" />
+        <ClInclude Include="flatbuf\gen\enum_generated.h" />
+        <ClInclude Include="flatbuf\gen\error_generated.h" />
+        <ClInclude Include="flatbuf\gen\packet_generated.h" />
+        <ClInclude Include="flatbuf\gen\room_generated.h" />
+        <ClInclude Include="flatbuf\gen\server_generated.h" />
+        <ClInclude Include="flatbuf\gen\user_generated.h" />
         <ClInclude Include="framework.h"/>
         <ClInclude Include="pch.h"/>
     </ItemGroup>
@@ -164,9 +173,6 @@
     </ItemGroup>
     <ItemGroup>
         <Natvis Include="flatbuffers.natvis"/>
-    </ItemGroup>
-    <ItemGroup>
-      <Folder Include="flatbuf\gen\" />
     </ItemGroup>
     <ItemGroup>
       <Content Include="flatbuf\flatbuffer-gen-analysis.md" />
