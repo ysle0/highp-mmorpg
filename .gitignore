@@ -365,3 +365,4 @@ FodyWeavers.xsd
 # Local AI tooling artifacts
 .claude/worktrees/
 /nul
+**/*_generated.h
