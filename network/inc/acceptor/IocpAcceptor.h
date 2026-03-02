@@ -4,12 +4,11 @@
 #include "AcceptContext.h"
 #include "client/windows/OverlappedExt.h"
 #include <logger/Logger.hpp>
-#include <memory/HybridObjectPool.hpp>
 #include <functional/Result.hpp>
 #include <error/NetworkError.h>
 #include <functional>
 #include <memory>
-#include <set>
+#include "scope/DeferredItemHolder.hpp"
 
 namespace highp::net {
     class SocketOptionBuilder;
@@ -131,8 +130,6 @@ namespace highp::net::internal {
 
         AcceptCallback _acceptCallback;
 
-        std::mutex _ioPendingOverlappedsLock;
-
-        std::set<AcceptOverlapped*> _ioPendingOverlappeds;
+        scope::DeferredItemHolder<AcceptOverlapped> _acceptOverlappedHolder;
     };
 }

@@ -159,6 +159,8 @@
         <ClInclude Include="inc\logger\Logger.hpp"/>
         <ClInclude Include="inc\logger\LoggerOptions.h"/>
         <ClInclude Include="inc\macro\macro.h"/>
+        <ClInclude Include="inc\scope\DeferContext.hpp" />
+        <ClInclude Include="inc\scope\DeferredItemHolder.hpp" />
         <ClInclude Include="pch.h"/>
         <ClInclude Include="inc\functional\Result.hpp"/>
         <ClInclude Include="inc\logger\TextLogger.h"/>

@@ -20,8 +20,9 @@
       "Bash(Get-ChildItem -Recurse -Include *.cpp,*.h,*.hpp,*.toml,*.md -File)",
       "Bash(Where-Object {$_FullName -notlike \"*\\\\.git\\\\*\"})",
       "Bash(Select-Object -ExpandProperty FullName)",
-      "Bash(cd:*)"
-      "Bash(powershell:*)"
+      "Bash(cd:*)",
+      "Bash(powershell:*)",
+      "Bash(xargs grep:*)"
     ]
   }
 }
