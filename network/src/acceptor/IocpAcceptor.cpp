@@ -209,13 +209,6 @@ namespace highp::net::internal {
             _acceptCallback(ctx);
         }
 
-        {
-            std::scoped_lock lock(_ioPendingOverlappedsLock);
-            _ioPendingOverlappeds.erase(overlapped);
-        }
-        mem::HybridObjectPool<AcceptOverlapped>::Return(overlapped);
-        overlappedItem.PreventReturn();
-
         // 3) 매크로 처리 + 후속 실행함수 추가
         GUARD_EFFECT(PostAccept(), [this] {
                      _logger->Error("Failed to re-post AcceptEx after completion.");

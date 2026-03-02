@@ -10,16 +10,12 @@ namespace highp::scope {
         using DeferFn = std::function<void(T*)>;
 
     public:
-        // copy x, move ok
-        DeferContext(const DeferContext&) = delete;
-        DeferContext& operator=(const DeferContext&) = delete;
-        DeferContext(DeferContext&&) = default;
-        DeferContext& operator=(DeferContext&&) = default;
-
         // 생성자에 deferFn 을 강제하는 이유는 단순히
         // DeferContext 생성 이후 defer 호출강제를 언어적으로 지원할 수단이 없어서임.
         explicit DeferContext(T* item, DeferFn deferFn) : _item(item) {
-            _deferLists.emplace_back(std::move(deferFn));
+            // 2-3 개의 defer 정리함수를 기대.
+            _deferFns.reserve(3);
+            _deferFns.emplace_back(std::move(deferFn));
         }
 
         ~DeferContext() {
@@ -27,24 +23,56 @@ namespace highp::scope {
                 return;
             }
 
-            for (auto it = _deferLists.rbegin(); it != _deferLists.rend(); ++it) {
+            for (auto it = _deferFns.rbegin(); it != _deferFns.rend(); ++it) {
                 (*it)(_item);
             }
 
-            _deferLists.clear();
+            _deferFns.clear();
+        }
+        
+        
+        // copy x, move ok
+        DeferContext(const DeferContext&) = delete;
+        DeferContext& operator=(const DeferContext&) = delete;
+        
+        DeferContext(DeferContext&& from) {
+            moveFrom(std::forward<DeferContext&&>(from));
+        }
+        
+        DeferContext& operator=(DeferContext&& from) {
+            return moveFrom(std::forward<DeferContext&&>(from));
+        }
+        
+        DeferContext& moveFrom(DeferContext&& from) {
+            _item = from._item;
+            from._item = nullptr;
+
+            _deferFns = std::move(from._deferFns);
+
+            _needReturn = from._needReturn;
+            from._needReturn = false;
+
+            return *this;
         }
 
-        void PreventReturn() { _needReturn = false; }
+        /// RAII 의 자동해제를 막는다. 마지막으로 정리할 함수는 lastDeferFn 에만 넣음.
+        /// @param lastDeferFn 
+        void PreventReturn(DeferFn lastDeferFn = nullptr) {
+            if (lastDeferFn) {
+                lastDeferFn(_item);
+            }
+            _needReturn = false;
+        }
 
         void Defer(DeferFn deferFn) {
-            _deferLists.emplace_back(std::move(deferFn));
+            _deferFns.emplace_back(std::move(deferFn));
         }
 
         T* Get() { return _item; }
 
     private:
         T* _item;
-        std::list<DeferFn> _deferLists;
+        std::vector<DeferFn> _deferFns;
         bool _needReturn = true;
     };
 }
