@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "server/PacketHandler.hpp"
 #include "client/PacketStream.h"
+#include "config/Const.h"
 
 #include <logger/Logger.hpp>
 
@@ -33,6 +34,14 @@ namespace highp::net {
             // payload 길이 읽기
             uint32_t payloadLen = 0;
             std::memcpy(&payloadLen, buf.data(), PacketStream::kHeaderSize);
+
+            if (payloadLen > Const::Buffer::maxFrameSize) {
+                _logger->Warn("[PacketHandler] payload too large: {} bytes", payloadLen);
+                _logger->Warn("[PacketHandler] disconnecting client. malevolent client has changed payloadLen for DoS attack.");
+                _logger->Warn("[PacketHandler] you should consider further security measure such as IP based client ban, rate limiting for the same client.");
+                client->Close(true);
+                return;
+            }
 
             const size_t frameSize = PacketStream::kHeaderSize + payloadLen;
 
