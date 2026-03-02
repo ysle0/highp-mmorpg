@@ -36,11 +36,11 @@ namespace highp::scope {
         DeferContext& operator=(const DeferContext&) = delete;
 
         DeferContext(DeferContext&& from) noexcept : _item(nullptr) {
-            moveFrom(std::forward<DeferContext&&>(from));
+            MoveFrom(std::forward<DeferContext&&>(from));
         }
 
         DeferContext& operator=(DeferContext&& from) noexcept {
-            return moveFrom(std::forward<DeferContext&&>(from));
+            return MoveFrom(std::forward<DeferContext&&>(from));
         }
 
         DeferContext& MoveFrom(DeferContext&& from) {
