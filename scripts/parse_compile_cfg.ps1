@@ -40,7 +40,7 @@ function Get-CppType
     param([string]$value)
     if ($value -match '^-?\d+$')
     {
-        return "INT"
+        return "int"
     }
     if ($value -match '^-?\d+\.\d+$')
     {
@@ -112,8 +112,6 @@ $code = @"
 #pragma once
 // Auto-generated from: $relativePath
 // Do not edit manually. Run scripts/parse_compile_cfg.ps1 to regenerate.
-
-#include <Windows.h>
 
 namespace highp::net {
 

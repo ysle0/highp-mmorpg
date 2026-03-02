@@ -26,6 +26,13 @@
 //=============================================================================
 #ifdef PLATFORM_WINDOWS
 
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+
 #pragma comment(lib, "ws2_32.lib")
 #pragma comment(lib, "mswsock.lib")
 #include <WinSock2.h>
@@ -54,12 +61,6 @@
 //#include <sys/time.h>
 //#endif
 
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
 #endif
 
 //=============================================================================
