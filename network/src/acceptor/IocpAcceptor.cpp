@@ -1,6 +1,8 @@
 #include "pch.h"
 
 #include "acceptor/IocpAcceptor.h"
+
+#include "memory/HybridObjectPool.hpp"
 #include "socket/SocketOptionBuilder.h"
 
 namespace highp::net::internal {
@@ -31,20 +33,6 @@ namespace highp::net::internal {
             _logger->Error("Failed to associate listen socket with IOCP. error: {}", GetLastError());
             return Res::Err(err::ENetworkError::SocketCreateFailed);
         }
-
-        // 0) 원본 C++17 if with initializer 로 2줄 -> 1줄로 줄이기!
-        //if (auto res = LoadAcceptExFunctions(); res.HasErr()) {
-        //	return res;
-        //}
-
-        // 1) bool 연산자 오버로딩 -> .HasErr() 를 줄일 수 있음.
-        //if (auto res = LoadAcceptExFunctions(); !res) {
-        //	return res;
-        //}
-        //
-        // 만약 return 으로 err propagation 이 필요없으면
-        //if (LoadAcceptExFunctions()) {
-        //}
 
         // 2) macro GUARD(expr)
         GUARD(LoadAcceptExFunctions());
@@ -108,20 +96,10 @@ namespace highp::net::internal {
         }
 
         auto overlappedItem = mem::HybridObjectPool<AcceptOverlapped>::Get();
-        overlappedItem.Defer([this](AcceptOverlapped* o) {
-            std::scoped_lock lock(_ioPendingOverlappedsLock);
-            _ioPendingOverlappeds.erase(o);
-        });
-
         auto* acceptOverlapped = overlappedItem.Get();
         ZeroMemory(&acceptOverlapped->overlapped, sizeof(WSAOVERLAPPED));
         acceptOverlapped->ioType = EIoType::Accept;
         acceptOverlapped->clientSocket = acceptSocket;
-
-        {
-            std::scoped_lock lock(_ioPendingOverlappedsLock);
-            _ioPendingOverlappeds.insert(acceptOverlapped);
-        }
 
         DWORD bytesReceived = 0;
         constexpr DWORD addrLen = sizeof(SOCKADDR_IN) + 16;
@@ -145,8 +123,9 @@ namespace highp::net::internal {
             }
         }
 
+        // 성공/IO_PENDING: holder로 소유권 이전
+        _acceptOverlappedHolder.Hold(std::move(overlappedItem));
         _logger->Debug("Posted AcceptEx request.");
-        overlappedItem.PreventReturn();
         return Res::Ok();
     }
 
@@ -159,17 +138,15 @@ namespace highp::net::internal {
     }
 
     IocpAcceptor::Res IocpAcceptor::OnAcceptComplete(AcceptOverlapped* overlapped, DWORD bytesTransferred) {
-        scope::DeferContext<AcceptOverlapped> overlappedItem{
-            overlapped,
-            [this](AcceptOverlapped* x) {
-                std::scoped_lock lock(_ioPendingOverlappedsLock);
-                _ioPendingOverlappeds.erase(x);
-                mem::HybridObjectPool<AcceptOverlapped>::Return(x);
-            }
-        };
-
         if (overlapped == nullptr || overlapped->ioType != EIoType::Accept) {
             _logger->Error("Invalid AcceptEx overlapped. expected: Accept.");
+            return Res::Err(err::ENetworkError::SocketAcceptFailed);
+        }
+
+        // holder에서 꺼냄 → 스코프 종료 시 자동 풀 반환
+        const auto overlappedItem = _acceptOverlappedHolder.Release(overlapped);
+        if (!overlappedItem) {
+            _logger->Error("AcceptOverlapped not found in holder.");
             return Res::Err(err::ENetworkError::SocketAcceptFailed);
         }
 
@@ -220,11 +197,10 @@ namespace highp::net::internal {
     void IocpAcceptor::Shutdown() {
         _logger->Info("IocpAcceptor shutdown start.");
         {
-            std::scoped_lock lock(_ioPendingOverlappedsLock);
-            for (auto* o : _ioPendingOverlappeds) {
+            _acceptOverlappedHolder.ForEach([this](AcceptOverlapped* x) {
                 CancelIoEx(reinterpret_cast<HANDLE>(_listenSocket),
-                           &o->overlapped);
-            }
+                           &x->overlapped);
+            });
         }
         // _overlappedPool.Clear();
         _fnAcceptEx = nullptr;

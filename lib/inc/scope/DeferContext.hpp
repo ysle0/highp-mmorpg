@@ -29,21 +29,21 @@ namespace highp::scope {
 
             _deferFns.clear();
         }
-        
-        
+
+
         // copy x, move ok
         DeferContext(const DeferContext&) = delete;
         DeferContext& operator=(const DeferContext&) = delete;
-        
-        DeferContext(DeferContext&& from) {
+
+        DeferContext(DeferContext&& from) noexcept : _item(nullptr) {
             moveFrom(std::forward<DeferContext&&>(from));
         }
-        
-        DeferContext& operator=(DeferContext&& from) {
+
+        DeferContext& operator=(DeferContext&& from) noexcept {
             return moveFrom(std::forward<DeferContext&&>(from));
         }
-        
-        DeferContext& moveFrom(DeferContext&& from) {
+
+        DeferContext& MoveFrom(DeferContext&& from) {
             _item = from._item;
             from._item = nullptr;
 
@@ -53,15 +53,6 @@ namespace highp::scope {
             from._needReturn = false;
 
             return *this;
-        }
-
-        /// RAII 의 자동해제를 막는다. 마지막으로 정리할 함수는 lastDeferFn 에만 넣음.
-        /// @param lastDeferFn 
-        void PreventReturn(DeferFn lastDeferFn = nullptr) {
-            if (lastDeferFn) {
-                lastDeferFn(_item);
-            }
-            _needReturn = false;
         }
 
         void Defer(DeferFn deferFn) {
