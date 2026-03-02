@@ -26,7 +26,7 @@ namespace highp::net {
     public:
         explicit PacketHandler(std::shared_ptr<log::Logger> logger);
 
-    private:
+    protected:
         void OnAccept(std::shared_ptr<Client> client) override;
         void OnRecv(std::shared_ptr<Client> client, std::span<const char> data) override;
         void OnSend(std::shared_ptr<Client> client, size_t bytesTransferred) override;
@@ -49,7 +49,7 @@ namespace highp::net {
                 };
         }
 
-    protected:
+    private:
         /// 파싱된 패킷을 핸들러에 디스패치
         Res DispatchPacket(std::shared_ptr<Client> client, const protocol::Packet* packet) {
             const auto it = _handlers.find(packet->payload_type());
@@ -64,7 +64,7 @@ namespace highp::net {
         }
 
         /// 바이트 버퍼를 검증하고 Packet*으로 역직렬화
-        ParseResult ParsePacket(std::span<const char> data) {
+        ParseResult ParsePacket(std::span<const char> data) const {
             auto verifier = flatbuffers::Verifier(
                 reinterpret_cast<const uint8_t*>(data.data()),
                 data.size(),
@@ -86,8 +86,10 @@ namespace highp::net {
             return ParseResult::Ok(packet);
         }
 
-    private:
+    protected:
         std::shared_ptr<log::Logger> _logger;
+
+    private:
         std::unordered_map<protocol::Payload, PacketHandlerFn> _handlers;
     };
 } // namespace highp::net
