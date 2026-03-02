@@ -40,7 +40,7 @@ function Get-CppType
     param([string]$value)
     if ($value -match '^-?\d+$')
     {
-        return "INT"
+        return "int"
     }
     if ($value -match '^-?\d+\.\d+$')
     {
@@ -117,7 +117,7 @@ $code = @"
 #include <filesystem>
 #include <config/runTime/Config.hpp>
 #include <stdexcept>
-#include <Windows.h>
+#include <string>
 
 namespace highp::net {
 

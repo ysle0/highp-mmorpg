@@ -153,6 +153,7 @@
         <ClInclude Include="inc\config\runTime\StringUtils.hpp"/>
         <ClInclude Include="inc\config\runTime\TomlEntry.hpp"/>
         <ClInclude Include="inc\config\runTime\TomlParser.hpp"/>
+        <ClInclude Include="inc\error\PacketError.h" />
         <ClInclude Include="inc\logger\ELoggerVerbosity.h"/>
         <ClInclude Include="framework.h"/>
         <ClInclude Include="inc\logger\ILogger.h"/>

@@ -1,11 +1,12 @@
 #pragma once
 
-#include <cstddef>
 #include <cstdint>
 #include <span>
 #include <vector>
 #include <error/NetworkError.h>
 #include <functional/Result.hpp>
+
+#include "config/Const.h"
 
 namespace highp::net {
     class TcpClientSocket;
@@ -15,13 +16,16 @@ namespace highp::net {
     /// </summary>
     class PacketStream final {
     public:
+        /// <summary>프레임 헤더 크기: payload 길이를 담는 uint32 (4바이트)</summary>
+        static constexpr size_t kHeaderSize = sizeof(uint32_t);
+
         using Res = fn::Result<void, err::ENetworkError>;
         using ResWithSize = fn::Result<size_t, err::ENetworkError>;
 
         /// <summary>
         /// 특정 소켓 인스턴스에 바인딩된 프레이머를 생성한다.
         /// </summary>
-        explicit PacketStream(TcpClientSocket& socket, size_t maxFrameSize = 64 * 1024);
+        explicit PacketStream(TcpClientSocket& socket, size_t maxFrameSize = Const::Buffer::maxFrameSize);
 
         /// <summary>
         /// [length(4)][payload] 형태로 1개 프레임을 전송한다.

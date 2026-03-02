@@ -156,6 +156,7 @@
         <ClInclude Include="inc\server\ServerLifecycle.h"/>
         <ClInclude Include="inc\client\windows\OverlappedExt.h"/>
         <ClInclude Include="inc\util\NetworkUtil.hpp"/>
+        <ClInclude Include="inc\client\FrameBuffer.h"/>
         <ClInclude Include="inc\client\PacketStream.h"/>
         <ClInclude Include="inc\platform.h"/>
         <ClInclude Include="inc\socket\SocketHelper.h"/>
@@ -166,7 +167,7 @@
         <ClInclude Include="inc\socket\ISocket.h"/>
         <ClInclude Include="inc\config\NetworkCfg.h"/>
         <ClInclude Include="inc\transport\NetworkTransport.hpp"/>
-        <ClInclude Include="inc\server\PacketServerHandler.h"/>
+        <ClInclude Include="inc\server\PacketHandler.hpp" />
         <ClInclude Include="framework.h"/>
         <ClInclude Include="pch.h"/>
     </ItemGroup>
@@ -175,6 +176,7 @@
         <ClCompile Include="src\socket\AsyncSocket.cpp"/>
         <ClCompile Include="src\client\windows\Client.cpp"/>
         <ClCompile Include="src\io\windows\IocpIoMultiplexer.cpp"/>
+        <ClCompile Include="src\client\FrameBuffer.cpp"/>
         <ClCompile Include="src\client\PacketStream.cpp"/>
         <ClCompile Include="src\ServerLifecycle.cpp"/>
         <ClCompile Include="src\socket\SocketHelper.cpp"/>
@@ -182,7 +184,7 @@
         <ClCompile Include="src\client\TcpClientSocket.cpp"/>
         <ClCompile Include="src\socket\WindowsAsyncSocket.cpp"/>
         <ClCompile Include="src\client\WsaSession.cpp"/>
-        <ClCompile Include="src\server\PacketServerHandler.cpp"/>
+        <ClCompile Include="src\server\PacketHandler.cpp" />
         <ClCompile Include="network.cpp"/>
         <ClCompile Include="pch.cpp">
             <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

@@ -70,7 +70,7 @@ namespace highp::mem {
 
                 // global 에 여유가 있으면 가져옴
                 if (const int size = static_cast<int>(_globalPool.size()); size > 0) {
-                    const int fetchCount = min(size, HybridObjectPoolConfig::ChunkSize);
+                    const int fetchCount = std::min(size, HybridObjectPoolConfig::ChunkSize);
                     auto from = _globalPool.end() - fetchCount;
                     local.pool.insert(local.pool.end(), from, _globalPool.end());
                     _globalPool.erase(from, _globalPool.end());

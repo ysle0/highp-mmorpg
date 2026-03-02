@@ -27,19 +27,19 @@ namespace highp::err {
     /// <returns>에러 코드가 설정된 Result</returns>
     template <auto E>
     static fn::Result<void, decltype(E)> LogErrorWSAWithResult(std::shared_ptr<log::Logger> logger) {
-        logger->Error("{}: {}", ToString(E), WSAGetLastError());
+        logger->Error("{}: {}", toString(E), WSAGetLastError());
         return fn::Result<void, decltype(E)>::Err(E);
     }
 
     template <auto E>
     static fn::Result<void, decltype(E)> LogErrorWindowsWithResult(std::shared_ptr<log::Logger> logger) {
-        logger->Error("{}: {}", ToString(E), GetLastError());
+        logger->Error("{}: {}", toString(E), GetLastError());
         return fn::Result<void, decltype(E)>::Err(E);
     }
 
     template <auto E>
     static fn::Result<void, decltype(E)> LogErrorWithResult(std::shared_ptr<log::Logger> logger) {
-        logger->Error("{}", ToString(E));
+        logger->Error("{}", toString(E));
         return fn::Result<void, decltype(E)>::Err(E);
     }
 
@@ -51,17 +51,17 @@ namespace highp::err {
     /// <param name="logger">로거 인스턴스</param>
     template <auto E>
     static void LogErrorWSA(std::shared_ptr<log::Logger> logger) {
-        logger->Error("{}: {}", ToString(E), WSAGetLastError());
+        logger->Error("{}: {}", toString(E), WSAGetLastError());
     }
 
     template <auto E>
     static void LogErrorWindows(std::shared_ptr<log::Logger> logger) {
-        logger->Error("{}: {}", ToString(E), GetLastError());
+        logger->Error("{}: {}", toString(E), GetLastError());
     }
 
     template <auto E>
     static void LogError(std::shared_ptr<log::Logger> logger) {
-        logger->Error("{}", ToString(E));
+        logger->Error("{}", toString(E));
     }
 
     /// <summary>

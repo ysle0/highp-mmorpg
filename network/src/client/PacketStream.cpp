@@ -4,12 +4,7 @@
 #include "client/PacketStream.h"
 #include "client/TcpClientSocket.h"
 
-namespace highp::net {namespace {
-        // 프레임 헤더는 payload 길이를 담는 uint32 4바이트 고정.
-        constexpr size_t kFrameHeaderSize = sizeof(uint32_t);
-        constexpr uint32_t kMaxFramePayloadSize = 0xFFFFFFFFu;
-    }
-
+namespace highp::net {
     PacketStream::PacketStream(TcpClientSocket& socket, size_t maxFrameSize)
     // 소켓은 외부에서 관리하며, PacketStream은 참조만 보관한다.
         : _socket(socket)
@@ -18,23 +13,16 @@ namespace highp::net {namespace {
     }
 
     PacketStream::Res PacketStream::SendFrame(std::span<const uint8_t> payload) {
-        // 길이 헤더 타입이 uint32이므로 payload 최대치를 방어한다.
-        if constexpr (sizeof(size_t) > sizeof(uint32_t)) {
-            if (payload.size() > static_cast<size_t>(kMaxFramePayloadSize)) {
-                return Res::Err(err::ENetworkError::WsaInvalidArgs);
-            }
-        }
-
         // [length:4 byte][payload:N byte] 연속 메모리 버퍼를 만든다.
         const uint32_t payloadSize = static_cast<uint32_t>(payload.size());
-        std::vector<char> frame(kFrameHeaderSize + payload.size(), 0);
+        std::vector<char> frame(kHeaderSize + payload.size(), 0);
 
         // 헤더에 payload 길이를 기록한다.
-        std::memcpy(frame.data(), &payloadSize, kFrameHeaderSize);
+        std::memcpy(frame.data(), &payloadSize, kHeaderSize);
 
         // payload가 있으면 헤더 뒤에 복사한다.
         if (payloadSize > 0) {
-            std::memcpy(frame.data() + kFrameHeaderSize, payload.data(), payload.size());
+            std::memcpy(frame.data() + kHeaderSize, payload.data(), payload.size());
         }
 
         // 소켓 raw 전송은 TcpClientSocket이 책임진다.
@@ -46,14 +34,13 @@ namespace highp::net {namespace {
         if (_maxFrameSize == 0) {
             return ResWithSize::Err(err::ENetworkError::WsaInvalidArgs);
         }
-        if constexpr (sizeof(size_t) > sizeof(uint32_t)) {
-            if (_maxFrameSize > static_cast<size_t>(kMaxFramePayloadSize)) {
-                return ResWithSize::Err(err::ENetworkError::WsaInvalidArgs);
-            }
+
+        if (_maxFrameSize > Const::Buffer::maxFrameSize) {
+            return ResWithSize::Err(err::ENetworkError::WsaInvalidArgs);
         }
 
         // 1) 길이 헤더(4바이트)를 정확히 수신한다.
-        std::array<char, kFrameHeaderSize> headerBuffer{0};
+        std::array<char, kHeaderSize> headerBuffer{0};
         auto headerSpan = std::span<char>{
             headerBuffer.data(),
             headerBuffer.size()
@@ -64,7 +51,7 @@ namespace highp::net {namespace {
 
         // 2) 헤더에서 payload 길이를 읽는다.
         uint32_t payloadSize = 0;
-        std::memcpy(&payloadSize, headerBuffer.data(), kFrameHeaderSize);
+        std::memcpy(&payloadSize, headerBuffer.data(), kHeaderSize);
 
         // 3) DoS/메모리 폭주 방지를 위해 최대 크기 제한을 적용한다.
         if (payloadSize > _maxFrameSize) {
