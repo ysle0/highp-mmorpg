@@ -1,6 +1,5 @@
 #include "pch.h"
 #include <array>
-#include <cstring>
 #include "client/PacketStream.h"
 #include "client/TcpClientSocket.h"
 
@@ -14,9 +13,11 @@ namespace highp::net {
 
     PacketStream::Res PacketStream::SendFrame(std::span<const uint8_t> payload) {
         // [length:4 byte][payload:N byte] 연속 메모리 버퍼를 만든다.
-        const uint32_t payloadSize = static_cast<uint32_t>(payload.size());
+        uint32_t payloadSize = static_cast<uint32_t>(payload.size());
         std::vector<char> frame(kHeaderSize + payload.size(), 0);
 
+        // 네트워크 바이트 오더 (패킷 헤더는 big-endian 으로 쓴다.)
+        payloadSize = htonl(payloadSize);
         // 헤더에 payload 길이를 기록한다.
         std::memcpy(frame.data(), &payloadSize, kHeaderSize);
 
@@ -40,18 +41,17 @@ namespace highp::net {
         }
 
         // 1) 길이 헤더(4바이트)를 정확히 수신한다.
-        std::array<char, kHeaderSize> headerBuffer{0};
-        auto headerSpan = std::span<char>{
-            headerBuffer.data(),
-            headerBuffer.size()
-        };
-        if (auto res = RecvExact(headerSpan); res.HasErr()) {
+        std::array<char, kHeaderSize> buf{};
+        const auto span = std::span{buf.data(), buf.size()};
+        if (auto res = RecvExact(span); res.HasErr()) {
             return ResWithSize::Err(res.Err());
         }
 
         // 2) 헤더에서 payload 길이를 읽는다.
         uint32_t payloadSize = 0;
-        std::memcpy(&payloadSize, headerBuffer.data(), kHeaderSize);
+        std::memcpy(&payloadSize, buf.data(), kHeaderSize);
+
+        payloadSize = ntohl(payloadSize);
 
         // 3) DoS/메모리 폭주 방지를 위해 최대 크기 제한을 적용한다.
         if (payloadSize > _maxFrameSize) {
@@ -65,7 +65,7 @@ namespace highp::net {
         }
 
         // 5) payload 본문을 정확히 수신한다.
-        auto payloadSpan = std::span<char>{
+        auto payloadSpan = std::span{
             reinterpret_cast<char*>(outPayload.data()),
             outPayload.size()
         };
