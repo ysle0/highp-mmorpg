@@ -30,8 +30,8 @@ namespace highp::net::internal {
             _workerThreads.emplace_back([this](std::stop_token st) { WorkerLoop(st); });
         }
 
-        _logger->Info("IocpIoMultiplexer initialized. worker threads: {}",
-                      workerThreadCount);
+        _logger->Debug("IocpIoMultiplexer initialized. worker threads: {}",
+                       workerThreadCount);
         return Res::Ok();
     }
 
@@ -52,7 +52,7 @@ namespace highp::net::internal {
             _handle = INVALID_HANDLE_VALUE;
         }
 
-        _logger->Info("IocpIoMultiplexer shutdown complete.");
+        _logger->Debug("IocpIoMultiplexer shutdown complete.");
     }
 
     IocpIoMultiplexer::Res IocpIoMultiplexer::PostCompletion(
@@ -103,7 +103,7 @@ namespace highp::net::internal {
                     constexpr auto workerShutdownGracePeriodMs = std::chrono::milliseconds(
                         Const::Io::workerIoPendingCancelGracePeriodMs);
 
-                    _logger->Info(
+                    _logger->Debug(
                         "[IocpIoMultiplexer::WorkerLoop] GetQueuedCompletionStatus canceled. I/O pending canceled by CancelIoEx().. exit WorkerLoop In {}ms",
                         workerShutdownGracePeriodMs);
 

@@ -8,7 +8,7 @@ namespace highp::net {
     ServerLifeCycle::ServerLifeCycle(
         std::shared_ptr<log::Logger> logger,
         std::shared_ptr<SocketOptionBuilder> socketOptionBuilder,
-        IServerHandler* handler
+        ISessionEventReceiver* handler
     ) : _logger(logger),
         _socketOptionBuilder(socketOptionBuilder),
         _handler(handler) {
@@ -56,7 +56,7 @@ namespace highp::net {
                      return Res::Err(err::ENetworkError::ThreadAcceptFailed);
                      });
 
-        _logger->Info("ServerCore started on port {}.", _config.server.port);
+        _logger->Debug("Server Lifecycle started.");
         return Res::Ok();
     }
 
