@@ -1,17 +1,20 @@
 #include "Client.h"
 
-#include "config/NetworkCfg.h"
-#include "logger/Logger.hpp"
+#include "scope/Defer.h"
 
 Client::Client(std::shared_ptr<log::Logger> logger) : _logger(logger) {
 }
 
 Client::~Client() noexcept {
-    (void)Disconnect();
+    if (_isConnected) {
+        Disconnect();
+    }
 }
 
 bool Client::Connect(const char* ipAddress, unsigned short port) {
-    (void)Disconnect();
+    if (_isConnected) {
+        Disconnect();
+    }
 
     auto sessionRes = net::WsaSession::Create(_logger);
     if (sessionRes.HasErr()) {
@@ -32,22 +35,24 @@ bool Client::Connect(const char* ipAddress, unsigned short port) {
     _tcpClientSocket = std::move(socket);
     _packetStream = std::make_unique<net::PacketStream>(*_tcpClientSocket);
 
+    _isConnected = true;
     _logger->Info("Connected to {}:{}", ipAddress, port);
     return true;
 }
 
-bool Client::Disconnect() {
-    if (!_tcpClientSocket) {
-        return false;
-    }
+void Client::Disconnect() {
+    scope::Defer _([this] {
+        _isConnected = false;
+    });
+
+    if (!_tcpClientSocket) return;
 
     _packetStream.reset();
-    _tcpClientSocket->Close();
+    (void)_tcpClientSocket->Close();
     _tcpClientSocket.reset();
     _wsaSession.reset();
 
     _logger->Info("Disconnected from server.");
-    return true;
 }
 
 void Client::Send(const flatbuffers::FlatBufferBuilder& builder) {
@@ -64,5 +69,5 @@ void Client::Send(const flatbuffers::FlatBufferBuilder& builder) {
         return;
     }
 
-    _logger->Info("Sent: {}", builder.GetBufferPointer());
+    _logger->Info("Sent");
 }

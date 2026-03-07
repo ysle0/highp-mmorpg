@@ -1,14 +1,12 @@
 #pragma once
+
 #include <memory>
 #include <client/PacketStream.h>
 #include <client/TcpClientSocket.h>
 #include <client/WsaSession.h>
-
-#include "../../../protocol/flatbuf/gen/broadcast_generated.h"
-
-namespace highp::log {
-    class Logger;
-}
+#include <flatbuf/gen/broadcast_generated.h>
+#include <flatbuffers/flatbuffer_builder.h>
+#include "logger/Logger.hpp"
 
 using namespace highp;
 
@@ -20,7 +18,7 @@ public:
 
     [[nodiscard]] bool Connect(const char* ipAddress, unsigned short port);
 
-    [[nodiscard]] bool Disconnect();
+    void Disconnect();
 
     void Send(const flatbuffers::FlatBufferBuilder& builder);
 
@@ -32,4 +30,6 @@ private:
     std::unique_ptr<net::TcpClientSocket> _tcpClientSocket;
 
     std::unique_ptr<net::PacketStream> _packetStream;
+
+    bool _isConnected = false;
 };
