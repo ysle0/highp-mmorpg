@@ -6,7 +6,7 @@
 namespace highp::net::internal {
     WindowsAsyncSocket::WindowsAsyncSocket(
         std::shared_ptr<log::Logger> logger
-    ) : AsyncSocket{logger} {
+    ) : AsyncSocket{logger->WithPrefix("[WindowsAsyncSocket] ")} {
     }
 
     WindowsAsyncSocket::~WindowsAsyncSocket() {

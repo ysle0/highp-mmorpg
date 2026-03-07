@@ -5,7 +5,7 @@
 namespace highp::net {
     SocketOptionBuilder::SocketOptionBuilder(
         std::shared_ptr<log::Logger> logger
-    ) : _logger(logger) {
+    ) : _logger(logger->WithPrefix("[SocketOptionBuilder] ")) {
     }
 
     //=============================================================================

@@ -1,9 +1,12 @@
 #include "Client.h"
 
+#include <flatbuffers/flatbuffer_builder.h>
+
 #include "config/NetworkCfg.h"
 #include "logger/Logger.hpp"
 
-Client::Client(std::shared_ptr<log::Logger> logger) : _logger(logger) {
+Client::Client(std::shared_ptr<log::Logger> logger)
+    : _logger(logger->WithPrefix("[ChatClient] ")) {
 }
 
 Client::~Client() noexcept {
@@ -42,7 +45,7 @@ bool Client::Disconnect() {
     }
 
     _packetStream.reset();
-    _tcpClientSocket->Close();
+    (void)_tcpClientSocket->Close();
     _tcpClientSocket.reset();
     _wsaSession.reset();
 
@@ -52,7 +55,7 @@ bool Client::Disconnect() {
 
 void Client::Send(const flatbuffers::FlatBufferBuilder& builder) {
     if (!_tcpClientSocket || !_packetStream || !_tcpClientSocket->IsConnected()) {
-        _logger->Error("Not connected to server.");
+        _logger->Error("[Client::Send] Not connected to server.");
         return;
     }
 
@@ -60,9 +63,9 @@ void Client::Send(const flatbuffers::FlatBufferBuilder& builder) {
     const size_t size = builder.GetSize();
     auto msgSpan = std::span{buf, size};
     if (!_packetStream->SendFrame(msgSpan)) {
-        _logger->Error("Send failed.");
+        _logger->Error("[Client::Send] Send failed.");
         return;
     }
 
-    _logger->Info("Sent: {}", builder.GetBufferPointer());
+    _logger->Info("[Client::Send] Sent.");
 }

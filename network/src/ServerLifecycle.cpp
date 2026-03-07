@@ -9,7 +9,7 @@ namespace highp::net {
         std::shared_ptr<log::Logger> logger,
         std::shared_ptr<SocketOptionBuilder> socketOptionBuilder,
         IServerHandler* handler
-    ) : _logger(logger),
+    ) : _logger(logger->WithPrefix("[ServerLifeCycle] ")),
         _socketOptionBuilder(socketOptionBuilder),
         _handler(handler) {
     }

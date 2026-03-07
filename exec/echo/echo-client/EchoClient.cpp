@@ -5,7 +5,7 @@
 #include "EchoClient.h"
 
 EchoClient::EchoClient(std::shared_ptr<Logger> logger)
-    : _logger(logger) {
+    : _logger(logger->WithPrefix("[EchoClient] ")) {
     //
 }
 

@@ -5,7 +5,7 @@
 
 namespace highp::net {
     WsaSession::WsaSession(std::shared_ptr<log::Logger> logger)
-        : _logger(std::move(logger)) {
+        : _logger(logger->WithPrefix("[WsaSession] ")) {
         //
     }
 

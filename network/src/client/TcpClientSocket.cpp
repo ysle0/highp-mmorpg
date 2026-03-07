@@ -11,7 +11,7 @@ namespace highp::net {
         std::shared_ptr<log::Logger> logger,
         std::shared_ptr<WsaSession> wsaSession
     )
-        : _logger(std::move(logger))
+        : _logger(logger->WithPrefix("[TcpClientSocket] "))
           , _wsaSession(std::move(wsaSession)) {
         //
     }

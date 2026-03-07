@@ -8,7 +8,7 @@ Server::Server(
     std::shared_ptr<log::Logger> logger,
     net::NetworkCfg config,
     std::shared_ptr<net::SocketOptionBuilder> socketOptionBuilder
-) : _logger(logger),
+) : _logger(logger->WithPrefix("[EchoServer] ")),
     _socketOptionBuilder(socketOptionBuilder),
     _config(config) {
     //

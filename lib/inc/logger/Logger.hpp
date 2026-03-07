@@ -4,6 +4,7 @@
 #include <format>
 #include "ILogger.h"
 #include <memory>
+#include <string>
 #include <string_view>
 #include <utility>
 
@@ -19,14 +20,46 @@ namespace highp::log {
     /// </summary>
     class Logger {
         /// <summary>실제 로깅을 수행하는 구현체</summary>
-        std::unique_ptr<ILogger> _impl;
+        std::shared_ptr<ILogger> _impl;
+        std::string _prefix;
+
+        [[nodiscard]] std::string CombinePrefix(std::string_view prefix) const {
+            if (prefix.empty()) {
+                return _prefix;
+            }
+
+            std::string combined;
+            combined.reserve(_prefix.size() + prefix.size());
+            combined += _prefix;
+            combined += prefix;
+            return combined;
+        }
+
+        [[nodiscard]] std::string BuildMessage(std::string_view msg) const {
+            if (_prefix.empty()) {
+                return std::string(msg);
+            }
+
+            std::string prefixed;
+            prefixed.reserve(_prefix.size() + msg.size());
+            prefixed += _prefix;
+            prefixed += msg;
+            return prefixed;
+        }
 
     public:
         /// <summary>
         /// Logger 생성자.
         /// </summary>
         /// <param name="impl">로깅 구현체 (소유권 이전)</param>
-        explicit Logger(std::unique_ptr<ILogger> impl) : _impl(std::move(impl)) {
+        explicit Logger(std::shared_ptr<ILogger> impl, std::string prefix = {})
+            : _impl(std::move(impl))
+              , _prefix(std::move(prefix)) {
+        }
+
+        explicit Logger(std::unique_ptr<ILogger> impl, std::string prefix = {})
+            : _impl(std::move(impl))
+              , _prefix(std::move(prefix)) {
         }
 
         /// <summary>
@@ -36,7 +69,7 @@ namespace highp::log {
         /// <returns>생성된 Logger의 shared_ptr</returns>
         template <typename Impl>
         static std::shared_ptr<Logger> Default() {
-            return std::make_shared<Logger>(std::make_unique<Impl>());
+            return std::make_shared<Logger>(std::make_shared<Impl>());
         }
 
         /// <summary>
@@ -48,57 +81,91 @@ namespace highp::log {
         /// <returns>생성된 Logger의 shared_ptr</returns>
         template <typename Impl, typename... Args>
         static std::shared_ptr<Logger> DefaultWithArgs(Args&&... args) {
-            auto impl = std::make_unique<Impl>(std::forward<Args...>(args...));
+            auto impl = std::make_shared<Impl>(std::forward<Args>(args)...);
             return std::make_shared<Logger>(std::move(impl));
+        }
+
+        [[nodiscard]] std::shared_ptr<Logger> WithPrefix(std::string_view prefix) const {
+            return std::make_shared<Logger>(_impl, CombinePrefix(prefix));
         }
 
         /// <summary>Info 레벨 로그 출력 (단순 문자열)</summary>
         void Info(std::string_view msg) {
-            _impl->Info(msg);
+            if (_prefix.empty()) {
+                _impl->Info(msg);
+                return;
+            }
+
+            auto prefixed = BuildMessage(msg);
+            _impl->Info(prefixed);
         }
 
         /// <summary>Debug 레벨 로그 출력 (단순 문자열)</summary>
         void Debug(std::string_view msg) {
-            _impl->Debug(msg);
+            if (_prefix.empty()) {
+                _impl->Debug(msg);
+                return;
+            }
+
+            auto prefixed = BuildMessage(msg);
+            _impl->Debug(prefixed);
         }
 
         /// <summary>Warn 레벨 로그 출력 (단순 문자열)</summary>
         void Warn(std::string_view msg) {
-            _impl->Warn(msg);
+            if (_prefix.empty()) {
+                _impl->Warn(msg);
+                return;
+            }
+
+            auto prefixed = BuildMessage(msg);
+            _impl->Warn(prefixed);
         }
 
         /// <summary>Error 레벨 로그 출력 (단순 문자열)</summary>
         void Error(std::string_view msg) {
-            _impl->Error(msg);
+            if (_prefix.empty()) {
+                _impl->Error(msg);
+                return;
+            }
+
+            auto prefixed = BuildMessage(msg);
+            _impl->Error(prefixed);
         }
 
         /// <summary>예외 정보와 함께 로그 출력</summary>
         void Exception(std::string_view msg, const std::exception& ex) {
-            _impl->Exception(msg, ex);
+            if (_prefix.empty()) {
+                _impl->Exception(msg, ex);
+                return;
+            }
+
+            auto prefixed = BuildMessage(msg);
+            _impl->Exception(prefixed, ex);
         }
 
         /// <summary>Info 레벨 로그 출력 (std::format 지원)</summary>
         template <class... Args>
         void Info(std::format_string<Args...> fmt, Args&&... args) {
-            _impl->Info(std::vformat(fmt.get(), std::make_format_args(args...)));
+            Info(std::vformat(fmt.get(), std::make_format_args(args...)));
         }
 
         /// <summary>Debug 레벨 로그 출력 (std::format 지원)</summary>
         template <class... Args>
         void Debug(std::format_string<Args...> fmt, Args&&... args) {
-            _impl->Debug(std::vformat(fmt.get(), std::make_format_args(args...)));
+            Debug(std::vformat(fmt.get(), std::make_format_args(args...)));
         }
 
         /// <summary>Warn 레벨 로그 출력 (std::format 지원)</summary>
         template <class... Args>
         void Warn(std::format_string<Args...> fmt, Args&&... args) {
-            _impl->Warn(std::vformat(fmt.get(), std::make_format_args(args...)));
+            Warn(std::vformat(fmt.get(), std::make_format_args(args...)));
         }
 
         /// <summary>Error 레벨 로그 출력 (std::format 지원)</summary>
         template <class... Args>
         void Error(std::format_string<Args...> fmt, Args&&... args) {
-            _impl->Error(std::vformat(fmt.get(), std::make_format_args(args...)));
+            Error(std::vformat(fmt.get(), std::make_format_args(args...)));
         }
     };
 }

@@ -8,7 +8,7 @@ namespace highp::net::internal {
     IocpIoMultiplexer::IocpIoMultiplexer(
         std::shared_ptr<log::Logger> logger,
         CompletionHandler handler
-    ) : _logger(logger),
+    ) : _logger(logger->WithPrefix("[IocpIoMultiplexer] ")),
         _completionHandler(std::move(handler)) {
     }
 

@@ -10,7 +10,7 @@ namespace highp::net::internal {
         std::shared_ptr<log::Logger> logger,
         std::shared_ptr<SocketOptionBuilder> socketOptionsBuilder,
         AcceptCallback onAfterAccept
-    ) : _logger(logger)
+    ) : _logger(logger->WithPrefix("[IocpAcceptor] "))
         , _socketOptionBuilder(socketOptionsBuilder)
         , _acceptCallback(std::move(onAfterAccept)) {
     }
