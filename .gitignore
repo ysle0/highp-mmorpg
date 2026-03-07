@@ -366,3 +366,5 @@ FodyWeavers.xsd
 .claude/worktrees/
 /nul
 **/*_generated.h
+**/.omc/**
+**/.omc
