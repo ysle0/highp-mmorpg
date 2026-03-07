@@ -10,7 +10,6 @@
 #include <iostream>
 
 #include "scope/Defer.hpp"
-#include "server/PacketHandler.hpp"
 
 using namespace highp;
 
@@ -24,18 +23,6 @@ int main() {
 	scope::Defer _([&s] {
 		s.Stop();
 	});
-
-	s.RegisterHandler<protocol::messages::ChatMessageBroadcast>([](
-		std::shared_ptr<net::Client> c,
-		const protocol::messages::ChatMessageBroadcast* p) {
-			std::cout << "ChatMessageBroadcast" << std::endl;
-		});
-
-	s.RegisterHandler<protocol::messages::JoinRoomRequest>([](
-		std::shared_ptr<net::Client> c,
-		const protocol::messages::JoinRoomRequest* p) {
-			std::cout << "JoinRoomRequest" << std::endl;
-		});
 
 	auto listenSocket = net::SocketHelper::MakeDefaultListener(
 		logger,

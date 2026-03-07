@@ -4,7 +4,7 @@
 #include "acceptor/IocpAcceptor.h"
 #include "client/windows/Client.h"
 #include "config/NetworkCfg.h"
-#include "IServerHandler.h"
+#include "ISessionEventReceiver.h"
 #include <logger/Logger.hpp>
 #include <functional/Result.hpp>
 #include <error/NetworkError.h>
@@ -21,7 +21,7 @@ namespace highp::net
     /// </summary>
     /// <remarks>
     /// 앱 서버(Server, ChatServer 등)는 ServerCore를 멤버로 가지고,
-    /// IServerHandler를 구현하여 비즈니스 로직만 처리한다.
+    /// ISessionEventReceiver를 구현하여 비즈니스 로직만 처리한다.
     /// </remarks>
     class ServerLifeCycle final
     {
@@ -37,7 +37,7 @@ namespace highp::net
         explicit ServerLifeCycle(
             std::shared_ptr<log::Logger> logger,
             std::shared_ptr<SocketOptionBuilder> socketOptionBuilder,
-            IServerHandler* handler);
+            ISessionEventReceiver* handler);
 
         ~ServerLifeCycle() noexcept;
 
@@ -90,7 +90,7 @@ namespace highp::net
 
         std::shared_ptr<log::Logger> _logger;
         std::shared_ptr<SocketOptionBuilder> _socketOptionBuilder;
-        IServerHandler* _handler = nullptr;
+        ISessionEventReceiver* _handler = nullptr;
 
         std::unique_ptr<internal::IocpIoMultiplexer> _iocp;
         std::unique_ptr<internal::IocpAcceptor> _acceptor;

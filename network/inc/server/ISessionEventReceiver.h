@@ -5,11 +5,11 @@
 
 namespace highp::net {
     /// <summary>
-    /// 서버 이벤트 핸들러 인터페이스.
-    /// 앱 레이어에서 구현하여 ServerCore에 주입한다.
+    /// 세션 이벤트 수신 인터페이스.
+    /// 앱 레이어에서 구현하여 ServerLifeCycle에 주입한다.
     /// </summary>
-    struct IServerHandler {
-        virtual ~IServerHandler() = default;
+    struct ISessionEventReceiver {
+        virtual ~ISessionEventReceiver() = default;
 
         /// <summary>새 클라이언트 연결 시 호출</summary>
         virtual void OnAccept(std::shared_ptr<Client> client) = 0;
