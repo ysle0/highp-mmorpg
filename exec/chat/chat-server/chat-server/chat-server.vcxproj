@@ -152,6 +152,9 @@
     <ClInclude Include="handlers\ChatMessageHandler.h" />
     <ClInclude Include="handlers\JoinRoomHandler.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="config.runtime.toml" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

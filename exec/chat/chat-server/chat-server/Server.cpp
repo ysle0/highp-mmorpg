@@ -13,7 +13,7 @@ Server::Server(
       _dispatcher(logger),
       _chatMessageHandler(logger),
       _joinRoomHandler(logger) {
-
+    _tickMs.store(networkCfg.server.tickMs);
     _dispatcher.RegisterHandler<protocol::messages::ChatMessageBroadcast>(&_chatMessageHandler);
     _dispatcher.RegisterHandler<protocol::messages::JoinRoomRequest>(&_joinRoomHandler);
 }
@@ -58,11 +58,11 @@ void Server::Stop() {
 }
 
 void Server::LogicLoop(std::stop_token st) {
-    _logger->Info("[LogicThread] started.");
+    _logger->Info("[LogicThread] started. ServerTick={}ms", _tickMs.load());
 
     while (!st.stop_requested()) {
         _dispatcher.Tick();
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        std::this_thread::sleep_for(std::chrono::milliseconds(_tickMs.load()));
     }
 
     // 종료 전 잔여 커맨드 처리

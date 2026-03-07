@@ -1,4 +1,5 @@
 #pragma once
+#include <atomic>
 #include <memory>
 #include <thread>
 
@@ -41,6 +42,7 @@ private:
 	net::NetworkCfg _config;
 	std::unique_ptr<net::ServerLifeCycle> _lifecycle;
 	bool _hasStopped = false;
+	std::atomic<int> _tickMs;
 
 	net::PacketDispatcher _dispatcher;
 	ChatMessageHandler _chatMessageHandler;

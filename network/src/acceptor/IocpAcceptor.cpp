@@ -37,7 +37,7 @@ namespace highp::net::internal {
         // 2) macro GUARD(expr)
         GUARD(LoadAcceptExFunctions());
 
-        _logger->Info("IocpAcceptor initialized. listen socket associated with IOCP.");
+        _logger->Debug("IocpAcceptor initialized. listen socket associated with IOCP.");
         return Res::Ok();
     }
 
@@ -78,7 +78,7 @@ namespace highp::net::internal {
             return Res::Err(err::ENetworkError::SocketPostAcceptFailed);
         }
 
-        _logger->Info("AcceptEx functions loaded successfully.");
+        _logger->Debug("AcceptEx functions loaded successfully.");
         return Res::Ok();
     }
 
@@ -125,7 +125,7 @@ namespace highp::net::internal {
 
         // 성공/IO_PENDING: holder로 소유권 이전
         _acceptOverlappedHolder.Hold(std::move(overlappedItem));
-        _logger->Debug("Posted AcceptEx request.");
+        // _logger->Debug("Posted AcceptEx request.");
         return Res::Ok();
     }
 
@@ -133,7 +133,7 @@ namespace highp::net::internal {
         for (int i = 0; i < count; ++i) {
             GUARD(PostAccept());
         }
-        _logger->Info("Posted {} AcceptEx requests.", count);
+        _logger->Debug("Posted {} AcceptEx requests.", count);
         return Res::Ok();
     }
 
@@ -195,7 +195,8 @@ namespace highp::net::internal {
     }
 
     void IocpAcceptor::Shutdown() {
-        _logger->Info("IocpAcceptor shutdown start.");
+        _logger->Debug("IocpAcceptor shutdown start.");
+
         {
             _acceptOverlappedHolder.ForEach([this](AcceptOverlapped* x) {
                 CancelIoEx(reinterpret_cast<HANDLE>(_listenSocket),
@@ -205,6 +206,7 @@ namespace highp::net::internal {
         // _overlappedPool.Clear();
         _fnAcceptEx = nullptr;
         _fnGetAcceptExSockAddrs = nullptr;
-        _logger->Info("IocpAcceptor shutdown complete.");
+
+        _logger->Debug("IocpAcceptor shutdown complete.");
     }
 }

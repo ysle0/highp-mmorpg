@@ -1,0 +1,14 @@
+# Echo Server Runtime Configuration
+# These values can be changed without recompilation.
+# Environment variables override: SERVER_PORT, SERVER_MAX_CLIENTS, etc.
+
+[server]
+port = 8080
+max_clients = 1000
+backlog = 10
+tick_ms = 16 # 60fps target!
+
+[thread]
+max_worker_thread_multiplier = 2
+max_acceptor_thread_count = 2
+desirable_iocp_thread_count = -1

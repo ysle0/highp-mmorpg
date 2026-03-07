@@ -56,7 +56,7 @@ namespace highp::net {
                      return Res::Err(err::ENetworkError::ThreadAcceptFailed);
                      });
 
-        _logger->Info("ServerCore started on port {}.", _config.server.port);
+        _logger->Debug("Server Lifecycle started.");
         return Res::Ok();
     }
 
