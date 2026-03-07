@@ -11,7 +11,8 @@
 #include <memory>
 #include <vector>
 
-namespace highp::net {
+namespace highp::net
+{
     class ISocket;
 
     /// <summary>
@@ -22,7 +23,8 @@ namespace highp::net {
     /// 앱 서버(Server, ChatServer 등)는 ServerCore를 멤버로 가지고,
     /// IServerHandler를 구현하여 비즈니스 로직만 처리한다.
     /// </remarks>
-    class ServerLifeCycle final {
+    class ServerLifeCycle final
+    {
     public:
         using Res = fn::Result<void, err::ENetworkError>;
 
@@ -30,6 +32,7 @@ namespace highp::net {
         /// ServerCore 생성자.
         /// </summary>
         /// <param name="logger">로깅에 사용할 Logger 인스턴스</param>
+        /// <param name="socketOptionBuilder"></param>
         /// <param name="handler">서버 이벤트 핸들러. 앱 레이어에서 구현.</param>
         explicit ServerLifeCycle(
             std::shared_ptr<log::Logger> logger,

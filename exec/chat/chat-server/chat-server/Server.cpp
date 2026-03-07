@@ -1,5 +1,7 @@
 #include "Server.h"
 
+#include <scope/Defer.hpp>
+
 Server::Server(
     std::shared_ptr<log::Logger> logger,
     net::NetworkCfg networkCfg,
@@ -11,9 +13,8 @@ Server::Server(
 }
 
 Server::~Server() noexcept {
-    if (_lifecycle) {
-        _lifecycle->Stop();
-        _lifecycle.reset();
+    if (!_hasStopped) {
+        Stop();
     }
 }
 
@@ -30,6 +31,10 @@ Server::Res Server::Start(std::shared_ptr<net::ISocket> listenSocket) {
 }
 
 void Server::Stop() {
+    scope::Defer _([this] {
+        _hasStopped = true;
+    });
+
     if (_lifecycle) {
         _lifecycle->Stop();
         _lifecycle.reset();

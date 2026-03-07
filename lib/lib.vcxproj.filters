@@ -63,6 +63,16 @@
     <ClInclude Include="inc\memory\HybridObjectPool.hpp">
       <Filter>inc\memory</Filter>
     </ClInclude>
+    <ClInclude Include="inc\error\PacketError.h" />
+    <ClInclude Include="inc\scope\DeferContext.hpp">
+      <Filter>inc\scope</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\scope\DeferredItemHolder.hpp">
+      <Filter>inc\scope</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\scope\Defer.hpp">
+      <Filter>inc\scope</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="lib.cpp" />
@@ -143,6 +153,9 @@
     </Filter>
     <Filter Include="inc\enum">
       <UniqueIdentifier>{eb25ab58-c026-4b6c-b1f4-fd6d3e5bf311}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="inc\scope">
+      <UniqueIdentifier>{a65515be-b1bd-4d96-9657-574a22ae7a0a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
