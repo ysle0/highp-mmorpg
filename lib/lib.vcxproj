@@ -161,7 +161,7 @@
     <ClInclude Include="inc\logger\LoggerOptions.h" />
     <ClInclude Include="inc\macro\macro.h" />
     <ClInclude Include="inc\scope\DeferContext.hpp" />
-    <ClInclude Include="inc\scope\Defer.hpp" />
+    <ClInclude Include="inc\scope\Defer.h" />
     <ClInclude Include="inc\scope\DeferredItemHolder.hpp" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="inc\functional\Result.hpp" />
@@ -169,6 +169,7 @@
     <ClInclude Include="inc\memory\ThreadLocalPool.hpp" />
     <ClInclude Include="inc\memory\LockObjectPool.hpp" />
     <ClInclude Include="inc\memory\HybridObjectPool.hpp" />
+    <ClInclude Include="inc\concurrency\MPSCCommandQueue.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="lib.cpp" />
@@ -179,6 +180,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="src\logger\TextLogger.cpp" />
+    <ClCompile Include="src\scope\Defer.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

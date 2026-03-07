@@ -9,7 +9,7 @@
 #include <logger/TextLogger.h>
 #include <iostream>
 
-#include "scope/Defer.hpp"
+#include "scope/Defer.h"
 
 using namespace highp;
 

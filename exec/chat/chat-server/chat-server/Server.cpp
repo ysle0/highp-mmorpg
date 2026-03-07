@@ -1,6 +1,7 @@
 #include "Server.h"
 
-#include <scope/Defer.hpp>
+#include <scope/Defer.h>
+#include <chrono>
 
 Server::Server(
     std::shared_ptr<log::Logger> logger,
@@ -31,6 +32,10 @@ Server::Res Server::Start(std::shared_ptr<net::ISocket> listenSocket) {
 
     GUARD(_lifecycle->Start(listenSocket, _config));
 
+    _logicThread = std::jthread([this](std::stop_token st) {
+        LogicLoop(st);
+    });
+
     _logger->Info("Server started on port {}.", _config.server.port);
     return Res::Ok();
 }
@@ -40,10 +45,29 @@ void Server::Stop() {
         _hasStopped = true;
     });
 
+    // logic thread 먼저 종료
+    if (_logicThread.joinable()) {
+        _logicThread.request_stop();
+        _logicThread.join();
+    }
+
     if (_lifecycle) {
         _lifecycle->Stop();
         _lifecycle.reset();
     }
+}
+
+void Server::LogicLoop(std::stop_token st) {
+    _logger->Info("[LogicThread] started.");
+
+    while (!st.stop_requested()) {
+        _dispatcher.Tick();
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+
+    // 종료 전 잔여 커맨드 처리
+    _dispatcher.Tick();
+    _logger->Info("[LogicThread] stopped.");
 }
 
 void Server::OnAccept(std::shared_ptr<net::Client> client) {
@@ -51,7 +75,7 @@ void Server::OnAccept(std::shared_ptr<net::Client> client) {
 }
 
 void Server::OnRecv(std::shared_ptr<net::Client> client, std::span<const char> data) {
-    _dispatcher.Handle(client, data);
+    _dispatcher.Receive(client, data);
 }
 
 void Server::OnSend(std::shared_ptr<net::Client> client, size_t bytesTransferred) {

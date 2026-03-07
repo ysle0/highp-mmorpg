@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <thread>
 
 #include "config/NetworkCfg.h"
 #include "server/ISessionEventReceiver.h"
@@ -32,6 +33,9 @@ private:
 	void OnSend(std::shared_ptr<net::Client> client, size_t bytesTransferred) override;
 	void OnDisconnect(std::shared_ptr<net::Client> client) override;
 
+	/// Logic thread 메인 루프
+	void LogicLoop(std::stop_token st);
+
 	std::shared_ptr<log::Logger> _logger;
 	std::shared_ptr<net::SocketOptionBuilder> _socketOptionBuilder;
 	net::NetworkCfg _config;
@@ -41,4 +45,6 @@ private:
 	net::PacketDispatcher _dispatcher;
 	ChatMessageHandler _chatMessageHandler;
 	JoinRoomHandler _joinRoomHandler;
+
+	std::jthread _logicThread;
 };
