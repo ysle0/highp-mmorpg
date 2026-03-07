@@ -59,7 +59,7 @@ namespace highp::net {
                 return Res::Err(err::EPacketError::FbPayloadTypeNotFound);
             }
 
-            it->second(std::move(client), packet);
+            it->second(client, packet);
             return Res::Ok();
         }
 

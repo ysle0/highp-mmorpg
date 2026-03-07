@@ -13,6 +13,9 @@ namespace highp::net {
 
     /// <summary>
     /// TCP 바이트 스트림 위에 길이 기반 프레이밍(uint32 + payload)을 제공한다.
+    /// ** Byte-order **
+    /// Write: Little-endian -> Network (Big-endian)
+    /// Read: Network (Big-endian) -> Little-endian
     /// </summary>
     class PacketStream final {
     public:
