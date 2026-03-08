@@ -63,6 +63,19 @@
     <ClInclude Include="inc\memory\HybridObjectPool.hpp">
       <Filter>inc\memory</Filter>
     </ClInclude>
+    <ClInclude Include="inc\error\PacketError.h" />
+    <ClInclude Include="inc\scope\DeferContext.hpp">
+      <Filter>inc\scope</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\scope\DeferredItemHolder.hpp">
+      <Filter>inc\scope</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\scope\Defer.hpp">
+      <Filter>inc\scope</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\concurrency\CommandQueue.hpp">
+      <Filter>inc\concurrency</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="lib.cpp" />
@@ -143,6 +156,12 @@
     </Filter>
     <Filter Include="inc\enum">
       <UniqueIdentifier>{eb25ab58-c026-4b6c-b1f4-fd6d3e5bf311}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="inc\scope">
+      <UniqueIdentifier>{a65515be-b1bd-4d96-9657-574a22ae7a0a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="inc\concurrency">
+      <UniqueIdentifier>{c7d8e9f0-1a2b-3c4d-5e6f-7a8b9c0d1e2f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

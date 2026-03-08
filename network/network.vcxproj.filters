@@ -122,13 +122,16 @@
     <ClInclude Include="inc\client\PacketStream.h">
       <Filter>inc\client</Filter>
     </ClInclude>
-    <ClInclude Include="inc\server\IServerHandler.h">
+    <ClInclude Include="inc\server\ISessionEventReceiver.h">
+      <Filter>inc\server</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\server\IPacketHandler.hpp">
       <Filter>inc\server</Filter>
     </ClInclude>
     <ClInclude Include="inc\server\ServerLifecycle.h">
       <Filter>inc\server</Filter>
     </ClInclude>
-    <ClInclude Include="inc\server\PacketServerHandler.h">
+    <ClInclude Include="inc\server\PacketDispatcher.hpp">
       <Filter>inc\server</Filter>
     </ClInclude>
     <ClInclude Include="inc\io\CompletionTarget.hpp">
@@ -171,7 +174,7 @@
     <ClCompile Include="src\client\PacketStream.cpp">
       <Filter>src\client</Filter>
     </ClCompile>
-    <ClCompile Include="src\server\PacketServerHandler.cpp">
+    <ClCompile Include="src\server\PacketDispatcher.cpp">
       <Filter>src\server</Filter>
     </ClCompile>
   </ItemGroup>

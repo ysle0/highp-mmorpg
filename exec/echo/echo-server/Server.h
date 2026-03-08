@@ -15,10 +15,10 @@ namespace highp::log {
 /// 클라이언트로부터 수신한 메시지를 그대로 반환한다.
 /// </summary>
 /// <remarks>
-/// net::ServerCore를 멤버로 가지며, net::IServerHandler를 구현하여
+/// net::ServerLifeCycle을 멤버로 가지며, net::ISessionEventReceiver를 구현하여
 /// Echo 비즈니스 로직만 처리한다.
 /// </remarks>
-class Server final : public net::IServerHandler {
+class Server final : public net::ISessionEventReceiver {
     /// <summary>Server 작업 결과 타입</summary>
     using Res = fn::Result<void, err::ENetworkError>;
 
@@ -48,7 +48,7 @@ public:
     void Stop();
 
 private:
-    // IServerHandler 구현
+    // ISessionEventReceiver 구현
     void OnAccept(std::shared_ptr<net::Client> client) override;
 
     void OnRecv(std::shared_ptr<net::Client> client,

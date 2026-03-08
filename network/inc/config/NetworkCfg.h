@@ -19,11 +19,13 @@ struct NetworkCfg {
         int port;
         int maxClients;
         int backlog;
+        int tickMs;
 
 		struct Defaults {
 			static constexpr int port = 8080;
 			static constexpr int maxClients = 1000;
 			static constexpr int backlog = 10;
+			static constexpr int tickMs = 16;
 		};
 	} server;
 	/// <summary>[thread] section</summary>
@@ -55,6 +57,7 @@ struct NetworkCfg {
 				.port = cfg.Int("server.port", Server::Defaults::port, "SERVER_PORT"),
 				.maxClients = cfg.Int("server.max_clients", Server::Defaults::maxClients, "SERVER_MAX_CLIENTS"),
 				.backlog = cfg.Int("server.backlog", Server::Defaults::backlog, "SERVER_BACKLOG"),
+				.tickMs = cfg.Int("server.tick_ms", Server::Defaults::tickMs, "SERVER_TICK_MS"),
 			},
 			.thread = {
 				.maxWorkerThreadMultiplier = cfg.Int("thread.max_worker_thread_multiplier", Thread::Defaults::maxWorkerThreadMultiplier, "THREAD_MAX_WORKER_THREAD_MULTIPLIER"),
@@ -71,6 +74,7 @@ struct NetworkCfg {
 				.port = Server::Defaults::port,
 				.maxClients = Server::Defaults::maxClients,
 				.backlog = Server::Defaults::backlog,
+				.tickMs = Server::Defaults::tickMs,
 			},
 			.thread = {
 				.maxWorkerThreadMultiplier = Thread::Defaults::maxWorkerThreadMultiplier,
