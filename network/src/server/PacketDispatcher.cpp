@@ -32,10 +32,18 @@ namespace highp::net {
             std::memcpy(&payloadLen, buf.data(), PacketStream::kHeaderSize);
 
             if (payloadLen > Const::Buffer::maxFrameSize) {
+                // #1. 악의적인 Packet 조작을 한 사용자를 직접 드랍!..
                 _logger->Warn("[PacketDispatcher] payload too large: {} bytes", payloadLen);
                 _logger->Warn(
                     "[PacketDispatcher] disconnecting client. malevolent client has changed payloadLen for DoS attack.");
                 client->Close(true);
+
+                // #2. 악의적인 Packet 조작자를 랜덤 지연 후 드랍.
+
+                // #3. rate-limit
+
+                // #4. IP 기억해서 ban
+
                 return;
             }
 
