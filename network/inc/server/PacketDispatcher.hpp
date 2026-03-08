@@ -35,7 +35,7 @@ namespace highp::net {
         /// IOCP worker thread에서 호출: 프레임 조립 + 파싱 + 큐 적재
         void Receive(std::shared_ptr<Client> client, std::span<const char> data);
 
-        /// Logic thread에서 호출: 큐에서 커맨드를 꺼내 핸들러에 디스패치
+        /// Logic thread에서 호출: 큐에서 커맨드를 꺼내 핸들러에 디스패치함으로 핸들러의 실행 컨텍스트를 logic thread 로 함.
         void Tick();
 
         /// IPacketHandler<T>를 페이로드 타입별로 등록
@@ -64,7 +64,7 @@ namespace highp::net {
         /// 검증된 페이로드를 복사하여 커맨드 큐에 적재
         void PushCommand(
             std::shared_ptr<Client> client,
-            const protocol::Packet* packet,
+            protocol::Payload payloadType,
             std::span<const char> rawPayload);
 
     private:

@@ -45,18 +45,20 @@ namespace highp::net {
             if (buf.size() < frameSize)
                 break;
 
-            // payload 영역을 파싱 + 검증 후 큐에 적재
-            auto payload = buf.subspan(PacketStream::kHeaderSize, payloadLen);
-            auto parseResult = ParsePacket(payload);
-            if (!parseResult) {
+            // payload 영역을 파싱 
+            const auto payload = buf.subspan(PacketStream::kHeaderSize, payloadLen);
+            if (auto res = ParsePacket(payload); !res) {
                 client->Close(true);
-                return;
             }
+            else {
+                // Packet Type 만 큐에 적재.
+                // 현재 파싱한 패킷의 원본은 frameBuf 에 존재. -> packet 은 framebuf.Consume 이후에 반드시 제거되므로 소유권 이전필요.
+                const protocol::Payload packetType = res.Data()->payload_type();
+                PushCommand(client, packetType, payload);
 
-            PushCommand(client, parseResult.Data(), payload);
-
-            // 소비한 프레임만큼 버퍼에서 제거
-            frameBuf.Consume(frameSize);
+                // 소비한 프레임만큼 버퍼에서 제거
+                frameBuf.Consume(frameSize);
+            }
         }
     }
 
@@ -64,7 +66,8 @@ namespace highp::net {
         _commandQueue.DrainTo(_tickBatch);
 
         for (auto& cmd : _tickBatch) {
-            const auto* packet = protocol::GetPacket(cmd.data.data());
+            // command 를 통해 이동한 패킷 데이터는 다시 파싱.
+            const protocol::Packet* packet = protocol::GetPacket(cmd.data.data());
             if (packet == nullptr) {
                 _logger->Warn("[PacketDispatcher::Tick] failed to get packet from command");
                 continue;
@@ -79,12 +82,13 @@ namespace highp::net {
 
     void PacketDispatcher::PushCommand(
         std::shared_ptr<Client> client,
-        const protocol::Packet* packet,
+        protocol::Payload payloadType,
         std::span<const char> rawPayload
     ) {
         PacketCommand cmd{
             .client = client,
-            .payloadType = packet->payload_type(),
+            .payloadType = payloadType,
+            // framebuffer 의 payload raw data 를 복사.
             .data = std::vector(
                 reinterpret_cast<const uint8_t*>(rawPayload.data()),
                 reinterpret_cast<const uint8_t*>(rawPayload.data()) + rawPayload.size()),
@@ -103,7 +107,7 @@ namespace highp::net {
             return Res::Err(err::EPacketError::FbPayloadTypeNotFound);
         }
 
-        it->second(client, packet);
+        it->second(std::move(client), packet);
         return Res::Ok();
     }
 
