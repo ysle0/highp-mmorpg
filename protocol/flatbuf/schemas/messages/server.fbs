@@ -11,3 +11,9 @@ table JoinedRoomResponse {
     room: RoomWithUsers;
     error: Error;
 }
+
+// 방 퇴장 결과
+table LeftRoomResponse {
+    ok: bool;
+    error: Error;
+}

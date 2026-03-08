@@ -15,6 +15,7 @@ union Payload {
 
     // Server->Client
     messages.JoinedRoomResponse,
+    messages.LeftRoomResponse,
 
     // Broadcast
     messages.UserJoinedBroadcast,
