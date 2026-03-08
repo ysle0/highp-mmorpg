@@ -8,8 +8,3 @@ table User {
     status: UserStatus = Online;
     created_at: uint64; // UNIX timestamp
 }
-
-table UserInfo {
-    user: User (required);
-    current_room_id: uint32;
-}
