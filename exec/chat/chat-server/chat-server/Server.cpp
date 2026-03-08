@@ -48,6 +48,7 @@ void Server::Stop() {
     // logic thread 먼저 종료
     if (_logicThread.joinable()) {
         _logicThread.request_stop();
+        // Tick() 의 sleep_until 은 즉시 깨울 수 없어 tickMs 정도 기다릴 수 있음.
         _logicThread.join();
     }
 
@@ -61,8 +62,9 @@ void Server::LogicLoop(std::stop_token st) {
     _logger->Info("[LogicThread] started. ServerTick={}ms", _tickMs.load());
 
     while (!st.stop_requested()) {
+        const auto nextTick = std::chrono::steady_clock::now() + std::chrono::milliseconds(_tickMs.load());
         _dispatcher.Tick();
-        std::this_thread::sleep_for(std::chrono::milliseconds(_tickMs.load()));
+        std::this_thread::sleep_until(nextTick);
     }
 
     // 종료 전 잔여 커맨드 처리
