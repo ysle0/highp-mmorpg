@@ -37,7 +37,7 @@ namespace highp::concurrency {
         }
 
     private:
-        std::mutex _mutex;
+        mutable std::mutex _mutex;
         std::vector<T> _writeQueue;
     };
 }
