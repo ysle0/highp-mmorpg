@@ -1,59 +1,69 @@
-# Repository Guidelines
+<!-- Generated: 2026-03-08 | Updated: 2026-03-08 -->
 
-## Project Structure & Module Organization
-- `network/`: IOCP networking core (acceptor, multiplexer, async sockets, lifecycle).
-- `lib/`: shared utilities (`Result`, logger, errors, TOML helpers).
-- `protocol/`: FlatBuffers schemas (`flatbuf/schemas/`) and generated headers (`flatbuf/gen/`).
-- `exec/echo/` and `exec/chat/`: runnable server/client applications.
-- `scripts/`: config/code generation scripts (`parse_*`, `gen_flatbuffers`).
-- `docs/`: architecture, configuration, and build references.
-- Build artifacts are emitted under `x64/<Configuration>/`.
+# highp-mmorpg
 
-## Build, Test, and Development Commands
-Use Developer PowerShell/Command Prompt for VS 2022.
+## Purpose
+Windows IOCP-based high-performance async MMORPG server backend. Currently implements echo and chat servers as foundations for game server development. Uses C++17/20 with Visual Studio 2022.
 
-- `powershell -ExecutionPolicy Bypass -File scripts/parse_compile_cfg.ps1`  
-  Generate compile-time constants (`network/Const.h`).
-- `powershell -ExecutionPolicy Bypass -File scripts/parse_network_cfg.ps1`  
-  Generate runtime config bindings (`network/NetworkCfg.h`).
-- `msbuild highp-mmorpg.slnx /p:Configuration=Debug /p:Platform=x64 /m`  
-  Build all projects (parallel).
-- `msbuild highp-mmorpg.slnx /t:Rebuild /p:Configuration=Release /p:Platform=x64`  
-  Clean rebuild.
-- `.\x64\Debug\echo-server.exe` then `.\x64\Debug\echo-client.exe`  
-  Manual integration smoke test.
-- `powershell -ExecutionPolicy Bypass -File scripts/gen_flatbuffers.ps1`  
-  Regenerate protocol headers after `.fbs` changes.
+## Key Files
 
-## Coding Style & Naming Conventions
-- Follow `docs/CODE_STYLE.md`.
-- Indentation: tabs; braces on the same line.
-- Naming: `PascalCase` for types/methods, `camelCase` for locals/params, private members as `_camelCase`.
-- Enums use `E` prefix (example: `EIoType`).
-- File names match primary type (`IocpAcceptor.h`, `IocpAcceptor.cpp`).
-- Prefer `Result<T, E>` + `GUARD(...)` for error propagation over exceptions.
+| File | Description |
+|------|-------------|
+| `highp-mmorpg.slnx` | Visual Studio solution file |
+| `CLAUDE.md` | AI agent instructions and project overview |
+| `README.md` | Project readme |
 
-## Testing Guidelines
-- Current strategy is manual integration testing (no gtest/Catch2 configured).
-- Minimum checks for network changes: connect, echo round-trip, multi-client run, graceful shutdown.
-- Record test commands and observed behavior in PRs.
-- If you add automated tests, place them with the relevant module and document execution in `docs/BUILD_AND_TEST.md`.
+## Subdirectories
 
-## Documentation References
-- `docs/INDEX.md`: documentation entry point and navigation map.
-- `docs/QUICK_START.md`: fastest local setup and run sequence.
-- `docs/BUILD_AND_TEST.md`: build matrix, troubleshooting, and test workflow.
-- `docs/ARCHITECTURE.md`: layer boundaries, ownership model, and data flow.
-- `docs/NETWORK_LAYER.md`: IOCP internals (`IocpIoMultiplexer`, `IocpAcceptor`, `ServerLifeCycle`).
-- `docs/CONFIGURATION.md`: compile-time/runtime config and regeneration behavior.
-- `docs/CODE_STYLE.md`: naming, formatting, and error-handling conventions.
-- `docs/PROTOCOL.md`: FlatBuffers schema and message contract details.
+| Directory | Purpose |
+|-----------|---------|
+| `network/` | IOCP networking core - async I/O, acceptor, client management (see `network/AGENTS.md`) |
+| `lib/` | Shared utilities - Result type, logger, error handling, memory pools (see `lib/AGENTS.md`) |
+| `protocol/` | FlatBuffers schemas and generated serialization code (see `protocol/AGENTS.md`) |
+| `exec/` | Runnable server/client applications (see `exec/AGENTS.md`) |
+| `scripts/` | TOML-to-C++ header generators and FlatBuffers codegen (see `scripts/AGENTS.md`) |
+| `docs/` | Architecture and reference documentation (see `docs/AGENTS.md`) |
 
-## Commit & Pull Request Guidelines
-- Match existing history style: `feat(scope): ...`, `refactor(scope): ...`, `chore(scope): ...`, `docs: ...`, `cfg: ...`, `script: ...`.
-- Keep commits small and single-purpose.
-- PRs should include:
-  - what changed and why,
-  - linked issue/task (if applicable),
-  - validation evidence (commands/log snippets),
-  - note whether config or FlatBuffers generation was required.
+## For AI Agents
+
+### Architecture Overview
+```
+Application Layer (exec/)     ← Business logic (EchoServer, ChatServer)
+        ↓ implements ISessionEventReceiver
+Network Layer (network/)      ← IOCP, sockets, async I/O primitives
+        ↓ uses
+Utility Layer (lib/)          ← Result<T,E>, Logger, error types, memory pools
+        ↓ serializes with
+Protocol Layer (protocol/)    ← FlatBuffers schemas and generated code
+```
+
+### Async I/O Flow
+```
+AcceptEx → GQCS wakes worker → OnAccept → Client.PostRecv()
+                                             ↓
+Client sends → GQCS wakes worker → OnRecv → PacketDispatcher.Receive()
+  → FrameBuffer assembles → ParsePacket → PushCommand to MPSC queue
+  → Logic thread Tick() → Dispatch to IPacketHandler
+```
+
+### Critical Invariants
+- `OverlappedExt.overlapped` (WSAOVERLAPPED) MUST be the first struct member for `reinterpret_cast` from OVERLAPPED*
+- Use `Result<T, E>` + `GUARD(...)` for error propagation, not exceptions
+- `std::shared_ptr<Client>` for connection lifetime management
+- PascalCase for types/methods, camelCase for locals/params, `_camelCase` for private members
+
+### Build Commands
+```powershell
+msbuild highp-mmorpg.slnx /p:Configuration=Debug /p:Platform=x64 /m
+powershell -ExecutionPolicy Bypass -File scripts/parse_compile_cfg.ps1   # after config.compile.toml changes
+powershell -ExecutionPolicy Bypass -File scripts/parse_network_cfg.ps1   # after config.runtime.toml changes
+powershell -ExecutionPolicy Bypass -File scripts/gen_flatbuffers.ps1     # after .fbs changes
+```
+
+### Testing
+Manual integration testing only. Start server, then client, verify echo round-trip / chat messaging.
+
+### Commit Style
+`feat(scope): ...`, `refactor(scope): ...`, `fix(scope): ...`, `docs: ...`, `cfg: ...`, `script: ...`
+
+<!-- MANUAL: Any manually added notes below this line are preserved on regeneration -->
