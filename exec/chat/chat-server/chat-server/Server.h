@@ -41,7 +41,6 @@ private:
 	std::shared_ptr<net::SocketOptionBuilder> _socketOptionBuilder;
 	net::NetworkCfg _config;
 	std::unique_ptr<net::ServerLifeCycle> _lifecycle;
-	bool _hasStopped = false;
 	std::atomic<int> _tickMs;
 
 	net::PacketDispatcher _dispatcher;
@@ -49,4 +48,5 @@ private:
 	JoinRoomHandler _joinRoomHandler;
 
 	std::jthread _logicThread;
+    std::atomic<bool> _hasStopped;
 };

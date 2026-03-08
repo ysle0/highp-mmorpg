@@ -19,7 +19,7 @@ Server::Server(
 }
 
 Server::~Server() noexcept {
-    if (!_hasStopped) {
+    if (!_hasStopped.load()) {
         Stop();
     }
 }
@@ -42,7 +42,7 @@ Server::Res Server::Start(std::shared_ptr<net::ISocket> listenSocket) {
 
 void Server::Stop() {
     scope::Defer _([this] {
-        _hasStopped = true;
+        _hasStopped.store(true);
     });
 
     // logic thread 먼저 종료
