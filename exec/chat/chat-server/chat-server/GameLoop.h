@@ -5,30 +5,28 @@
 #include "server/PacketDispatcher.hpp"
 #include "thread/LogicThread.h"
 
-using namespace highp;
-
 class GameLoop {
-    using Res = fn::Result<void, err::ENetworkError>;
+    using Res = highp::fn::Result<void, highp::err::ENetworkError>;
 
 public:
     explicit GameLoop(
-        std::shared_ptr<log::Logger> logger,
-        net::NetworkCfg networkConfig);
+        std::shared_ptr<highp::log::Logger> logger,
+        highp::net::NetworkCfg networkConfig);
     ~GameLoop() noexcept;
 
 public:
     void Start();
     void Stop();
-    void Receive(std::shared_ptr<net::Client> shared, std::span<const char> span);
+    void Receive(std::shared_ptr<highp::net::Client> client, std::span<const char> data);
 
 private:
     /// Logic thread 메인 루프
     void Update(std::stop_token st);
 
 private:
-    std::shared_ptr<log::Logger> _logger;
+    std::shared_ptr<highp::log::Logger> _logger;
     std::atomic<int> _tickMs;
-    net::PacketDispatcher _dispatcher;
-    thread::LogicThread _logicThread;
-    std::atomic<bool> _hasStopped;
+    highp::net::PacketDispatcher _dispatcher;
+    highp::thread::LogicThread _logicThread;
+    std::atomic<bool> _hasStopped{false};
 };

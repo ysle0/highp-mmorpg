@@ -4,8 +4,8 @@
 namespace highp::thread {
     LogicThread LogicThread::Exec(ExecFn fn) {
         return LogicThread(
-            [_fn=std::forward<ExecFn>(fn)](std::stop_token st) {
-                _fn(st);
+            [_fn=std::move(fn)](std::stop_token st) {
+                _fn(std::move(st));
             });
     }
 

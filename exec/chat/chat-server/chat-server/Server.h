@@ -12,38 +12,31 @@
 #include "handlers/ChatMessageHandler.h"
 #include "handlers/JoinRoomHandler.h"
 
-using namespace highp;
-
-class Server : public net::ISessionEventReceiver {
-    using Res = fn::Result<void, err::ENetworkError>;
+class Server : public highp::net::ISessionEventReceiver {
+    using Res = highp::fn::Result<void, highp::err::ENetworkError>;
 
 public:
     explicit Server(
-        std::shared_ptr<log::Logger> logger,
-        net::NetworkCfg networkCfg,
-        std::shared_ptr<net::SocketOptionBuilder> socketOptionBuilder = nullptr);
+        std::shared_ptr<highp::log::Logger> logger,
+        highp::net::NetworkCfg networkCfg,
+        std::shared_ptr<highp::net::SocketOptionBuilder> socketOptionBuilder = nullptr);
     ~Server() noexcept override;
 
-    Res Start(std::shared_ptr<net::ISocket> listenSocket);
+    Res Start(std::shared_ptr<highp::net::ISocket> listenSocket);
     void Stop();
 
 private:
-    void OnAccept(std::shared_ptr<net::Client> client) override;
-    void OnRecv(std::shared_ptr<net::Client> client, std::span<const char> data) override;
-    void OnSend(std::shared_ptr<net::Client> client, size_t bytesTransferred) override;
-    void OnDisconnect(std::shared_ptr<net::Client> client) override;
-
-    // 등록된 핸들러들.
-private:
-    ChatMessageHandler _chatMessageHandler;
-    JoinRoomHandler _joinRoomHandler;
+    void OnAccept(std::shared_ptr<highp::net::Client> client) override;
+    void OnRecv(std::shared_ptr<highp::net::Client> client, std::span<const char> data) override;
+    void OnSend(std::shared_ptr<highp::net::Client> client, size_t bytesTransferred) override;
+    void OnDisconnect(std::shared_ptr<highp::net::Client> client) override;
 
 private:
-    std::shared_ptr<log::Logger> _logger;
-    std::shared_ptr<net::SocketOptionBuilder> _socketOptionBuilder;
-    net::NetworkCfg _config;
-    std::atomic<bool> _hasStopped;
-    
-    std::unique_ptr<net::ServerLifeCycle> _lifecycle;
+    std::shared_ptr<highp::log::Logger> _logger;
+    std::shared_ptr<highp::net::SocketOptionBuilder> _socketOptionBuilder;
+    highp::net::NetworkCfg _config;
+    std::atomic<bool> _hasStopped{false};
+
+    std::unique_ptr<highp::net::ServerLifeCycle> _lifecycle;
     std::unique_ptr<GameLoop> _gameLoop;
 };

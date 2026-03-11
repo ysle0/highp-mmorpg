@@ -1,18 +1,18 @@
 #include "Server.h"
 
 #include <scope/Defer.h>
-#include <chrono>
+#include <utility>
+
+using namespace highp;
 
 Server::Server(
     std::shared_ptr<log::Logger> logger,
     net::NetworkCfg networkCfg,
-    std::shared_ptr<net::SocketOptionBuilder> socketOptionBuilder)
-    : _logger(logger),
-      _socketOptionBuilder(socketOptionBuilder),
-      _config(networkCfg),
-      _chatMessageHandler(logger),
-      _joinRoomHandler(logger) {
-    _gameLoop = std::make_unique<GameLoop>(logger, networkCfg);
+    std::shared_ptr<net::SocketOptionBuilder> socketOptionBuilder
+) : _logger(std::move(logger)),
+    _socketOptionBuilder(std::move(socketOptionBuilder)),
+    _config(networkCfg) {
+    _gameLoop = std::make_unique<GameLoop>(_logger, networkCfg);
 }
 
 Server::~Server() noexcept {
@@ -62,5 +62,5 @@ void Server::OnSend(std::shared_ptr<net::Client> client, size_t bytesTransferred
 
 void Server::OnDisconnect(std::shared_ptr<net::Client> client) {
     _logger->Debug("[Server::OnDisconnect]: socket #{}", client->socket);
-    _gameLoop->Stop();
+    // TODO: 해당 접속이 끊킨 client 를 room 에서 제거, 세션 정리 등..
 }

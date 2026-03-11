@@ -1,13 +1,15 @@
 #include "GameLoop.h"
 
+#include "SelfHandlerRegistry.h"
 #include "scope/Defer.h"
 
 GameLoop::GameLoop(
-    std::shared_ptr<log::Logger> logger,
-    net::NetworkCfg networkConfig
+    std::shared_ptr<highp::log::Logger> logger,
+    highp::net::NetworkCfg networkConfig
 ) : _logger(std::move(logger)),
-    _dispatcher(logger) {
+    _dispatcher(_logger) {
     _tickMs.store(networkConfig.server.tickMs);
+    SelfHandlerRegistry::Instance().RegisterAll(_dispatcher, _logger);
 }
 
 GameLoop::~GameLoop() noexcept {
@@ -19,15 +21,22 @@ GameLoop::~GameLoop() noexcept {
 void GameLoop::Start() {
     _logger->Debug("[GameLoop] starting...");
 
-    _logicThread = thread::LogicThread::Exec([this](std::stop_token st) {
+    _logicThread = highp::thread::LogicThread::Exec([this](std::stop_token st) {
         Update(std::move(st));
     });
 }
 
 void GameLoop::Stop() {
-    _logger->Debug("[GameLoop] stopping...");
+    if (_hasStopped.load()) {
+        _logger->Warn("[GameLoop::Stop] already stopped.");
+        return;
+    }
+
+    _logger->Debug("[GameLoop::Stop] stopping...");
+    _hasStopped.store(true);
 
     // TODO: 게임 로직 (방/zone 정지)
+
     if (_logicThread.joinable()) {
         _logicThread.request_stop();
         // Tick() 의 sleep_until 은 즉시 깨울 수 없어 tickMs 정도 기다릴 수 있음.
@@ -35,20 +44,18 @@ void GameLoop::Stop() {
     }
 }
 
-void GameLoop::Receive(
-    std::shared_ptr<net::Client> shared,
-    std::span<const char> span
-) {
+void GameLoop::Receive(std::shared_ptr<highp::net::Client> client, std::span<const char> data) {
     if (_hasStopped.load()) {
+        _logger->Warn("[GameLoop::Receive] already stopped.");
         return;
     }
 
-    _dispatcher.Receive(shared, span);
+    _dispatcher.Receive(std::move(client), data);
 }
 
 void GameLoop::Update(std::stop_token st) {
     _logger->Info("[LogicThread] Update started. ServerTick={}ms", _tickMs.load());
-    scope::Defer defer([this] {
+    highp::scope::Defer defer([this] {
         // 종료 전 잔여 커맨드 처리
         _dispatcher.Tick();
         _logger->Info("[LogicThread] stopped.");
