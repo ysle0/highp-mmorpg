@@ -10,9 +10,6 @@
 #include "socket/ISocket.h"
 #include "socket/SocketOptionBuilder.h"
 
-#include "handlers/ChatMessageHandler.h"
-#include "handlers/JoinRoomHandler.h"
-
 using namespace highp;
 
 class Server : public net::ISessionEventReceiver {
@@ -44,8 +41,6 @@ private:
 	std::atomic<int> _tickMs;
 
 	net::PacketDispatcher _dispatcher;
-	ChatMessageHandler _chatMessageHandler;
-	JoinRoomHandler _joinRoomHandler;
 
 	std::jthread _logicThread;
     std::atomic<bool> _hasStopped;
