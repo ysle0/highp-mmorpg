@@ -142,12 +142,14 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="SelfHandlerRegistry.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Server.cpp" />
     <ClCompile Include="handlers\ChatMessageHandler.cpp" />
     <ClCompile Include="handlers\JoinRoomHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="SelfHandlerRegistry.h" />
     <ClInclude Include="Server.h" />
     <ClInclude Include="handlers\ChatMessageHandler.h" />
     <ClInclude Include="handlers\JoinRoomHandler.h" />
