@@ -13,7 +13,7 @@ public:
     using FactoryFn = std::function<void(
         highp::net::PacketDispatcher& dispatcher,
         std::shared_ptr<highp::log::Logger> logger)>;
-    
+
     ~SelfHandlerRegistry() noexcept;
 
     static SelfHandlerRegistry& Instance();
@@ -33,15 +33,16 @@ inline SelfHandlerRegistry& SelfHandlerRegistry::Instance() {
 /*
  * @description 핸들러를 등록. 
  * @param HandlerClass SelfHandlerRegistry::FactoryFn signature
+ * @param isEnable true: 서버에 등록 및 패킷을 받음. false: 수동으로 비활성화.
  */
-#define REGISTER_HANDLER(HandlerClass)          \
-static bool _reg_##HandlerClass = [] {          \
+#define SELF_REGISTER_PACKET_HANDLER(HandlerClass, isEnable)    \
+static bool is##HandlerClass##Registered = isEnable ? [] {   \
     SelfHandlerRegistry::Instance().Add([](         \
-        highp::net::PacketDispatcher& d,        \
-        std::shared_ptr<highp::log::Logger> l   \
-    ) {                                         \
-        static HandlerClass h{l};               \
-        d.RegisterHandler(&h);                  \
-    });                                         \
-    return true;                                \
-}();
+        highp::net::PacketDispatcher& d,            \
+        std::shared_ptr<highp::log::Logger> l       \
+    ) {                                             \
+        static HandlerClass h{l};                   \
+        d.RegisterHandler(&h);                      \
+    });                                             \
+    return true;                                    \
+}() : false;
