@@ -6,10 +6,12 @@
 namespace highp::net {
     bool FrameBuffer::Append(std::span<const char> data) {
         const size_t dataLen = data.size();
-        
+
         // 앞 줄은 오버플로우 여지가 있어서 방어적으로 변경.
         // if (_len + dataLen > _buf.size()) {
-        if (_len > _buf.size() - dataLen) {
+        // 이건 언더 플로우 가능 ㅎㅎ..
+        // if (_len > _buf.size() - dataLen) {
+        if (dataLen > _buf.size() || _len > _buf.size() - dataLen) {
             return false;
         }
 
