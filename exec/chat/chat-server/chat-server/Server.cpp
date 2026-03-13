@@ -1,4 +1,5 @@
 #include "Server.h"
+#include "SelfHandlerRegistry.h"
 
 #include <scope/Defer.h>
 #include <utility>
@@ -13,6 +14,7 @@ Server::Server(
     _socketOptionBuilder(std::move(socketOptionBuilder)),
     _config(networkCfg) {
     _gameLoop = std::make_unique<GameLoop>(_logger, networkCfg);
+    SelfHandlerRegistry::Instance().RegisterAll(_dispatcher, _logger);
 }
 
 Server::~Server() noexcept {

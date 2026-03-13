@@ -9,8 +9,6 @@
 #include "socket/ISocket.h"
 #include "socket/SocketOptionBuilder.h"
 
-#include "handlers/ChatMessageHandler.h"
-#include "handlers/JoinRoomHandler.h"
 
 class Server : public highp::net::ISessionEventReceiver {
     using Res = highp::fn::Result<void, highp::err::ENetworkError>;
