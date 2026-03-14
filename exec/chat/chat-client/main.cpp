@@ -1,8 +1,29 @@
-// chat-client.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
+#include <logger/Logger.hpp>
+#include <logger/TextLogger.h>
+#include "Client.h"
+#include "PacketReceiver.h"
+#include "ChatCli.h"
 
-#include <iostream>
+using namespace highp;
 
 int main() {
-    std::cout << "Hello World!\n";
+    auto logger = log::Logger::Default<log::TextLogger>();
+    logger->Info("Chat Client starting...");
+
+    Client client(logger);
+    if (!client.Connect("127.0.0.1", 8080)) {
+        logger->Error("Failed to connect to server.");
+        return -1;
+    }
+
+    client.StartRecvLoop([logger](const protocol::Packet* packet) {
+        OnPacketReceived(logger, packet);
+    });
+
+    ChatCli cli(client, logger);
+    cli.PromptNickname();
+    cli.Run();
+
+    client.Disconnect();
+    return 0;
 }

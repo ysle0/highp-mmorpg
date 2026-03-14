@@ -128,11 +128,17 @@
         </Link>
     </ItemDefinitionGroup>
     <ItemGroup>
+        <ClCompile Include="ChatCli.cpp" />
         <ClCompile Include="Client.cpp" />
+        <ClCompile Include="PacketReceiver.cpp" />
+        <ClCompile Include="PacketSender.cpp" />
         <ClCompile Include="main.cpp" />
     </ItemGroup>
     <ItemGroup>
+      <ClInclude Include="ChatCli.h" />
       <ClInclude Include="Client.h" />
+      <ClInclude Include="PacketReceiver.h" />
+      <ClInclude Include="PacketSender.h" />
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\..\..\lib\lib.vcxproj">
