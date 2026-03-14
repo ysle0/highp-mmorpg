@@ -20,6 +20,9 @@ int main() {
         OnPacketReceived(logger, packet);
     });
 
+    ChatCli cli(client, logger);
+    cli.PromptNickname();
+    cli.Run();
 
     client.Disconnect();
     return 0;
