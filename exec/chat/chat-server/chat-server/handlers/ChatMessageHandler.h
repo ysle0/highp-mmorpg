@@ -4,13 +4,13 @@
 #include <logger/Logger.hpp>
 
 class ChatMessageHandler
-    : public highp::net::IPacketHandler<highp::protocol::messages::ChatMessageBroadcast> {
+    : public highp::net::IPacketHandler<highp::protocol::messages::SendMessageRequest> {
 public:
     explicit ChatMessageHandler(std::shared_ptr<highp::log::Logger> logger);
 
     void Handle(
         std::shared_ptr<highp::net::Client> client,
-        const highp::protocol::messages::ChatMessageBroadcast* payload
+        const highp::protocol::messages::SendMessageRequest* payload
     ) override;
 
 private:
