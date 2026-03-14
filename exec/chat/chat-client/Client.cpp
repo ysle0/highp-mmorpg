@@ -45,11 +45,20 @@ void Client::Disconnect() {
         _isConnected = false;
     });
 
+    if (_recvThread.joinable()) {
+        _recvThread.request_stop();
+    }
+
     if (!_tcpClientSocket) return;
 
     _packetStream.reset();
     (void)_tcpClientSocket->Close();
     _tcpClientSocket.reset();
+
+    if (_recvThread.joinable()) {
+        _recvThread.join();
+    }
+
     _wsaSession.reset();
 
     _logger->Info("Disconnected from server.");
@@ -69,5 +78,34 @@ void Client::Send(const flatbuffers::FlatBufferBuilder& builder) {
         return;
     }
 
-    _logger->Info("Sent");
+    // _logger->Info("Sent");
+}
+
+void Client::StartRecvLoop(RecvCallback callback) {
+    _recvThread = std::jthread([this, cb = std::move(callback)](std::stop_token st) {
+        std::vector<uint8_t> recvBuffer;
+
+        while (!st.stop_requested() && _isConnected) {
+            recvBuffer.clear();
+            auto res = _packetStream->RecvFrame(recvBuffer);
+            if (!res) {
+                if (!st.stop_requested() && _isConnected) {
+                    _logger->Error("RecvFrame failed.");
+                }
+                break;
+            }
+
+            if (recvBuffer.empty()) continue;
+
+            flatbuffers::Verifier verifier(recvBuffer.data(), recvBuffer.size());
+            if (!protocol::VerifyPacketBuffer(verifier)) {
+                _logger->Warn("Received invalid packet.");
+                continue;
+            }
+
+            if (auto* p = protocol::GetPacket(recvBuffer.data())) {
+                cb(p);
+            }
+        }
+    });
 }
