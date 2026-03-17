@@ -9,61 +9,48 @@ void OnPacketReceived(std::shared_ptr<log::Logger> logger, const Packet* packet)
     switch (packet->type()) {
     case MessageType::SC_JoinedRoom: {
         auto* resp = packet->payload_as_messages_JoinedRoomResponse();
-        if (!resp) break;
-        if (resp->ok()) {
-            logger->Info("[JoinedRoom] ok=true");
-            if (auto* rw = resp->room(); rw && rw->room()) {
-                logger->Info("  room: id={}, name={}", rw->room()->id(),
-                             rw->room()->name() ? rw->room()->name()->c_str() : "");
-            }
+        if (auto* err = resp->error(); err != nullptr) {
+            logger->Warn("[JoinedRoom] err={}", err->message()->c_str());
+            break;
         }
-        else {
-            auto* err = resp->error();
-            logger->Warn("[JoinedRoom] ok=false, error={}",
-                         err && err->message() ? err->message()->c_str() : "unknown");
-        }
+
+        logger->Info("[JoinedRoom] ok");
         break;
     }
+
     case MessageType::SC_LeftRoom: {
         auto* resp = packet->payload_as_messages_LeftRoomResponse();
-        if (!resp) break;
-        if (resp->ok()) {
-            logger->Info("[LeftRoom] ok=true");
+        if (auto* err = resp->error(); err != nullptr) {
+            logger->Warn("[LeftRoom] err={}", err->message()->c_str());
+            break;
         }
-        else {
-            auto* err = resp->error();
-            logger->Warn("[LeftRoom] ok=false, error={}",
-                         err && err->message() ? err->message()->c_str() : "unknown");
-        }
+
+        logger->Info("[LeftRoom] ok");
         break;
     }
-    case MessageType::SC_UserJoined: {
+
+    case MessageType::B_UserJoined: {
         auto* bc = packet->payload_as_messages_UserJoinedBroadcast();
-        if (!bc) break;
         auto* user = bc->user();
-        logger->Info("[UserJoined] room={}, user={}",
-                     bc->room_id(),
-                     user && user->username() ? user->username()->c_str() : "?");
+        logger->Info("[UserJoined] user={}", user->username()->c_str());
         break;
     }
-    case MessageType::SC_UserLeft: {
+
+    case MessageType::B_UserLeft: {
         auto* bc = packet->payload_as_messages_UserLeftBroadcast();
-        if (!bc) break;
-        logger->Info("[UserLeft] room={}, user={}",
-                     bc->room_id(),
-                     bc->username() ? bc->username()->c_str() : "?");
+        logger->Info("[UserLeft] user={}", bc->username()->c_str());
         break;
     }
-    case MessageType::SC_ChatMessage: {
+
+    case MessageType::B_ChatMessage: {
         auto* bc = packet->payload_as_messages_ChatMessageBroadcast();
-        if (!bc) break;
-        auto* sender = bc->sender();
-        logger->Info("[Chat] room={}, {}: {}",
-                     bc->room_id(),
-                     sender && sender->username() ? sender->username()->c_str() : "?",
-                     bc->message() ? bc->message()->c_str() : "");
+        uint32_t senderId = bc->sender_id();
+        logger->Info("[Chat] {}: {}",
+                     senderId,
+                     bc->message()->c_str());
         break;
     }
+
     case MessageType::SC_Error: {
         auto* err = packet->payload_as_ErrorResponse();
         if (!err) break;
@@ -72,6 +59,14 @@ void OnPacketReceived(std::shared_ptr<log::Logger> logger, const Packet* packet)
                       err->message() ? err->message()->c_str() : "");
         break;
     }
+
+    case MessageType::None:
+    case MessageType::CS_JoinRoom:
+    case MessageType::CS_LeaveRoom:
+    case MessageType::CS_SendMessage:
+        logger->Error("[Invalid] type={}", EnumNameMessageType(packet->type()));
+        break;
+
     default:
         logger->Warn("[Unknown] type={}", EnumNameMessageType(packet->type()));
         break;

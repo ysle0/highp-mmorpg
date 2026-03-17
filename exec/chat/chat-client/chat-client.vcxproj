@@ -128,31 +128,31 @@
         </Link>
     </ItemDefinitionGroup>
     <ItemGroup>
-        <ClCompile Include="ChatCli.cpp" />
-        <ClCompile Include="Client.cpp" />
-        <ClCompile Include="PacketReceiver.cpp" />
-        <ClCompile Include="PacketSender.cpp" />
-        <ClCompile Include="main.cpp" />
+        <ClCompile Include="ChatCli.cpp"/>
+        <ClCompile Include="Client.cpp"/>
+        <ClCompile Include="PacketReceiver.cpp"/>
+        <ClCompile Include="PacketSender.cpp"/>
+        <ClCompile Include="main.cpp"/>
     </ItemGroup>
     <ItemGroup>
-      <ClInclude Include="ChatCli.h" />
-      <ClInclude Include="Client.h" />
-      <ClInclude Include="PacketReceiver.h" />
-      <ClInclude Include="PacketSender.h" />
+        <ClInclude Include="ChatCli.h"/>
+        <ClInclude Include="Client.h"/>
+        <ClInclude Include="PacketReceiver.h"/>
+        <ClInclude Include="PacketSender.h"/>
     </ItemGroup>
     <ItemGroup>
-      <ProjectReference Include="..\..\..\lib\lib.vcxproj">
-        <Project>{823faac2-5c85-4820-900b-ea98f10c08b4}</Project>
-        <Name>lib</Name>
-      </ProjectReference>
-      <ProjectReference Include="..\..\..\network\network.vcxproj">
-        <Project>{dc3969f5-be2d-46ff-a38f-1d4223bd9b8d}</Project>
-        <Name>network</Name>
-      </ProjectReference>
-      <ProjectReference Include="..\..\..\protocol\protocol.vcxproj">
-        <Project>{d23bc128-6149-4a73-afa1-6047f35449e7}</Project>
-        <Name>protocol</Name>
-      </ProjectReference>
+        <ProjectReference Include="..\..\..\lib\lib.vcxproj">
+            <Project>{823faac2-5c85-4820-900b-ea98f10c08b4}</Project>
+            <Name>lib</Name>
+        </ProjectReference>
+        <ProjectReference Include="..\..\..\network\network.vcxproj">
+            <Project>{dc3969f5-be2d-46ff-a38f-1d4223bd9b8d}</Project>
+            <Name>network</Name>
+        </ProjectReference>
+        <ProjectReference Include="..\..\..\protocol\protocol.vcxproj">
+            <Project>{d23bc128-6149-4a73-afa1-6047f35449e7}</Project>
+            <Name>protocol</Name>
+        </ProjectReference>
     </ItemGroup>
     <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets"/>
     <ImportGroup Label="ExtensionTargets">

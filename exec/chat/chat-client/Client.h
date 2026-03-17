@@ -20,7 +20,7 @@ public:
 
     ~Client() noexcept;
 
-    [[nodiscard]] bool Connect(const char* ipAddress, unsigned short port);
+    [[nodiscard]] bool Connect(std::string_view ipAddress, unsigned short port);
 
     void Disconnect();
 

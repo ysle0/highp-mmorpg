@@ -11,7 +11,7 @@ Client::~Client() noexcept {
     }
 }
 
-bool Client::Connect(const char* ipAddress, unsigned short port) {
+bool Client::Connect(std::string_view ipAddress, unsigned short port) {
     if (_isConnected) {
         Disconnect();
     }

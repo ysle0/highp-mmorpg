@@ -1,6 +1,5 @@
 #pragma once
 
-#include <optional>
 #include <string>
 #include <logger/Logger.hpp>
 
@@ -9,7 +8,7 @@ class Client;
 class ChatCli final {
 public:
     explicit ChatCli(
-        std::shared_ptr<Client> client,
+        Client* client,
         std::shared_ptr<highp::log::Logger> logger
     );
 
@@ -23,14 +22,14 @@ private:
     enum class Action { Continue, Quit };
 
     Action HandleCommand(const std::string& line);
-    Action HandleChat(const std::string& line);
+    Action HandleChat(const std::string& line) const;
 
     void PrintHelp() const;
     void PrintPrompt() const;
 
 private:
-    std::shared_ptr<Client> _client;
+    Client* _client;
     std::shared_ptr<highp::log::Logger> _logger;
     std::string _nickname;
-    std::optional<uint32_t> _currentRoom;
+    bool _joined = false;
 };
