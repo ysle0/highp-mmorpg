@@ -154,6 +154,14 @@
             <Name>protocol</Name>
         </ProjectReference>
     </ItemGroup>
+    <ItemGroup>
+        <Content Include="docs\JoinRoom.md"/>
+        <Content Include="docs\JoinRoom.png"/>
+        <Content Include="docs\LeaveRoom.md"/>
+        <Content Include="docs\LeaveRoom.png"/>
+        <Content Include="docs\ChatMessage.md"/>
+        <Content Include="docs\ChatMessage.md"/>
+    </ItemGroup>
     <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets"/>
     <ImportGroup Label="ExtensionTargets">
     </ImportGroup>
