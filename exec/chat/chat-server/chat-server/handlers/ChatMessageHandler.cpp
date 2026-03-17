@@ -16,4 +16,7 @@ void ChatMessageHandler::Handle(
     // TODO: RoomManager를 통해 해당 방의 모든 유저에게 ChatMessageBroadcast 전송
 }
 
-SELF_REGISTER_PACKET_HANDLER(ChatMessageHandler, true);
+static bool registered = registerSelf<
+    ChatMessageHandler,
+    highp::protocol::messages::SendMessageRequest
+>(true);

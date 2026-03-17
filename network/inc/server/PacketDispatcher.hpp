@@ -39,18 +39,18 @@ namespace highp::net {
         void Tick();
 
         /// IPacketHandler<T>를 페이로드 타입별로 등록
-        template <typename T> requires PayloadType<T>
-        void RegisterHandler(IPacketHandler<T>* handler) {
-            constexpr protocol::Payload key = protocol::PayloadTraits<T>::enum_value;
-            _handlers[key] = [handler](
+        template <typename TPayload> requires PayloadType<TPayload>
+        void RegisterHandler(IPacketHandler<TPayload>* handler) {
+            constexpr protocol::Payload key = protocol::PayloadTraits<TPayload>::enum_value;
+            _handlers[key] = [h = std::move(handler)](
                 std::shared_ptr<Client> client,
                 const protocol::Packet* packet
             ) {
-                    const T* payload = packet->payload_as<T>();
+                    const TPayload* payload = packet->payload_as<TPayload>();
                     if (payload == nullptr)
                         return;
 
-                    handler->Handle(client, payload);
+                    h->Handle(client, payload);
                 };
         }
 

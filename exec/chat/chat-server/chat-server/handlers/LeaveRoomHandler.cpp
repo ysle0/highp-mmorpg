@@ -2,13 +2,13 @@
 #include "../SelfHandlerRegistry.h"
 #include <utility>
 
-LeaveRoomHandler::LeaveRoomHandler(std::shared_ptr<log::Logger> logger)
+LeaveRoomHandler::LeaveRoomHandler(std::shared_ptr<highp::log::Logger> logger)
     : _logger(std::move(logger)) {
 }
 
 void LeaveRoomHandler::Handle(
-    std::shared_ptr<net::Client> client,
-    const protocol::messages::LeaveRoomRequest* payload
+    std::shared_ptr<highp::net::Client> client,
+    const highp::protocol::messages::LeaveRoomRequest* payload
 ) {
     _logger->Info("[LeaveRoomHandler] socket #{}, room_id={}", client->socket, payload->room_id());
 
@@ -17,4 +17,7 @@ void LeaveRoomHandler::Handle(
     // TODO: UserLeftBroadcast 브로드캐스트
 }
 
-SELF_REGISTER_PACKET_HANDLER(LeaveRoomHandler, true);
+static bool registered = registerSelf<
+    LeaveRoomHandler,
+    highp::protocol::messages::LeaveRoomRequest
+>(true);
