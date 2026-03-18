@@ -3,20 +3,22 @@
 #include <functional>
 #include <memory>
 #include <thread>
-#include <client/PacketStream.h>
-#include <client/TcpClientSocket.h>
-#include <client/WsaSession.h>
 #include <flatbuf/gen/packet_generated.h>
 #include <flatbuffers/flatbuffer_builder.h>
 #include "logger/Logger.hpp"
 
-using namespace highp;
+namespace highp::net {
+    class WsaSession;
+    class TcpClientSocket;
+    class PacketStream;
+}
+
 
 class Client {
 public:
-    using RecvCallback = std::function<void(const protocol::Packet*)>;
+    using RecvCallback = std::function<void(const highp::protocol::Packet*)>;
 
-    explicit Client(std::shared_ptr<log::Logger> logger);
+    explicit Client(std::shared_ptr<highp::log::Logger> logger);
 
     ~Client() noexcept;
 
@@ -29,13 +31,13 @@ public:
     void StartRecvLoop(RecvCallback callback);
 
 private:
-    std::shared_ptr<log::Logger> _logger;
+    std::shared_ptr<highp::log::Logger> _logger;
 
-    std::shared_ptr<net::WsaSession> _wsaSession;
+    std::shared_ptr<highp::net::WsaSession> _wsaSession;
 
-    std::unique_ptr<net::TcpClientSocket> _tcpClientSocket;
+    std::unique_ptr<highp::net::TcpClientSocket> _tcpClientSocket;
 
-    std::unique_ptr<net::PacketStream> _packetStream;
+    std::unique_ptr<highp::net::PacketStream> _packetStream;
 
     std::jthread _recvThread;
 
