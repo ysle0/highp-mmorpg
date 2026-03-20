@@ -23,7 +23,7 @@ namespace {
     }
 } // namespace
 
-ChatCli::ChatCli(Client* client, std::shared_ptr<log::Logger> logger)
+ChatCli::ChatCli(Client* client, std::shared_ptr<highp::log::Logger> logger)
     : _client(client),
       _logger(std::move(logger)) {
     //
