@@ -22,7 +22,8 @@
       "Bash(Select-Object -ExpandProperty FullName)",
       "Bash(cd:*)",
       "Bash(powershell:*)",
-      "Bash(xargs grep:*)"
+      "Bash(xargs grep:*)",
+      "Bash(cmd //c \"dir /s /b \\\\\"C:\\\\Program Files\\\\Microsoft Visual Studio\\\\*MSBuild.exe\\\\\" 2>NUL | head -5\")"
     ]
   }
 }
