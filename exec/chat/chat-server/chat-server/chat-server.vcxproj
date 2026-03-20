@@ -144,17 +144,27 @@
   <ItemGroup>
     <ClCompile Include="GameLoop.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="room\Room.cpp" />
+    <ClCompile Include="room\RoomManager.cpp" />
     <ClCompile Include="Server.cpp" />
     <ClCompile Include="handlers\JoinRoomHandler.cpp" />
     <ClCompile Include="handlers\LeaveRoomHandler.cpp" />
-    <ClCompile Include="handlers\SendMessageHandler.cpp" />
+    <ClCompile Include="handlers\ChatMessageHandler.cpp" />
+    <ClCompile Include="SelfHandlerRegistry.cpp" />
+    <ClCompile Include="Session.cpp" />
+    <ClCompile Include="User.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameLoop.h" />
+    <ClInclude Include="room\Room.h" />
+    <ClInclude Include="room\RoomManager.h" />
     <ClInclude Include="Server.h" />
     <ClInclude Include="handlers\JoinRoomHandler.h" />
     <ClInclude Include="handlers\LeaveRoomHandler.h" />
-    <ClInclude Include="handlers\SendMessageHandler.h" />
+    <ClInclude Include="handlers\ChatMessageHandler.h" />
+    <ClCompile Include="SelfHandlerRegistry.h" />
+    <ClInclude Include="Session.h" />
+    <ClInclude Include="User.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="config.runtime.toml" />

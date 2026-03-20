@@ -164,6 +164,7 @@
     <ClInclude Include="inc\scope\DeferContext.hpp" />
     <ClInclude Include="inc\scope\Defer.h" />
     <ClInclude Include="inc\scope\DeferredItemHolder.hpp" />
+    <ClInclude Include="inc\time\Time.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="inc\functional\Result.hpp" />
     <ClInclude Include="inc\logger\TextLogger.h" />
@@ -174,6 +175,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="inc\thread\LogicThread.cpp" />
+    <ClCompile Include="inc\time\Time.cpp" />
     <ClCompile Include="lib.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

@@ -176,6 +176,12 @@ namespace highp::net {
         if (_handler) {
             _handler->OnRecv(clientPtr, data);
         }
+
+        // 다음 수신을 위해 PostRecv 재발행
+        if (!client->PostRecv()) {
+            _logger->Error("[HandleRecv] PostRecv failed for socket #{}", client->socket);
+            CloseClient(clientPtr, true);
+        }
     }
 
     void ServerLifeCycle::HandleSend(internal::CompletionEvent& event) {

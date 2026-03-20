@@ -83,6 +83,8 @@ namespace highp::net {
         _commandQueue.DrainTo(_tickBatch);
 
         for (auto& cmd : _tickBatch) {
+            _logger->Debug("[PacketDispatcher::Tick] processing cmd, payloadType={}",
+                           protocol::EnumNamePayload(cmd.payloadType));
             // command 를 통해 이동한 패킷 데이터는 다시 파싱.
             const protocol::Packet* packet = protocol::GetPacket(cmd.data.data());
             if (packet == nullptr) {

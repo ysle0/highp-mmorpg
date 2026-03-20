@@ -9,7 +9,6 @@
 #include "socket/ISocket.h"
 #include "socket/SocketOptionBuilder.h"
 
-
 class Server : public highp::net::ISessionEventReceiver {
     using Res = highp::fn::Result<void, highp::err::ENetworkError>;
 

@@ -1,0 +1,131 @@
+#pragma once
+
+#include <cstdint>
+#include <string_view>
+
+#include <flatbuf/gen/packet_generated.h>
+
+#include "time/Time.h"
+
+namespace highp::protocol {namespace detail {
+        inline flatbuffers::Offset<flatbuffers::String> createStringOffset(
+            flatbuffers::FlatBufferBuilder& builder,
+            std::string_view value
+        ) {
+            return builder.CreateString(value.empty() ? "" : value.data(), value.size());
+        }
+
+        // Wrap a typed payload into the root Packet using generated union traits.
+        template <typename TPayload>
+        inline void finishTypedPacket(
+            flatbuffers::FlatBufferBuilder& builder,
+            MessageType type,
+            flatbuffers::Offset<TPayload> payload,
+            std::uint32_t sequence = 0
+        ) {
+            static_assert(
+                PayloadTraits<TPayload>::enum_value != Payload::NONE,
+                "TPayload must map to a protocol::Payload enum."
+            );
+
+            const auto packet = CreatePacket(
+                builder,
+                type,
+                PayloadTraits<TPayload>::enum_value,
+                payload.Union(),
+                sequence);
+            FinishPacketBuffer(builder, packet);
+        }
+    } // namespace detail
+
+    inline Common::Timestamp now() {
+        return Common::Timestamp(
+            time::Time::NowInSec(),
+            time::Time::NowInNs()
+        );
+    }
+
+
+    [[nodiscard]] inline flatbuffers::FlatBufferBuilder MakeJoinRoomRequest(
+        std::string_view nickname,
+        std::uint32_t sequence = 0
+    ) {
+        flatbuffers::FlatBufferBuilder builder(128);
+        const auto request = messages::CreateJoinRoomRequest(
+            builder,
+            detail::createStringOffset(builder, nickname));
+        detail::finishTypedPacket(builder, MessageType::CS_JoinRoom, request, sequence);
+        return builder;
+    }
+
+    [[nodiscard]] inline flatbuffers::FlatBufferBuilder MakeLeaveRoomRequest(
+        std::uint32_t roomId = 0,
+        std::uint32_t sequence = 0
+    ) {
+        flatbuffers::FlatBufferBuilder builder(128);
+        const auto request = messages::CreateLeaveRoomRequest(builder, roomId);
+        detail::finishTypedPacket(builder, MessageType::CS_LeaveRoom, request, sequence);
+        return builder;
+    }
+
+    [[nodiscard]] inline flatbuffers::FlatBufferBuilder MakeSendMessageRequest(
+        std::uint32_t roomId,
+        std::string_view message,
+        std::uint32_t sequence = 0
+    ) {
+        flatbuffers::FlatBufferBuilder builder(256);
+        const auto request = messages::CreateSendMessageRequest(
+            builder,
+            roomId,
+            detail::createStringOffset(builder, message));
+        detail::finishTypedPacket(builder, MessageType::CS_SendMessage, request, sequence);
+        return builder;
+    }
+
+    [[nodiscard]] inline flatbuffers::FlatBufferBuilder MakeUserJoinedBroadcast(
+        std::uint32_t userId,
+        std::string_view userName,
+        UserStatus status = UserStatus::Online,
+        std::uint32_t sequence = 0
+    ) {
+        flatbuffers::FlatBufferBuilder builder(128);
+        const auto user = CreateUser(
+            builder,
+            userId,
+            detail::createStringOffset(builder, userName),
+            status);
+        const auto broadcast = messages::CreateUserJoinedBroadcast(builder, user);
+        detail::finishTypedPacket(builder, MessageType::B_UserJoined, broadcast, sequence);
+        return builder;
+    }
+
+    [[nodiscard]] inline flatbuffers::FlatBufferBuilder MakeUserLeftBroadcast(
+        std::uint32_t userId,
+        std::string_view userName,
+        std::uint32_t sequence = 0
+    ) {
+        flatbuffers::FlatBufferBuilder builder(128);
+        const auto broadcast = messages::CreateUserLeftBroadcast(
+            builder,
+            userId,
+            detail::createStringOffset(builder, userName));
+        detail::finishTypedPacket(builder, MessageType::B_UserLeft, broadcast, sequence);
+        return builder;
+    }
+
+    [[nodiscard]] inline flatbuffers::FlatBufferBuilder MakeChatMessageBroadcast(
+        std::uint32_t senderId,
+        std::string_view message,
+        const Common::Timestamp& timestamp,
+        std::uint32_t sequence = 0
+    ) {
+        flatbuffers::FlatBufferBuilder builder(256);
+        const auto broadcast = messages::CreateChatMessageBroadcast(
+            builder,
+            senderId,
+            detail::createStringOffset(builder, message),
+            &timestamp);
+        detail::finishTypedPacket(builder, MessageType::B_ChatMessage, broadcast, sequence);
+        return builder;
+    }
+} // namespace highp::protocol

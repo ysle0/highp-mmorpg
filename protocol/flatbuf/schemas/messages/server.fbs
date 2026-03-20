@@ -7,13 +7,11 @@ namespace highp.protocol.messages;
 
 // 방 입장 결과
 table JoinedRoomResponse {
-    ok: bool;
-    room: RoomWithUsers;
     error: Error;
+    // room: RoomWithUsers;
 }
 
 // 방 퇴장 결과
 table LeftRoomResponse {
-    ok: bool;
     error: Error;
 }
