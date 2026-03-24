@@ -12,7 +12,7 @@ namespace highp::net {
         : _logger(std::move(logger)) {
     }
 
-    void PacketDispatcher::Receive(std::shared_ptr<Client> client, std::span<const char> data) {
+    void PacketDispatcher::Receive(const std::shared_ptr<Client>& client, std::span<const char> data) {
         auto& frameBuf = client->FrameBuf();
 
         if (!frameBuf.Append(data)) {

@@ -18,8 +18,14 @@ int main() {
 	auto c = net::NetworkCfg::FromFile("config.runtime.toml");
 	auto tp = net::NetworkTransport(net::ETransport::TCP);
 	auto sockOptBuilder = std::make_shared<net::SocketOptionBuilder>(logger);
+	auto packetDispatcher = std::make_unique<net::PacketDispatcher>(logger);
+	auto gameLoop = std::make_unique<GameLoop>(
+		logger, 
+		std::move(packetDispatcher),
+		c
+	);
 
-	Server s(logger, c, sockOptBuilder);
+	Server s(logger, std::move(gameLoop), c, sockOptBuilder);
 	scope::Defer _([&s] {
 		s.Stop();
 	});

@@ -33,7 +33,7 @@ namespace highp::net {
         explicit PacketDispatcher(std::shared_ptr<log::Logger> logger);
 
         /// IOCP worker thread에서 호출: 프레임 조립 + 파싱 + 큐 적재
-        void Receive(std::shared_ptr<Client> client, std::span<const char> data);
+        void Receive(const std::shared_ptr<Client>& client, std::span<const char> data);
 
         /// Logic thread에서 호출: 큐에서 커맨드를 꺼내 핸들러에 디스패치함으로 핸들러의 실행 컨텍스트를 logic thread 로 함.
         void Tick();

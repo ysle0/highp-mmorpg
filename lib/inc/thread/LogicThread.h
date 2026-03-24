@@ -2,13 +2,13 @@
 #include <functional>
 
 namespace highp::thread {
-    class LogicThread : public std::jthread {
+    class LogicThread {
         using ExecFn = std::function<void(std::stop_token)>;
     public:
-        LogicThread() = default;
-        static LogicThread Exec(ExecFn fn);
+        void Exec(ExecFn fn);
+        void Exit();
 
     private:
-        explicit LogicThread(ExecFn fn);
+        std::jthread _thread;
     };
 }

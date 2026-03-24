@@ -9,14 +9,16 @@
 #include "socket/ISocket.h"
 #include "socket/SocketOptionBuilder.h"
 
-class Server : public highp::net::ISessionEventReceiver {
+class Server final : public highp::net::ISessionEventReceiver {
     using Res = highp::fn::Result<void, highp::err::ENetworkError>;
 
 public:
     explicit Server(
         std::shared_ptr<highp::log::Logger> logger,
+        std::unique_ptr<GameLoop> gameLoop,
         highp::net::NetworkCfg networkCfg,
-        std::shared_ptr<highp::net::SocketOptionBuilder> socketOptionBuilder = nullptr);
+        std::shared_ptr<highp::net::SocketOptionBuilder> socketOptionBuilder
+    );
     ~Server() noexcept override;
 
     Res Start(std::shared_ptr<highp::net::ISocket> listenSocket);

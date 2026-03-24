@@ -7,37 +7,38 @@
 
 #include "time/Time.h"
 
-namespace highp::protocol {namespace detail {
-        inline flatbuffers::Offset<flatbuffers::String> createStringOffset(
-            flatbuffers::FlatBufferBuilder& builder,
-            std::string_view value
-        ) {
-            return builder.CreateString(value.empty() ? "" : value.data(), value.size());
-        }
+namespace highp::protocol::detail {
+    inline flatbuffers::Offset<flatbuffers::String> createStringOffset(
+        flatbuffers::FlatBufferBuilder& builder,
+        std::string_view value
+    ) {
+        return builder.CreateString(value.empty() ? "" : value.data(), value.size());
+    }
 
-        // Wrap a typed payload into the root Packet using generated union traits.
-        template <typename TPayload>
-        inline void finishTypedPacket(
-            flatbuffers::FlatBufferBuilder& builder,
-            MessageType type,
-            flatbuffers::Offset<TPayload> payload,
-            std::uint32_t sequence = 0
-        ) {
-            static_assert(
-                PayloadTraits<TPayload>::enum_value != Payload::NONE,
-                "TPayload must map to a protocol::Payload enum."
-            );
+    // Wrap a typed payload into the root Packet using generated union traits.
+    template <typename TPayload>
+    inline void finishTypedPacket(
+        flatbuffers::FlatBufferBuilder& builder,
+        MessageType type,
+        flatbuffers::Offset<TPayload> payload,
+        std::uint32_t sequence = 0
+    ) {
+        static_assert(
+            PayloadTraits<TPayload>::enum_value != Payload::NONE,
+            "TPayload must map to a protocol::Payload enum."
+        );
 
-            const auto packet = CreatePacket(
-                builder,
-                type,
-                PayloadTraits<TPayload>::enum_value,
-                payload.Union(),
-                sequence);
-            FinishPacketBuffer(builder, packet);
-        }
-    } // namespace detail
+        const auto packet = CreatePacket(
+            builder,
+            type,
+            PayloadTraits<TPayload>::enum_value,
+            payload.Union(),
+            sequence);
+        FinishPacketBuffer(builder, packet);
+    }
+} // namespace detail
 
+namespace highp::protocol {
     inline Common::Timestamp now() {
         return Common::Timestamp(
             time::Time::NowInSec(),

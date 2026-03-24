@@ -6,12 +6,13 @@
 
 Server::Server(
     std::shared_ptr<highp::log::Logger> logger,
+    std::unique_ptr<GameLoop> gameLoop,
     highp::net::NetworkCfg networkCfg,
     std::shared_ptr<highp::net::SocketOptionBuilder> socketOptionBuilder
 ) : _logger(std::move(logger)),
-    _socketOptionBuilder(std::move(socketOptionBuilder)),
-    _config(networkCfg) {
-    _gameLoop = std::make_unique<GameLoop>(_logger, networkCfg);
+    _gameLoop(std::move(gameLoop)),
+    _config(networkCfg),
+    _socketOptionBuilder(std::move(socketOptionBuilder)) {
 }
 
 Server::~Server() noexcept {
@@ -51,15 +52,17 @@ void Server::OnAccept(std::shared_ptr<highp::net::Client> client) {
 }
 
 void Server::OnRecv(std::shared_ptr<highp::net::Client> client, std::span<const char> data) {
-    _logger->Debug("[Server::OnRecv]: socket #{}, data: {}", client->socket, data.data());
+    _logger->Debug("[Server::OnRecv]: socket #{}, data: {}",
+                   client->socket, data.data());
     _gameLoop->Receive(client, data);
 }
 
 void Server::OnSend(std::shared_ptr<highp::net::Client> client, size_t bytesTransferred) {
-    _logger->Debug("[Server::OnSend]: socket #{}, bytes: {}", client->socket, bytesTransferred);
+    _logger->Debug("[Server::OnSend]: socket #{}, bytes: {}",
+                   client->socket, bytesTransferred);
 }
 
 void Server::OnDisconnect(std::shared_ptr<highp::net::Client> client) {
     _logger->Debug("[Server::OnDisconnect]: socket #{}", client->socket);
-    // TODO: 해당 접속이 끊킨 client 를 room 에서 제거, 세션 정리 등..
+    _gameLoop->Disconnect(client);
 }
