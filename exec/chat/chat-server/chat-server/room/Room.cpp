@@ -1,8 +1,12 @@
 #include "Room.h"
 
-#include "../User.h"
+#include <algorithm>
+
 #include "PacketFactory.h"
-#include "time/time.h"
+#include "time/Time.h"
+
+Room::Room(uint32_t roomId) : _roomId(roomId) {
+}
 
 void Room::Join(std::unique_ptr<User> user) {
     {
@@ -14,7 +18,7 @@ void Room::Join(std::unique_ptr<User> user) {
 void Room::Leave(uint32_t userId) {
     {
         std::scoped_lock lock{_mtx};
-        erase_if(_users, [userId](auto& user) {
+        std::erase_if(_users, [userId](const std::unique_ptr<User>& user) {
             return user->GetId() == userId;
         });
     }
@@ -48,5 +52,23 @@ void Room::BroadcastChatMessage(std::string_view chatMessage) {
         for (const auto& u : _users) {
             u->Send(pkt);
         }
+    }
+}
+
+void Room::Kick(uint32_t userId) {
+    {
+        std::scoped_lock lock{_mtx};
+        std::erase_if(_users, [userId](const std::unique_ptr<User>& user) {
+            return user->GetId() == userId;
+        });
+    }
+}
+
+void Room::KickByDisconnected(const std::shared_ptr<highp::net::Client>& client) {
+    {
+        std::scoped_lock lock{_mtx};
+        std::erase_if(_users, [&client](const std::unique_ptr<User>& user) {
+            return user->IsSameUser(client);
+        });
     }
 }

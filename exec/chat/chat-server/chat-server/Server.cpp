@@ -49,6 +49,7 @@ void Server::Stop() {
 
 void Server::OnAccept(std::shared_ptr<highp::net::Client> client) {
     _logger->Debug("[Server::OnAccept]: socket #{}", client->socket);
+    _gameLoop->Connect(client);
 }
 
 void Server::OnRecv(std::shared_ptr<highp::net::Client> client, std::span<const char> data) {

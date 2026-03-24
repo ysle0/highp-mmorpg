@@ -9,6 +9,8 @@ public:
 
     void Send(const flatbuffers::FlatBufferBuilder& builder) const;
 
+public:
+    [[nodiscard]] bool IsSameUser(const std::shared_ptr<highp::net::Client>& client) const;
     [[nodiscard]] std::string_view GetUserName() const { return std::string_view(_userName); }
     [[nodiscard]] std::uint32_t GetId() const { return _id; }
 

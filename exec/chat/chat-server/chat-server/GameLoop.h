@@ -1,7 +1,9 @@
 #pragma once
 #include <atomic>
 
+#include "SessionManager.h"
 #include "config/NetworkCfg.h"
+#include "room/RoomManager.h"
 #include "server/PacketDispatcher.hpp"
 #include "thread/LogicThread.h"
 
@@ -12,11 +14,14 @@ public:
     explicit GameLoop(
         std::shared_ptr<highp::log::Logger> logger,
         std::unique_ptr<highp::net::PacketDispatcher> packetDispatcher,
+        std::unique_ptr<RoomManager> roomManager,
+        std::unique_ptr<SessionManager> sessionManager,
         highp::net::NetworkCfg networkConfig
     );
     ~GameLoop() noexcept;
 
 public:
+    void Connect(const std::shared_ptr<highp::net::Client>& client);
     void Start();
     void Stop();
     void Receive(const std::shared_ptr<highp::net::Client>& client, std::span<const char> data) const;
@@ -32,4 +37,6 @@ private:
     std::unique_ptr<highp::net::PacketDispatcher> _dispatcher;
     highp::thread::LogicThread _logicThread;
     std::atomic<bool> _hasStopped{false};
+    std::unique_ptr<RoomManager> _roomManager;
+    std::unique_ptr<SessionManager> _sessionManager;
 };

@@ -152,6 +152,7 @@
     <ClCompile Include="handlers\ChatMessageHandler.cpp" />
     <ClCompile Include="SelfHandlerRegistry.cpp" />
     <ClCompile Include="Session.cpp" />
+    <ClCompile Include="SessionManager.cpp" />
     <ClCompile Include="User.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -164,6 +165,7 @@
     <ClInclude Include="handlers\ChatMessageHandler.h" />
     <ClCompile Include="SelfHandlerRegistry.h" />
     <ClInclude Include="Session.h" />
+    <ClInclude Include="SessionManager.h" />
     <ClInclude Include="User.h" />
   </ItemGroup>
   <ItemGroup>

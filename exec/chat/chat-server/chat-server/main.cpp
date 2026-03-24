@@ -9,6 +9,7 @@
 #include <logger/TextLogger.h>
 #include <iostream>
 
+#include "SessionManager.h"
 #include "scope/Defer.h"
 
 using namespace highp;
@@ -19,9 +20,13 @@ int main() {
 	auto tp = net::NetworkTransport(net::ETransport::TCP);
 	auto sockOptBuilder = std::make_shared<net::SocketOptionBuilder>(logger);
 	auto packetDispatcher = std::make_unique<net::PacketDispatcher>(logger);
+	auto roomMgr = std::make_unique<RoomManager>(logger, 1);
+	auto sessionMgr = std::make_unique<SessionManager>(logger);
 	auto gameLoop = std::make_unique<GameLoop>(
-		logger, 
+		logger,
 		std::move(packetDispatcher),
+		std::move(roomMgr),
+		std::move(sessionMgr),
 		c
 	);
 

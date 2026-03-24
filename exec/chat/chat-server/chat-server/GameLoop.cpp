@@ -6,9 +6,13 @@
 GameLoop::GameLoop(
     std::shared_ptr<highp::log::Logger> logger,
     std::unique_ptr<highp::net::PacketDispatcher> packetDispatcher,
+    std::unique_ptr<RoomManager> roomManager,
+    std::unique_ptr<SessionManager> sessionManager,
     highp::net::NetworkCfg networkConfig
 ) : _logger(std::move(logger)),
-    _dispatcher(std::move(packetDispatcher)) {
+    _dispatcher(std::move(packetDispatcher)),
+    _roomManager(std::move(roomManager)),
+    _sessionManager(std::move(sessionManager)) {
     _tickMs.store(networkConfig.server.tickMs);
     SelfHandlerRegistry::Instance().RegisterAll(*_dispatcher, _logger);
 }
@@ -17,6 +21,21 @@ GameLoop::~GameLoop() noexcept {
     if (!_hasStopped.load()) {
         Stop();
     }
+}
+
+void GameLoop::Connect(const std::shared_ptr<highp::net::Client>& client) {
+    if (_hasStopped.load()) {
+        _logger->Warn("[GameLoop::Connect] already stopped.");
+        return;
+    }
+
+    if (_sessionManager == nullptr) {
+        return;
+    }
+
+    const auto session = _sessionManager->CreateSession(client);
+    _logger->Info("[GameLoop::Connect] session #{} connected on socket #{}",
+                  session->GetId(), client->socket);
 }
 
 void GameLoop::Start() {
@@ -78,4 +97,11 @@ void GameLoop::Update(std::stop_token st) const {
 }
 
 void GameLoop::Disconnect(const std::shared_ptr<highp::net::Client>& client) {
+    if (_roomManager != nullptr) {
+        _roomManager->KickDisconnected(client);
+    }
+
+    if (_sessionManager != nullptr) {
+        _sessionManager->RemoveByClient(client);
+    }
 }
