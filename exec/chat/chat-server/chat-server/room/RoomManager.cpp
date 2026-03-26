@@ -50,7 +50,7 @@ Room* RoomManager::GetRoom(uint32_t roomId) {
     return it == _rooms.end() ? nullptr : it->get();
 }
 
-void RoomManager::KickDisconnectedClient(const std::shared_ptr<highp::net::Client>& client) {
+void RoomManager::KickDisconnected(const std::shared_ptr<highp::net::Client>& client) {
     std::scoped_lock lock{_mtx};
     for (const auto& room : _rooms) {
         room->KickByDisconnected(client);
