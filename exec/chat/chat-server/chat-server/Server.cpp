@@ -36,13 +36,17 @@ Server::Res Server::Start(std::shared_ptr<highp::net::ISocket> listenSocket) {
 
 void Server::Stop() {
     highp::scope::Defer _([this] {
-        _gameLoop->Stop();
         _hasStopped.store(true);
     });
 
     if (_lifecycle) {
         _lifecycle->Stop();
         _lifecycle.reset();
+    }
+
+    if (_gameLoop) {
+        _gameLoop->Stop();
+        _gameLoop.reset();
     }
 }
 
