@@ -29,5 +29,5 @@ void Session::Send(const flatbuffers::FlatBufferBuilder& builder) const {
 }
 
 bool Session::IsSameSession(const std::shared_ptr<highp::net::Client>& client) const {
-    return _tcpClient != nullptr && client != nullptr && _tcpClient.get() == client.get();
+    return _tcpClient->socket == client->socket;
 }
