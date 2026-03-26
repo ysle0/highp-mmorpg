@@ -1,4 +1,5 @@
 #include "Server.h"
+#include "SelfHandlerRegistry.h"
 
 #include <scope/Defer.h>
 #include <chrono>
@@ -10,9 +11,9 @@ Server::Server(
     : _logger(logger),
       _socketOptionBuilder(socketOptionBuilder),
       _config(networkCfg),
-      _chatMessageHandler(logger),
-      _joinRoomHandler(logger) {
-    _gameLoop = std::make_unique<GameLoop>(logger, networkCfg);
+      _dispatcher(logger) {
+    _tickMs.store(networkCfg.server.tickMs);
+    SelfHandlerRegistry::Instance().RegisterAll(_dispatcher, _logger);
 }
 
 Server::~Server() noexcept {
