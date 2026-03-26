@@ -30,25 +30,16 @@ Server::Res Server::Start(std::shared_ptr<net::ISocket> listenSocket) {
 
     GUARD(_lifecycle->Start(listenSocket, _config));
 
-    _logicThread = std::jthread([this](std::stop_token st) {
-        LogicLoop(st);
-    });
-
     _logger->Info("Server started on port {}.", _config.server.port);
+    _gameLoop->Start();
     return Res::Ok();
 }
 
 void Server::Stop() {
     scope::Defer _([this] {
+        _gameLoop->Stop();
         _hasStopped.store(true);
     });
-
-    // logic thread 먼저 종료
-    if (_logicThread.joinable()) {
-        _logicThread.request_stop();
-        // Tick() 의 sleep_until 은 즉시 깨울 수 없어 tickMs 정도 기다릴 수 있음.
-        _logicThread.join();
-    }
 
     if (_lifecycle) {
         _lifecycle->Stop();
@@ -56,32 +47,21 @@ void Server::Stop() {
     }
 }
 
-void Server::LogicLoop(std::stop_token st) {
-    _logger->Info("[LogicThread] started. ServerTick={}ms", _tickMs.load());
-
-    while (!st.stop_requested()) {
-        const auto nextTick = std::chrono::steady_clock::now() + std::chrono::milliseconds(_tickMs.load());
-        _dispatcher.Tick();
-        std::this_thread::sleep_until(nextTick);
-    }
-
-    // 종료 전 잔여 커맨드 처리
-    _dispatcher.Tick();
-    _logger->Info("[LogicThread] stopped.");
-}
 
 void Server::OnAccept(std::shared_ptr<net::Client> client) {
-    _logger->Info("[Server::OnAccept]: socket #{}", client->socket);
+    _logger->Debug("[Server::OnAccept]: socket #{}", client->socket);
 }
 
 void Server::OnRecv(std::shared_ptr<net::Client> client, std::span<const char> data) {
-    _dispatcher.Receive(client, data);
+    _logger->Debug("[Server::OnRecv]: socket #{}, data: {}", client->socket, data);
+    _gameLoop->Receive(client, data);
 }
 
 void Server::OnSend(std::shared_ptr<net::Client> client, size_t bytesTransferred) {
-    _logger->Info("[Server::OnSend]: socket #{}, bytes: {}", client->socket, bytesTransferred);
+    _logger->Debug("[Server::OnSend]: socket #{}, bytes: {}", client->socket, bytesTransferred);
 }
 
 void Server::OnDisconnect(std::shared_ptr<net::Client> client) {
-    _logger->Info("[Server::OnDisconnect]: socket #{}", client->socket);
+    _logger->Debug("[Server::OnDisconnect]: socket #{}", client->socket);
+    _gameLoop->Stop();
 }
