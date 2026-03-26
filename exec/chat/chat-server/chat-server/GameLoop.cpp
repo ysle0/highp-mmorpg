@@ -75,24 +75,29 @@ void GameLoop::Receive(
 
 void GameLoop::Update(std::stop_token st) const {
     _logger->Info("[LogicThread] Update started. ServerTick={}ms", _tickMs.load());
-    highp::scope::Defer defer([this] {
+    DEFER([this] {
         // 종료 전 잔여 커맨드 처리
         _dispatcher->Tick();
         _logger->Info("[LogicThread] stopped.");
-    });
+        });
 
     while (!st.stop_requested()) {
-        const auto nextTick =
+        // 시작 전 목표 시각을 고정.
+        const auto targetingNextTick =
             std::chrono::steady_clock::now() +
             std::chrono::milliseconds(_tickMs.load());
 
-        if (nextTick < std::chrono::steady_clock::now()) {
+        _dispatcher->Tick();
+
+        // 이미 targetingNextTick 이  sleep 할 필요없이 바로 다음 tick 으로 넘어감.
+        const bool alreadyPassedNextTick = targetingNextTick < std::chrono::steady_clock::now();
+        if (alreadyPassedNextTick) {
             std::this_thread::yield();
             continue;
         }
 
-        _dispatcher->Tick();
-        std::this_thread::sleep_until(nextTick);
+        // _dispatcher->Tick() 이후 남은 tick 만큼만 sleep!
+        std::this_thread::sleep_until(targetingNextTick);
     }
 }
 
