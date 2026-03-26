@@ -22,5 +22,5 @@ private:
     std::shared_ptr<highp::log::Logger> _logger;
     mutable std::mutex _mtx;
     std::atomic<uint64_t> _sessionCounter{0};
-    std::unordered_map<uint64_t, std::shared_ptr<Session>> _sessions;
+    std::unordered_map<SocketHandle, std::shared_ptr<Session>> _sessions;
 };
