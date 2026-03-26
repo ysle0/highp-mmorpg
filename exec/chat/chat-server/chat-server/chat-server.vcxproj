@@ -163,7 +163,7 @@
     <ClInclude Include="handlers\JoinRoomHandler.h" />
     <ClInclude Include="handlers\LeaveRoomHandler.h" />
     <ClInclude Include="handlers\ChatMessageHandler.h" />
-    <ClCompile Include="SelfHandlerRegistry.h" />
+    <ClInclude Include="SelfHandlerRegistry.h" />
     <ClInclude Include="Session.h" />
     <ClInclude Include="SessionManager.h" />
     <ClInclude Include="User.h" />
