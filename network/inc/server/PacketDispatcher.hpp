@@ -42,7 +42,7 @@ namespace highp::net {
         template <typename TPayload> requires PayloadType<TPayload>
         void RegisterHandler(IPacketHandler<TPayload>* handler) {
             constexpr protocol::Payload key = protocol::PayloadTraits<TPayload>::enum_value;
-            _handlers[key] = [h = std::move(handler)](
+            _handlers[key] = [&handler](
                 std::shared_ptr<Client> client,
                 const protocol::Packet* packet
             ) {
@@ -50,7 +50,7 @@ namespace highp::net {
                     if (payload == nullptr)
                         return;
 
-                    h->Handle(client, payload);
+                    handler->Handle(client, payload);
                 };
         }
 
