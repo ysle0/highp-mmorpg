@@ -12,7 +12,7 @@ class SelfHandlerRegistry {
 public:
     using FactoryFn = std::function<void(
         highp::net::PacketDispatcher& dispatcher,
-        const std::shared_ptr<highp::log::Logger>& logger)>;
+        std::shared_ptr<highp::log::Logger> logger)>;
 
     ~SelfHandlerRegistry() noexcept;
 
@@ -20,8 +20,7 @@ public:
     void Add(FactoryFn fn);
     void RegisterAll(
         highp::net::PacketDispatcher& dispatcher,
-        const std::shared_ptr<highp::log::Logger>& logger
-    ) const;
+        std::shared_ptr<highp::log::Logger> logger) const;
 
 private:
     std::vector<FactoryFn> _factories;
@@ -45,8 +44,8 @@ bool registerSelf(const bool isEnable) {
     if (!isEnable) return false;
 
     SelfHandlerRegistry::Instance().Add(
-        [](highp::net::PacketDispatcher& d, const std::shared_ptr<highp::log::Logger>& l) {
-            d.RegisterHandler<TPayload>(new THandler(l));
+        [](highp::net::PacketDispatcher& d, std::shared_ptr<highp::log::Logger> l) {
+            d.RegisterHandler<TPayload>(new THandler(std::move(l)));
         });
     return true;
 }

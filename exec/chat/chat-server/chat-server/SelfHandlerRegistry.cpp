@@ -10,7 +10,7 @@ void SelfHandlerRegistry::Add(FactoryFn fn) {
 
 void SelfHandlerRegistry::RegisterAll(
     highp::net::PacketDispatcher& dispatcher,
-    const std::shared_ptr<highp::log::Logger>& logger
+    std::shared_ptr<highp::log::Logger> logger
 ) const {
     logger->Info("[SelfHandlerRegistry] registering {} handler(s)", _factories.size());
     for (auto& fn : _factories) {
