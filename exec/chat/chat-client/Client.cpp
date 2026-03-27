@@ -1,8 +1,12 @@
 #include "Client.h"
 
+#include <client/PacketStream.h>
+#include <client/TcpClientSocket.h>
+#include <client/WsaSession.h>
 #include "scope/Defer.h"
 
-Client::Client(std::shared_ptr<log::Logger> logger) : _logger(logger) {
+Client::Client(std::shared_ptr<highp::log::Logger> logger)
+    : _logger(std::move(logger)) {
 }
 
 Client::~Client() noexcept {
@@ -11,12 +15,12 @@ Client::~Client() noexcept {
     }
 }
 
-bool Client::Connect(const char* ipAddress, unsigned short port) {
+bool Client::Connect(std::string_view ipAddress, unsigned short port) {
     if (_isConnected) {
         Disconnect();
     }
 
-    auto sessionRes = net::WsaSession::Create(_logger);
+    auto sessionRes = highp::net::WsaSession::Create(_logger);
     if (sessionRes.HasErr()) {
         _logger->Error("Failed to initialize WSA session.");
         return false;
@@ -25,7 +29,7 @@ bool Client::Connect(const char* ipAddress, unsigned short port) {
     _logger->Info("Connecting to {}:{}", ipAddress, port);
 
     auto wsaSession = sessionRes.Data();
-    auto socket = std::make_unique<net::TcpClientSocket>(_logger, wsaSession);
+    auto socket = std::make_unique<highp::net::TcpClientSocket>(_logger, wsaSession);
     if (!socket->Connect(ipAddress, port)) {
         _logger->Error("Connect failed.");
         return false;
@@ -33,7 +37,7 @@ bool Client::Connect(const char* ipAddress, unsigned short port) {
 
     _wsaSession = std::move(wsaSession);
     _tcpClientSocket = std::move(socket);
-    _packetStream = std::make_unique<net::PacketStream>(*_tcpClientSocket);
+    _packetStream = std::make_unique<highp::net::PacketStream>(*_tcpClientSocket);
 
     _isConnected = true;
     _logger->Info("Connected to {}:{}", ipAddress, port);
@@ -41,15 +45,24 @@ bool Client::Connect(const char* ipAddress, unsigned short port) {
 }
 
 void Client::Disconnect() {
-    scope::Defer _([this] {
+    highp::scope::Defer _([this] {
         _isConnected = false;
     });
+
+    if (_recvThread.joinable()) {
+        _recvThread.request_stop();
+    }
 
     if (!_tcpClientSocket) return;
 
     _packetStream.reset();
     (void)_tcpClientSocket->Close();
     _tcpClientSocket.reset();
+
+    if (_recvThread.joinable()) {
+        _recvThread.join();
+    }
+
     _wsaSession.reset();
 
     _logger->Info("Disconnected from server.");
@@ -69,5 +82,34 @@ void Client::Send(const flatbuffers::FlatBufferBuilder& builder) {
         return;
     }
 
-    _logger->Info("Sent");
+    // _logger->Info("Sent");
+}
+
+void Client::StartRecvLoop(RecvCallback callback) {
+    _recvThread = std::jthread([this, cb = std::move(callback)](std::stop_token st) {
+        std::vector<uint8_t> recvBuffer;
+
+        while (!st.stop_requested() && _isConnected) {
+            recvBuffer.clear();
+            auto res = _packetStream->RecvFrame(recvBuffer);
+            if (!res) {
+                if (!st.stop_requested() && _isConnected) {
+                    _logger->Error("RecvFrame failed.");
+                }
+                break;
+            }
+
+            if (recvBuffer.empty()) continue;
+
+            flatbuffers::Verifier verifier(recvBuffer.data(), recvBuffer.size());
+            if (!highp::protocol::VerifyPacketBuffer(verifier)) {
+                _logger->Warn("Received invalid packet.");
+                continue;
+            }
+
+            if (auto* p = highp::protocol::GetPacket(recvBuffer.data())) {
+                cb(p);
+            }
+        }
+    });
 }
