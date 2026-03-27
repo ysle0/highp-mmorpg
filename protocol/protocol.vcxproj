@@ -139,6 +139,7 @@
         </Link>
     </ItemDefinitionGroup>
     <ItemGroup>
+        <ClInclude Include="PacketFactory.h" />
         <ClInclude Include="flatbuf\gen\broadcast_generated.h" />
         <ClInclude Include="flatbuf\gen\client_generated.h" />
         <ClInclude Include="flatbuf\gen\common_generated.h" />

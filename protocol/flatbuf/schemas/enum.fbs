@@ -8,10 +8,14 @@ enum MessageType : ushort {
 	CS_LeaveRoom = 2,
 	CS_SendMessage = 3,
 
-	// Server->Client (100-199)
-	SC_UserJoined = 100,
-	SC_UserLeft = 101,
-    SC_ChatMessage = 102,
+	// Server->Client Responses (100-149)
+	SC_JoinedRoom = 100,
+	SC_LeftRoom = 101,
+
+	// Server->Client Broadcasts (150-199)
+	B_UserJoined = 150,
+	B_UserLeft = 151,
+    B_ChatMessage = 152,
 
     // Errors (500+)
 	SC_Error = 999
