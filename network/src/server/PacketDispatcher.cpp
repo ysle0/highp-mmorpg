@@ -5,12 +5,14 @@
 #include "config/Const.h"
 #include <logger/Logger.hpp>
 
+#include "scope/Defer.h"
+
 namespace highp::net {
     PacketDispatcher::PacketDispatcher(std::shared_ptr<log::Logger> logger)
         : _logger(std::move(logger)) {
     }
 
-    void PacketDispatcher::Receive(std::shared_ptr<Client> client, std::span<const char> data) {
+    void PacketDispatcher::Receive(const std::shared_ptr<Client>& client, std::span<const char> data) {
         auto& frameBuf = client->FrameBuf();
 
         if (!frameBuf.Append(data)) {
@@ -30,6 +32,8 @@ namespace highp::net {
             // payload 길이 읽기
             uint32_t payloadLen = 0;
             std::memcpy(&payloadLen, buf.data(), PacketStream::kHeaderSize);
+            // byte order network -> little-endian.
+            payloadLen = ntohl(payloadLen);
 
             if (payloadLen > Const::Buffer::maxFrameSize) {
                 // #1. 악의적인 Packet 조작을 한 사용자를 직접 드랍!..
@@ -50,23 +54,28 @@ namespace highp::net {
             const size_t frameSize = PacketStream::kHeaderSize + payloadLen;
 
             // payload가 아직 안 모임
-            if (buf.size() < frameSize)
+            if (buf.size() < frameSize) {
                 break;
+            }
+
+            scope::Defer defer([&frameBuf, frameSize] {
+                // 소비한 프레임만큼 버퍼에서 제거
+                // 패킷 파싱 성공여부와 상관없이 frameBuf 를 비워줘야함.
+                frameBuf.Consume(frameSize);
+            });
 
             // payload 영역을 파싱 
             const auto payload = buf.subspan(PacketStream::kHeaderSize, payloadLen);
-            if (auto res = ParsePacket(payload); !res) {
+            const auto res = ParsePacket(payload);
+            if (!res) {
                 client->Close(true);
+                return;
             }
-            else {
-                // Packet Type 만 큐에 적재.
-                // 현재 파싱한 패킷의 원본은 frameBuf 에 존재. -> packet 은 framebuf.Consume 이후에 반드시 제거되므로 소유권 이전필요.
-                const protocol::Payload packetType = res.Data()->payload_type();
-                PushCommand(client, packetType, payload);
-
-                // 소비한 프레임만큼 버퍼에서 제거
-                frameBuf.Consume(frameSize);
-            }
+            
+            // Packet Type 만 큐에 적재.
+            // 현재 파싱한 패킷의 원본은 frameBuf 에 존재. -> packet 은 framebuf.Consume 이후에 반드시 제거되므로 소유권 이전필요.
+            const protocol::Payload packetType = res.Data()->payload_type();
+            PushCommand(client, packetType, payload);
         }
     }
 
@@ -74,6 +83,8 @@ namespace highp::net {
         _commandQueue.DrainTo(_tickBatch);
 
         for (auto& cmd : _tickBatch) {
+            _logger->Debug("[PacketDispatcher::Tick] processing cmd, payloadType={}",
+                           protocol::EnumNamePayload(cmd.payloadType));
             // command 를 통해 이동한 패킷 데이터는 다시 파싱.
             const protocol::Packet* packet = protocol::GetPacket(cmd.data.data());
             if (packet == nullptr) {
@@ -124,7 +135,9 @@ namespace highp::net {
             reinterpret_cast<const uint8_t*>(data.data()),
             data.size(),
             flatbuffers::VerifierTemplate<false>::Options{
-                .assert = true,
+                // .assert = true,
+                // 악의적인 클라이언트가 잘못된 flatbuffer를 보내면 Debug 빌드에서 서버 전체가 크래시됨..
+                // 프로덕션에서는 해당 패킷만 거부해야함.
             });
 
         if (!protocol::VerifyPacketBuffer(verifier)) {
