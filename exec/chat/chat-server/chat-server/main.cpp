@@ -20,7 +20,7 @@ int main() {
     auto tp = net::NetworkTransport(net::ETransport::TCP);
     auto sockOptBuilder = std::make_shared<net::SocketOptionBuilder>(logger);
     auto packetDispatcher = std::make_unique<net::PacketDispatcher>(logger);
-    auto roomMgr = std::make_unique<RoomManager>(logger, 1);
+    auto roomMgr = std::make_unique<RoomManager>(logger, 1, c.room.maxCapacity);
     auto sessionMgr = std::make_unique<SessionManager>(logger);
     auto gameLoop = std::make_unique<GameLoop>(
         logger,

@@ -13,11 +13,13 @@ class RoomManager final {
 public:
     explicit RoomManager(
         std::shared_ptr<highp::log::Logger> logger,
-        uint16_t initRoomCount
+        uint16_t initRoomCount,
+        uint32_t maxRoomCapacity
     );
 
 public:
-    void CreateRoom(std::optional<uint32_t> roomIdOverride = std::nullopt);
+    std::shared_ptr<Room> CreateRoom(std::optional<uint32_t> roomIdOverride = std::nullopt);
+    std::shared_ptr<Room> GetAvailableRoom();
     bool DestroyRoom(uint32_t roomId);
     bool IsRoomExist(uint32_t roomId) const;
     Room* GetRoom(uint32_t roomId);
@@ -27,6 +29,7 @@ private:
     std::shared_ptr<highp::log::Logger> _logger;
 
     mutable std::mutex _mtx;
-    std::vector<std::unique_ptr<Room>> _rooms;
+    std::vector<std::shared_ptr<Room>> _rooms;
     std::atomic<uint32_t> _roomCounter{0};
+    uint32_t _maxRoomCapacity;
 };

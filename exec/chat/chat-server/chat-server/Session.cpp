@@ -4,11 +4,11 @@
 
 Session::Session(
     std::shared_ptr<highp::log::Logger> logger,
-    uint64_t sessionId,
-    std::shared_ptr<highp::net::Client> tcpClient
+    std::shared_ptr<highp::net::Client> tcpClient,
+    uint64_t sessionId
 ) : _logger(std::move(logger)),
-    _sessionId(sessionId),
-    _tcpClient(std::move(tcpClient)) {
+    _tcpClient(std::move(tcpClient)),
+    _sessionId(sessionId) {
 }
 
 void Session::Send(const flatbuffers::FlatBufferBuilder& builder) const {
