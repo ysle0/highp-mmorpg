@@ -1,8 +1,8 @@
 #pragma once
+#include <concepts>
 #include <functional>
 
 #include "server/PacketDispatcher.hpp"
-
 
 /**
  * IPacketHandler 를 상송하는 각 핸들러 자신이 GameLoop 에 등록하는 데에 사용.
@@ -18,7 +18,9 @@ public:
 
     static SelfHandlerRegistry& Instance();
     void Add(FactoryFn fn);
-    void RegisterAll(highp::net::PacketDispatcher& dispatcher, std::shared_ptr<highp::log::Logger> logger) const;
+    void RegisterAll(
+        highp::net::PacketDispatcher& dispatcher,
+        std::shared_ptr<highp::log::Logger> logger) const;
 
 private:
     std::vector<FactoryFn> _factories;
@@ -35,14 +37,15 @@ inline SelfHandlerRegistry& SelfHandlerRegistry::Instance() {
  * @param HandlerClass SelfHandlerRegistry::FactoryFn signature
  * @param isEnable true: 서버에 등록 및 패킷을 받음. false: 수동으로 비활성화.
  */
-#define SELF_REGISTER_PACKET_HANDLER(HandlerClass, isEnable)    \
-static bool is##HandlerClass##Registered = isEnable ? [] {   \
-    SelfHandlerRegistry::Instance().Add([](         \
-        highp::net::PacketDispatcher& d,            \
-        std::shared_ptr<highp::log::Logger> l       \
-    ) {                                             \
-        static HandlerClass h{l};                   \
-        d.RegisterHandler(&h);                      \
-    });                                             \
-    return true;                                    \
-}() : false;
+template <typename THandler, typename TPayload>
+    requires highp::net::PayloadType<TPayload> &&
+    std::derived_from<THandler, highp::net::IPacketHandler<TPayload>>
+bool registerSelf(const bool isEnable) {
+    if (!isEnable) return false;
+
+    SelfHandlerRegistry::Instance().Add(
+        [](highp::net::PacketDispatcher& d, std::shared_ptr<highp::log::Logger> l) {
+            d.RegisterHandler<TPayload>(new THandler(std::move(l)));
+        });
+    return true;
+}
