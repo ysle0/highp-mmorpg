@@ -28,6 +28,14 @@ struct NetworkCfg {
 			static constexpr int tickMs = 16;
 		};
 	} server;
+	/// <summary>[room] section</summary>
+	struct Room {
+        int maxCapacity;
+
+		struct Defaults {
+			static constexpr int maxCapacity = 100;
+		};
+	} room;
 	/// <summary>[thread] section</summary>
 	struct Thread {
         int maxWorkerThreadMultiplier;
@@ -59,6 +67,9 @@ struct NetworkCfg {
 				.backlog = cfg.Int("server.backlog", Server::Defaults::backlog, "SERVER_BACKLOG"),
 				.tickMs = cfg.Int("server.tick_ms", Server::Defaults::tickMs, "SERVER_TICK_MS"),
 			},
+			.room = {
+				.maxCapacity = cfg.Int("room.max_capacity", Room::Defaults::maxCapacity, "ROOM_MAX_CAPACITY"),
+			},
 			.thread = {
 				.maxWorkerThreadMultiplier = cfg.Int("thread.max_worker_thread_multiplier", Thread::Defaults::maxWorkerThreadMultiplier, "THREAD_MAX_WORKER_THREAD_MULTIPLIER"),
 				.maxAcceptorThreadCount = cfg.Int("thread.max_acceptor_thread_count", Thread::Defaults::maxAcceptorThreadCount, "THREAD_MAX_ACCEPTOR_THREAD_COUNT"),
@@ -75,6 +86,9 @@ struct NetworkCfg {
 				.maxClients = Server::Defaults::maxClients,
 				.backlog = Server::Defaults::backlog,
 				.tickMs = Server::Defaults::tickMs,
+			},
+			.room = {
+				.maxCapacity = Room::Defaults::maxCapacity,
 			},
 			.thread = {
 				.maxWorkerThreadMultiplier = Thread::Defaults::maxWorkerThreadMultiplier,
