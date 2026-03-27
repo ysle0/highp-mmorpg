@@ -2,19 +2,40 @@
 #include "../SelfHandlerRegistry.h"
 #include <utility>
 
-LeaveRoomHandler::LeaveRoomHandler(std::shared_ptr<highp::log::Logger> logger)
-    : _logger(std::move(logger)) {
+#include "PacketFactory.h"
+
+LeaveRoomHandler::LeaveRoomHandler(
+    std::shared_ptr<highp::log::Logger> logger,
+    std::shared_ptr<RoomManager> roomManager,
+    std::shared_ptr<UserManager> userManager
+) : _logger(std::move(logger)),
+    _roomManager(std::move(roomManager)),
+    _userManager(std::move(userManager)) {
 }
 
 void LeaveRoomHandler::Handle(
     std::shared_ptr<highp::net::Client> client,
     const highp::protocol::messages::LeaveRoomRequest* payload
 ) {
-    _logger->Info("[LeaveRoomHandler] socket #{}, room_id={}", client->socket, payload->room_id());
+    _logger->Info("[LeaveRoomHandler] socket #{}, room_id={}",
+                  client->socket,
+                  payload->room_id());
 
-    // TODO: RoomManager를 통해 방에서 유저 제거
-    // TODO: LeftRoomResponse 응답
-    // TODO: UserLeftBroadcast 브로드캐스트
+    const User* user = _userManager->GetUserByClient(client);
+    if (!user) {
+        _logger->Warn("[LeaveRoomHandler] user not found");
+        return;
+    }
+
+    Room* room = _roomManager->GetRoom(user->GetRoomId());
+    room->Leave(user->GetId());
+
+    _logger->Info("[LeaveRoomHandler] user left room");
+
+    const auto resp = highp::protocol::MakeLeftRoomResponse();
+    user->Send(resp);
+
+    _userManager->RemoveUserByUserId(user->GetId());
 }
 
 // NOTE(2026-03-27): .cpp 가 static library 로 묶이면 해당 translation unit 의 심볼을 
