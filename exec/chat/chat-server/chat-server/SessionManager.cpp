@@ -4,11 +4,9 @@ SessionManager::SessionManager(std::shared_ptr<highp::log::Logger> logger)
     : _logger(std::move(logger)) {
 }
 
-std::shared_ptr<Session> SessionManager::CreateSession(
-    const std::shared_ptr<highp::net::Client>& client
-) {
-    const auto sessionId = _sessionCounter.fetch_add(1);
-    auto session = std::make_shared<Session>(_logger, sessionId, client);
+std::shared_ptr<Session> SessionManager::CreateSession(const std::shared_ptr<highp::net::Client>& client) {
+    const uint64_t sessionId = _sessionCounter.fetch_add(1);
+    auto session = std::make_shared<Session>(_logger, client, sessionId);
 
     {
         std::scoped_lock lock{_mtx};
@@ -26,6 +24,16 @@ std::shared_ptr<Session> SessionManager::GetSession(uint64_t sessionId) const {
     }
 
     return it->second;
+}
+
+std::shared_ptr<Session> SessionManager::GetSessionByClient(const std::shared_ptr<highp::net::Client>& client) const {
+    std::scoped_lock lock{_mtx};
+    for (const auto& [id, s] : _sessions) {
+        if (s->IsSameSession(client)) {
+            return s;
+        }
+    }
+    return nullptr;
 }
 
 bool SessionManager::RemoveSession(uint64_t sessionId) {

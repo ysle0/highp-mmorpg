@@ -10,8 +10,8 @@ class Session final {
 public:
     explicit Session(
         std::shared_ptr<highp::log::Logger> logger,
-        uint64_t sessionId,
-        std::shared_ptr<highp::net::Client> tcpClient
+        std::shared_ptr<highp::net::Client> tcpClient,
+        uint64_t sessionId
     );
 
     void Send(const flatbuffers::FlatBufferBuilder& builder) const;
