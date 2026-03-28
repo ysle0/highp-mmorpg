@@ -22,7 +22,16 @@
       "Bash(Select-Object -ExpandProperty FullName)",
       "Bash(cd:*)",
       "Bash(powershell:*)",
-      "Bash(xargs grep:*)"
+      "Bash(xargs grep:*)",
+      "WebFetch(domain:microsoft.github.io)",
+      "WebFetch(domain:developers.soundcloud.com)",
+      "WebSearch",
+      "WebFetch(domain:velog.io)",
+      "WebFetch(domain:www.minware.com)",
+      "WebFetch(domain:luminousmen.com)",
+      "WebFetch(domain:www.pullrequest.com)",
+      "WebFetch(domain:www.hackerone.com)",
+      "Bash(gh pr:*)"
     ]
   }
 }
