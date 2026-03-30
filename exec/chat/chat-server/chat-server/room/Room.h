@@ -13,14 +13,14 @@ class Room {
 public:
     explicit Room(
         std::shared_ptr<highp::log::Logger> logger,
-        uint32_t roomId);
+        uint64_t roomId);
 
     // packet handle logics
 public:
     void Join(const std::shared_ptr<User>& user);
     void Leave(uint64_t userId);
-    void BroadcastUserJoined(uint32_t userId, std::string_view userName);
-    void BroadcastUserLeft(uint32_t userId, std::string_view userName);
+    void BroadcastUserJoined(uint64_t userId, std::string_view userName);
+    void BroadcastUserLeft(uint64_t userId, std::string_view userName);
     void BroadcastChatMessage(uint64_t userId, std::string_view chatMessage);
 
 public:
@@ -28,7 +28,7 @@ public:
     void KickByDisconnected(const std::shared_ptr<highp::net::Client>& client);
 
 public:
-    [[nodiscard]] uint32_t GetId() const { return _roomId; }
+    [[nodiscard]] uint64_t GetId() const { return _roomId; }
     [[nodiscard]] size_t GetUserCount() const;
 
 private:
@@ -37,5 +37,5 @@ private:
     mutable std::mutex _mtx;
     std::vector<std::shared_ptr<User>> _users;
 
-    uint32_t _roomId{0};
+    uint64_t _roomId{0};
 };
