@@ -53,7 +53,8 @@ void Server::OnAccept(std::shared_ptr<net::Client> client) {
 }
 
 void Server::OnRecv(std::shared_ptr<net::Client> client, std::span<const char> data) {
-    _logger->Debug("[Server::OnRecv]: socket #{}, data: {}", client->socket, data);
+    _logger->Debug("[Server::OnRecv]: socket #{}, data len: {}",
+        client->socket, data.size());
     _gameLoop->Receive(client, data);
 }
 
