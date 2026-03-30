@@ -19,7 +19,9 @@ void Room::Join(const std::shared_ptr<User>& user) {
         return;
     }
 
-    this->BroadcastUserJoined(user->GetId(), user->GetUsername());
+    this->BroadcastUserJoined(
+        static_cast<uint32_t>(user->GetId()),
+        user->GetUsername());
 
     std::scoped_lock lock{_mtx};
     _users.emplace_back(user);
@@ -48,10 +50,10 @@ void Room::Leave(uint64_t userId) {
         username = (*found)->GetUsername();
         _users.erase(found);
     }
-    this->BroadcastUserLeft(userId, username);
+    this->BroadcastUserLeft(static_cast<uint32_t>(userId), username);
 }
 
-void Room::BroadcastUserJoined(uint64_t userId, std::string_view userName) {
+void Room::BroadcastUserJoined(uint32_t userId, std::string_view userName) {
     std::scoped_lock lock{_mtx};
     const auto pkt = highp::protocol::MakeUserJoinedBroadcast(userId, userName);
     for (const auto& u : _users) {
@@ -59,7 +61,7 @@ void Room::BroadcastUserJoined(uint64_t userId, std::string_view userName) {
     }
 }
 
-void Room::BroadcastUserLeft(uint64_t userId, std::string_view userName) {
+void Room::BroadcastUserLeft(uint32_t userId, std::string_view userName) {
     std::scoped_lock lock{_mtx};
     const auto pkt = highp::protocol::MakeUserLeftBroadcast(userId, userName);
     for (const auto& u : _users) {

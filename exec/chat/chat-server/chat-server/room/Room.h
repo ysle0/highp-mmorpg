@@ -19,8 +19,8 @@ public:
 public:
     void Join(const std::shared_ptr<User>& user);
     void Leave(uint64_t userId);
-    void BroadcastUserJoined(uint64_t userId, std::string_view userName);
-    void BroadcastUserLeft(uint64_t userId, std::string_view userName);
+    void BroadcastUserJoined(uint32_t userId, std::string_view userName);
+    void BroadcastUserLeft(uint32_t userId, std::string_view userName);
     void BroadcastChatMessage(std::string_view chatMessage);
 
 public:
@@ -34,7 +34,7 @@ public:
 private:
     std::shared_ptr<highp::log::Logger> _logger;
 
-    std::mutex _mtx;
+    mutable std::mutex _mtx;
     std::vector<std::shared_ptr<User>> _users;
 
     uint32_t _roomId{0};

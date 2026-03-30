@@ -51,7 +51,7 @@ User* UserManager::GetUser(uint64_t userId) {
     return nullptr;
 }
 
-uint32_t UserManager::GetUserCount() const {
+size_t UserManager::GetUserCount() const {
     return _users.size();
 }
 

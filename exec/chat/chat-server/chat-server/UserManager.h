@@ -30,7 +30,7 @@ public:
 
     [[nodiscard]] bool IsUserExist(uint64_t userId) const;
     [[nodiscard]] User* GetUser(uint64_t userId);
-    [[nodiscard]] uint32_t GetUserCount() const;
+    [[nodiscard]] size_t GetUserCount() const;
     [[nodiscard]] std::vector<const User*> GetAllUsers() const;
     [[nodiscard]] User* GetUserByClient(const std::shared_ptr<highp::net::Client>& client);
 
