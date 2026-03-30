@@ -6,15 +6,21 @@
 GameLoop::GameLoop(
     std::shared_ptr<highp::log::Logger> logger,
     std::unique_ptr<highp::net::PacketDispatcher> packetDispatcher,
-    std::unique_ptr<RoomManager> roomManager,
-    std::unique_ptr<SessionManager> sessionManager,
+    std::shared_ptr<RoomManager> roomManager,
+    std::shared_ptr<SessionManager> sessionManager,
+    std::shared_ptr<UserManager> userManager,
     highp::net::NetworkCfg networkConfig
 ) : _logger(std::move(logger)),
     _dispatcher(std::move(packetDispatcher)),
     _roomManager(std::move(roomManager)),
-    _sessionManager(std::move(sessionManager)) {
+    _sessionManager(std::move(sessionManager)),
+    _userManager(std::move(userManager)) {
     _tickMs.store(networkConfig.server.tickMs);
-    SelfHandlerRegistry::Instance().RegisterAll(*_dispatcher, _logger);
+    SelfHandlerRegistry::Instance().RegisterAll(
+        *_dispatcher,
+        _logger,
+        _roomManager,
+        _userManager);
 }
 
 GameLoop::~GameLoop() noexcept {

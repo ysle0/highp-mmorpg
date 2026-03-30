@@ -1,8 +1,13 @@
 #pragma once
 #include <concepts>
 #include <functional>
+#include <memory>
+#include <vector>
 
 #include "server/PacketDispatcher.hpp"
+
+class RoomManager;
+class UserManager;
 
 /**
  * IPacketHandler 를 상송하는 각 핸들러 자신이 GameLoop 에 등록하는 데에 사용.
@@ -12,7 +17,9 @@ class SelfHandlerRegistry {
 public:
     using FactoryFn = std::function<void(
         highp::net::PacketDispatcher& dispatcher,
-        std::shared_ptr<highp::log::Logger> logger)>;
+        std::shared_ptr<highp::log::Logger> logger,
+        std::shared_ptr<RoomManager> roomManager,
+        std::shared_ptr<UserManager> userManager)>;
 
     ~SelfHandlerRegistry() noexcept;
 
@@ -20,7 +27,9 @@ public:
     void Add(FactoryFn fn);
     void RegisterAll(
         highp::net::PacketDispatcher& dispatcher,
-        std::shared_ptr<highp::log::Logger> logger) const;
+        std::shared_ptr<highp::log::Logger> logger,
+        std::shared_ptr<RoomManager> roomManager,
+        std::shared_ptr<UserManager> userManager) const;
 
 private:
     std::vector<FactoryFn> _factories;
@@ -44,8 +53,12 @@ bool registerSelf(const bool isEnable) {
     if (!isEnable) return false;
 
     SelfHandlerRegistry::Instance().Add(
-        [](highp::net::PacketDispatcher& d, std::shared_ptr<highp::log::Logger> l) {
-            d.RegisterHandler<TPayload>(new THandler(std::move(l)));
+        [](highp::net::PacketDispatcher& d,
+           std::shared_ptr<highp::log::Logger> l,
+           std::shared_ptr<RoomManager> roomManager,
+           std::shared_ptr<UserManager> userManager) {
+            d.RegisterHandler<TPayload>(
+                new THandler(std::move(l), std::move(roomManager), std::move(userManager)));
         });
     return true;
 }
