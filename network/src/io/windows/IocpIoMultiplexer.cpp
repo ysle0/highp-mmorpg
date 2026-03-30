@@ -27,7 +27,7 @@ namespace highp::net::internal {
         _isRunning = true;
 
         for (int i = 0; i < workerThreadCount; ++i) {
-            _workerThreads.emplace_back([this](std::stop_token st) { WorkerLoop(st); });
+            _workerThreads.emplace_back([this](std::stop_token st) { WorkerLoop(std::move(st)); });
         }
 
         _logger->Debug("IocpIoMultiplexer initialized. worker threads: {}",

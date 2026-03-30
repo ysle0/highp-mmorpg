@@ -2,14 +2,15 @@
 #include "LogicThread.h"
 
 namespace highp::thread {
-    LogicThread LogicThread::Exec(ExecFn fn) {
-        return LogicThread(
-            [_fn=std::forward<ExecFn>(fn)](std::stop_token st) {
-                _fn(st);
-            });
+    void LogicThread::Exec(ExecFn fn) {
+        Exit();
+        _thread = std::jthread(std::move(fn));
     }
 
-    LogicThread::LogicThread(ExecFn fn) : std::jthread(std::move(fn)) {
-        //
+    void LogicThread::Exit() {
+        if (_thread.joinable()) {
+            _thread.request_stop();
+            _thread.join();
+        }
     }
 }

@@ -44,9 +44,11 @@ namespace highp::net {
         /// </summary>
         /// <param name="isFireAndForget">true면 linger 없이 즉시 종료</param>
         void Close(bool isFireAndForget);
-        
+
         /// <summary>프레임 조립용 누적 버퍼</summary>
         FrameBuffer& FrameBuf() { return _frameBuf; }
+
+        bool IsConnected() const noexcept { return socket != INVALID_SOCKET; }
 
         /// <summary>클라이언트 소켓 핸들</summary>
         SocketHandle socket = INVALID_SOCKET;

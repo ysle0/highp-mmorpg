@@ -5,7 +5,7 @@ namespace highp.protocol.messages;
 
 // 방 입장
 table JoinRoomRequest {
-    room_id: uint32;
+    username: string (required);
 }
 
 // 방 퇴장
