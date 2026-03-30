@@ -33,4 +33,4 @@ namespace highp::scope {
 // 임시 이름 붙은 defer 로 변신함.
 // e.g. _defer_25, _defer_223, _defer_1
 #define DEFER(...) \
-    highp::scope::Defer GIVE_TEMP_NAME_TO_DEFER(_defer_, __LINE__)(...)
+    highp::scope::Defer GIVE_TEMP_NAME_TO_DEFER(_defer_, __LINE__)(__VA_ARGS__)
