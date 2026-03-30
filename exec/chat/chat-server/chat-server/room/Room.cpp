@@ -57,6 +57,10 @@ void Room::BroadcastUserJoined(uint32_t userId, std::string_view userName) {
     std::scoped_lock lock{_mtx};
     const auto pkt = highp::protocol::MakeUserJoinedBroadcast(userId, userName);
     for (const auto& u : _users) {
+        if (u->GetId() == userId) {
+            continue;
+        }
+
         u->Send(pkt);
     }
 }
@@ -65,15 +69,23 @@ void Room::BroadcastUserLeft(uint32_t userId, std::string_view userName) {
     std::scoped_lock lock{_mtx};
     const auto pkt = highp::protocol::MakeUserLeftBroadcast(userId, userName);
     for (const auto& u : _users) {
+        if (u->GetId() == userId) {
+            continue;
+        }
+
         u->Send(pkt);
     }
 }
 
-void Room::BroadcastChatMessage(std::string_view chatMessage) {
+void Room::BroadcastChatMessage(uint64_t userId, std::string_view chatMessage) {
     std::scoped_lock lock{_mtx};
     const auto now = highp::protocol::now();
     const auto pkt = highp::protocol::MakeChatMessageBroadcast(0, chatMessage, now);
     for (const auto& u : _users) {
+        if (u->GetId() == userId) {
+            continue;
+        }
+
         u->Send(pkt);
     }
 }

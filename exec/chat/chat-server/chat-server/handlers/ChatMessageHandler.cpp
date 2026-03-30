@@ -28,7 +28,7 @@ void ChatMessageHandler::Handle(
         std::string_view msg{payload->message()->str()};
         _logger->Debug("[ChatMessageHandler] broadcasting message: {}", msg);
 
-        r->BroadcastChatMessage(msg);
+        r->BroadcastChatMessage(user->GetId(), msg);
     }
     else {
         _logger->Warn("[ChatMessageHandler] room not found: {}", user->GetRoomId());

@@ -21,7 +21,7 @@ public:
     void Leave(uint64_t userId);
     void BroadcastUserJoined(uint32_t userId, std::string_view userName);
     void BroadcastUserLeft(uint32_t userId, std::string_view userName);
-    void BroadcastChatMessage(std::string_view chatMessage);
+    void BroadcastChatMessage(uint64_t userId, std::string_view chatMessage);
 
 public:
     void Kick(uint64_t userId);
