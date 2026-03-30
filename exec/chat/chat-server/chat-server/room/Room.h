@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "client/windows/Client.h"
+#include "logger/Logger.hpp"
 #include "../User.h"
 
 class Room {

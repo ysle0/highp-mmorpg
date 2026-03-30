@@ -1,10 +1,18 @@
 #pragma once
+#include <atomic>
+#include <memory>
+#include <string_view>
 #include <unordered_map>
+#include <vector>
 
-#include "User.h"
 #include "logger/Logger.hpp"
 
+namespace highp::net {
+    struct Client;
+}
+
 class SessionManager;
+class User;
 
 class UserManager {
 public:

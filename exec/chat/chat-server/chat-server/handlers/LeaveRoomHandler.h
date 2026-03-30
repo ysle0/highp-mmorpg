@@ -3,6 +3,7 @@
 #include <flatbuf/gen/packet_generated.h>
 #include <logger/Logger.hpp>
 
+#include "../UserManager.h"
 #include "../room/RoomManager.h"
 
 class LeaveRoomHandler

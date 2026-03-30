@@ -1,4 +1,5 @@
 #include "UserManager.h"
+#include "User.h"
 #include "SessionManager.h"
 
 UserManager::UserManager(

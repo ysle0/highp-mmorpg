@@ -1,7 +1,13 @@
 #pragma once
+#include <cstdint>
+#include <memory>
+#include <string>
+#include <string_view>
+
+#include <flatbuffers/flatbuffers.h>
+
 #include "Session.h"
 #include "client/windows/Client.h"
-#include "handlers/ChatMessageHandler.h"
 
 class User {
 public:
