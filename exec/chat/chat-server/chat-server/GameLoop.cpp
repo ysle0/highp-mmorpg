@@ -48,11 +48,11 @@ void GameLoop::Receive(
 
 void GameLoop::Update(std::stop_token st) {
     _logger->Info("[LogicThread] Update started. ServerTick={}ms", _tickMs.load());
-    scope::Defer defer([this] {
+    DEFER([this] {
         // 종료 전 잔여 커맨드 처리
         _dispatcher.Tick();
         _logger->Info("[LogicThread] stopped.");
-    });
+        });
 
     while (!st.stop_requested()) {
         const auto nextTick =
