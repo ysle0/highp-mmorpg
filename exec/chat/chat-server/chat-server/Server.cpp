@@ -36,7 +36,7 @@ Server::Res Server::Start(std::shared_ptr<net::ISocket> listenSocket) {
 }
 
 void Server::Stop() {
-    scope::Defer _([this] {
+    DEFER([this] {
         _gameLoop->Stop();
         _hasStopped.store(true);
     });
