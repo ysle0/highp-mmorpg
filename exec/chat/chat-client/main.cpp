@@ -7,7 +7,7 @@
 #include "scope/Defer.h"
 
 int main() {
-    auto logger = log::Logger::Default<log::TextLogger>();
+    auto logger = highp::log::Logger::Default<highp::log::TextLogger>();
     logger->Info("Chat Client starting...");
 
     Client client(logger);
@@ -20,11 +20,11 @@ int main() {
         logger->Error("Failed to connect to server.");
         return -1;
     }
-    scope::Defer defer([&client] {
+    DEFER([&client] {
         client.Disconnect();
-    });
+        });
 
-    client.StartRecvLoop([logger](const protocol::Packet* packet) {
+    client.StartRecvLoop([logger](const highp::protocol::Packet* packet) {
         onPacketReceived(logger, packet);
     });
 

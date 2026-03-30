@@ -58,7 +58,7 @@ namespace highp::net {
                 break;
             }
 
-            scope::Defer defer([&frameBuf, frameSize] {
+            DEFER([&frameBuf, frameSize] {
                 // 소비한 프레임만큼 버퍼에서 제거
                 // 패킷 파싱 성공여부와 상관없이 frameBuf 를 비워줘야함.
                 frameBuf.Consume(frameSize);

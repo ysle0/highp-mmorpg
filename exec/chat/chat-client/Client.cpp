@@ -45,7 +45,7 @@ bool Client::Connect(std::string_view ipAddress, unsigned short port) {
 }
 
 void Client::Disconnect() {
-    highp::scope::Defer _([this] {
+    DEFER([this] {
         _isConnected = false;
     });
 
