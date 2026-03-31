@@ -32,7 +32,7 @@ void LeaveRoomHandler::Handle(
 
     _logger->Info("[LeaveRoomHandler] user left room");
 
-    const flatbuffers::FlatBufferBuilder resp = highp::protocol::MakeLeftRoomResponse();
+    const flatbuffers::FlatBufferBuilder resp = highp::protocol::makeLeftRoomResponse();
     user->Send(resp);
 
     _userManager->RemoveUserByUserId(user->GetId());
