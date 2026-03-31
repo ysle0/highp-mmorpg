@@ -31,7 +31,7 @@ public:
 
 private:
     /// Logic thread 메인 루프
-    void Update(std::stop_token st) const;
+    void Update(std::stop_token st);
 
 private:
     std::shared_ptr<highp::log::Logger> _logger;

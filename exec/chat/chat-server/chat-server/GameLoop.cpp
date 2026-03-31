@@ -17,7 +17,7 @@ GameLoop::GameLoop(
     _userManager(std::move(userManager)) {
     _tickMs.store(networkConfig.server.tickMs);
     SelfHandlerRegistry::Instance().RegisterAll(
-        *_dispatcher,
+        _dispatcher,
         _logger,
         _roomManager,
         _userManager);
@@ -41,7 +41,8 @@ void GameLoop::Connect(const std::shared_ptr<highp::net::Client>& client) {
 
     const std::shared_ptr<Session> session = _sessionManager->CreateSession(client);
     _logger->Info("[GameLoop::Connect] session #{} connected on socket #{}",
-                  session->GetId(), client->socket);
+                  session->GetId(),
+                  client->socket);
 }
 
 void GameLoop::Start() {
@@ -79,13 +80,14 @@ void GameLoop::Receive(
     _dispatcher->Receive(client, data);
 }
 
-void GameLoop::Update(std::stop_token st) const {
+void GameLoop::Update(std::stop_token st) {
     _logger->Info("[LogicThread] Update started. ServerTick={}ms", _tickMs.load());
-    DEFER([this] {
+
+    highp::scope::Defer defer([this] {
         // 종료 전 잔여 커맨드 처리
         _dispatcher->Tick();
         _logger->Info("[LogicThread] stopped.");
-        });
+    });
 
     while (!st.stop_requested()) {
         // 시작 전 목표 시각을 고정.

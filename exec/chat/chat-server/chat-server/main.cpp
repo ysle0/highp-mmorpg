@@ -18,8 +18,8 @@ using namespace highp;
 int main() {
     std::shared_ptr<log::Logger> logger = log::Logger::Default<log::TextLogger>();
     net::NetworkCfg c = net::NetworkCfg::FromFile("config.runtime.toml");
-    auto tp = net::NetworkTransport(net::ETransport::TCP);
-    auto sockOptBuilder = std::make_shared<net::SocketOptionBuilder>(logger);
+    const auto tp = net::NetworkTransport(net::ETransport::TCP);
+    const auto sockOptBuilder = std::make_shared<net::SocketOptionBuilder>(logger);
     auto packetDispatcher = std::make_unique<net::PacketDispatcher>(logger);
     auto roomMgr = std::make_shared<RoomManager>(logger, 1, c.room.maxCapacity);
     auto sessionMgr = std::make_shared<SessionManager>(logger);
