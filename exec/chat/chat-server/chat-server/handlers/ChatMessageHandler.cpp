@@ -12,12 +12,13 @@ ChatMessageHandler::ChatMessageHandler(
 }
 
 void ChatMessageHandler::Handle(
-    std::shared_ptr<highp::net::Client> client,
     const std::shared_ptr<highp::net::Client>& client,
     const highp::protocol::messages::SendMessageRequest* payload
 ) {
     _logger->Info("[ChatMessageHandler] socket #{}, room_id={}, message={}",
-                  client->socket, payload->room_id(), payload->message()->c_str());
+                  client->socket,
+                  payload->room_id(),
+                  payload->message()->c_str());
 
     const User* user = _userManager->GetUserByClient(client);
     if (!user) {
@@ -25,11 +26,11 @@ void ChatMessageHandler::Handle(
         return;
     }
 
-    if (Room* r = _roomManager->GetRoom(user->GetRoomId())) {
+    if (Room* room = _roomManager->GetRoom(user->GetRoomId()); !room) {
         std::string_view msg{payload->message()->str()};
         _logger->Debug("[ChatMessageHandler] broadcasting message: {}", msg);
 
-        r->BroadcastChatMessage(user->GetId(), msg);
+        room->BroadcastChatMessage(user->GetId(), msg);
     }
     else {
         _logger->Warn("[ChatMessageHandler] room not found: {}", user->GetRoomId());
