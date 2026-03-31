@@ -39,7 +39,7 @@ void GameLoop::Connect(const std::shared_ptr<highp::net::Client>& client) {
         return;
     }
 
-    const auto session = _sessionManager->CreateSession(client);
+    const std::shared_ptr<Session> session = _sessionManager->CreateSession(client);
     _logger->Info("[GameLoop::Connect] session #{} connected on socket #{}",
                   session->GetId(), client->socket);
 }
@@ -89,7 +89,7 @@ void GameLoop::Update(std::stop_token st) const {
 
     while (!st.stop_requested()) {
         // 시작 전 목표 시각을 고정.
-        const auto targetingNextTick =
+        const std::chrono::time_point<std::chrono::steady_clock> targetingNextTick =
             std::chrono::steady_clock::now() +
             std::chrono::milliseconds(_tickMs.load());
 

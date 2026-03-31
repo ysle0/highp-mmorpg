@@ -16,8 +16,8 @@
 using namespace highp;
 
 int main() {
-    auto logger = log::Logger::Default<log::TextLogger>();
-    auto c = net::NetworkCfg::FromFile("config.runtime.toml");
+    std::shared_ptr<log::Logger> logger = log::Logger::Default<log::TextLogger>();
+    net::NetworkCfg c = net::NetworkCfg::FromFile("config.runtime.toml");
     auto tp = net::NetworkTransport(net::ETransport::TCP);
     auto sockOptBuilder = std::make_shared<net::SocketOptionBuilder>(logger);
     auto packetDispatcher = std::make_unique<net::PacketDispatcher>(logger);
@@ -37,7 +37,7 @@ int main() {
         s.Stop();
         });
 
-    auto listenSocket = net::SocketHelper::MakeDefaultListener(
+    const std::shared_ptr<net::ISocket> listenSocket = net::SocketHelper::MakeDefaultListener(
         logger,
         tp,
         c,

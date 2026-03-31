@@ -91,7 +91,7 @@ void Client::StartRecvLoop(RecvCallback callback) {
 
         while (!st.stop_requested() && _isConnected) {
             recvBuffer.clear();
-            auto res = _packetStream->RecvFrame(recvBuffer);
+            highp::fn::Result<size_t, highp::err::ENetworkError> res = _packetStream->RecvFrame(recvBuffer);
             if (!res) {
                 if (!st.stop_requested() && _isConnected) {
                     _logger->Error("RecvFrame failed.");

@@ -27,7 +27,7 @@ void JoinRoomHandler::Handle(
 
     room->Join(newUser);
 
-    const auto resp = highp::protocol::MakeJoinedRoomResponse();
+    const flatbuffers::FlatBufferBuilder resp = highp::protocol::MakeJoinedRoomResponse();
     newUser->Send(resp);
 }
 

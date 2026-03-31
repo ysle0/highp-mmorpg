@@ -150,7 +150,7 @@ namespace highp::net::internal {
             return Res::Err(err::ENetworkError::SocketAcceptFailed);
         }
 
-        const auto result = _socketOptionBuilder->SetUpdateAcceptContext(
+        const bool result = _socketOptionBuilder->SetUpdateAcceptContext(
             overlapped->clientSocket,
             _listenSocket);
 

@@ -19,7 +19,7 @@ void ChatMessageHandler::Handle(
     _logger->Info("[ChatMessageHandler] socket #{}, room_id={}, message={}",
                   client->socket, payload->room_id(), payload->message()->c_str());
 
-    const auto user = _userManager->GetUserByClient(client);
+    const User* user = _userManager->GetUserByClient(client);
     if (!user) {
         _logger->Warn("[ChatMessageHandler] user not found");
         return;

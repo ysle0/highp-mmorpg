@@ -16,7 +16,8 @@ namespace {
             {"/leave", Command::Leave},
         };
 
-        if (const auto it = kCommands.find(cmd); it != kCommands.end()) {
+        const std::unordered_map<std::string, Command>::const_iterator it = kCommands.find(cmd);
+        if (it != kCommands.end()) {
             return it->second;
         }
         return Command::Unknown;

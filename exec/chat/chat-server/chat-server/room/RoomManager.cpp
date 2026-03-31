@@ -10,7 +10,7 @@ RoomManager::RoomManager(
     _maxRoomCapacity(maxRoomCapacity) {
     _rooms.reserve(initRoomCount);
     for (uint16_t i = 0; i < initRoomCount; ++i) {
-        const auto roomId = _roomCounter.fetch_add(1);
+        const uint32_t roomId = _roomCounter.fetch_add(1);
         _rooms.emplace_back(std::make_unique<Room>(_logger, roomId));
     }
 }
@@ -30,7 +30,7 @@ std::shared_ptr<Room> RoomManager::CreateRoom(std::optional<uint32_t> roomIdOver
 
 std::shared_ptr<Room> RoomManager::GetAvailableRoom() {
     std::scoped_lock lock{_mtx};
-    for (const auto& room : _rooms) {
+    for (const std::shared_ptr<Room>& room : _rooms) {
         if (room->GetUserCount() < _maxRoomCapacity) {
             return room;
         }
@@ -44,7 +44,7 @@ std::shared_ptr<Room> RoomManager::GetAvailableRoom() {
 
 bool RoomManager::DestroyRoom(uint32_t roomId) {
     std::scoped_lock lock{_mtx};
-    const auto oldSize = _rooms.size();
+    const size_t oldSize = _rooms.size();
     std::erase_if(_rooms, [roomId](const std::shared_ptr<Room>& room) {
         return room->GetId() == roomId;
     });
@@ -73,7 +73,7 @@ Room* RoomManager::GetRoom(uint32_t roomId) {
 
 void RoomManager::KickDisconnected(const std::shared_ptr<highp::net::Client>& client) {
     std::scoped_lock lock{_mtx};
-    for (const auto& room : _rooms) {
+    for (const std::shared_ptr<Room>& room : _rooms) {
         room->KickByDisconnected(client);
     }
 }
