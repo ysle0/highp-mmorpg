@@ -15,7 +15,7 @@ public:
         std::shared_ptr<UserManager> userManager);
 
     void Handle(
-        std::shared_ptr<highp::net::Client> client,
+        const std::shared_ptr<highp::net::Client>& client,
         const highp::protocol::messages::JoinRoomRequest* payload
     ) override;
 

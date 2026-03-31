@@ -13,6 +13,7 @@ ChatMessageHandler::ChatMessageHandler(
 
 void ChatMessageHandler::Handle(
     std::shared_ptr<highp::net::Client> client,
+    const std::shared_ptr<highp::net::Client>& client,
     const highp::protocol::messages::SendMessageRequest* payload
 ) {
     _logger->Info("[ChatMessageHandler] socket #{}, room_id={}, message={}",

@@ -14,7 +14,7 @@ LeaveRoomHandler::LeaveRoomHandler(
 }
 
 void LeaveRoomHandler::Handle(
-    std::shared_ptr<highp::net::Client> client,
+    const std::shared_ptr<highp::net::Client>& client,
     const highp::protocol::messages::LeaveRoomRequest* payload
 ) {
     _logger->Info("[LeaveRoomHandler] socket #{}, room_id={}",

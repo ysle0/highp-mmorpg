@@ -18,7 +18,7 @@ public:
         std::shared_ptr<RoomManager> roomManager,
         std::shared_ptr<SessionManager> sessionManager,
         std::shared_ptr<UserManager> userManager,
-        highp::net::NetworkCfg networkConfig
+        const highp::net::NetworkCfg& networkConfig
     );
     ~GameLoop() noexcept;
 

@@ -9,7 +9,7 @@ GameLoop::GameLoop(
     std::shared_ptr<RoomManager> roomManager,
     std::shared_ptr<SessionManager> sessionManager,
     std::shared_ptr<UserManager> userManager,
-    highp::net::NetworkCfg networkConfig
+    const highp::net::NetworkCfg& networkConfig
 ) : _logger(std::move(logger)),
     _dispatcher(std::move(packetDispatcher)),
     _roomManager(std::move(roomManager)),
@@ -107,7 +107,9 @@ void GameLoop::Update(std::stop_token st) const {
     }
 }
 
-void GameLoop::Disconnect(const std::shared_ptr<highp::net::Client>& client) {
+void GameLoop::Disconnect(
+    const std::shared_ptr<highp::net::Client>& client
+) {
     if (_roomManager != nullptr) {
         _roomManager->KickDisconnected(client);
     }
