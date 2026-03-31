@@ -12,7 +12,7 @@ UserManager::UserManager(
 std::shared_ptr<User> UserManager::CreateUser(
     const std::shared_ptr<highp::net::Client>& client,
     std::string_view username,
-    uint32_t roomId
+    uint64_t roomId
 ) {
     auto session = _sessionManager->GetSessionByClient(client);
     if (!session) {

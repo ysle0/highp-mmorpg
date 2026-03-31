@@ -23,7 +23,7 @@ public:
     std::shared_ptr<User> CreateUser(
         const std::shared_ptr<highp::net::Client>& client,
         std::string_view username,
-        uint32_t roomId);
+        uint64_t roomId);
 
     void RemoveUser(const User& user);
     void RemoveUserByUserId(uint64_t userId);
