@@ -47,7 +47,7 @@ bool Client::Connect(std::string_view ipAddress, unsigned short port) {
 void Client::Disconnect() {
     DEFER([this] {
         _isConnected = false;
-    });
+        });
 
     if (_recvThread.joinable()) {
         _recvThread.request_stop();
@@ -86,11 +86,12 @@ void Client::Send(const flatbuffers::FlatBufferBuilder& builder) {
 }
 
 void Client::StartRecvLoop(RecvCallback callback) {
-    _recvThread = std::jthread([this, cb = std::move(callback)](std::stop_token st) {
+    _recvThread = std::jthread([this, cb = std::move(callback)](const std::stop_token& st) {
         std::vector<uint8_t> recvBuffer;
 
         while (!st.stop_requested() && _isConnected) {
             recvBuffer.clear();
+
             highp::fn::Result<size_t, highp::err::ENetworkError> res = _packetStream->RecvFrame(recvBuffer);
             if (!res) {
                 if (!st.stop_requested() && _isConnected) {
@@ -107,8 +108,9 @@ void Client::StartRecvLoop(RecvCallback callback) {
                 continue;
             }
 
-            if (auto* p = highp::protocol::GetPacket(recvBuffer.data())) {
-                cb(p);
+            const highp::protocol::Packet* pkt = highp::protocol::GetPacket(recvBuffer.data());
+            if (!pkt) {
+                cb(pkt);
             }
         }
     });

@@ -32,8 +32,13 @@ ChatCli::ChatCli(Client* client, std::shared_ptr<highp::log::Logger> logger)
 
 void ChatCli::PromptNickname() {
     _logger->Info("Enter nickname: ");
+
     std::getline(std::cin, _nickname);
-    if (_nickname.empty()) _nickname = "guest";
+
+    if (_nickname.empty()) {
+        _nickname = "guest";
+    }
+
     _logger->Info("Nickname set to '{}'", _nickname);
 }
 
@@ -42,6 +47,7 @@ void ChatCli::Run() {
     PrintPrompt();
 
     std::string line;
+    
     while (std::getline(std::cin, line)) {
         if (line.empty()) {
             PrintPrompt();

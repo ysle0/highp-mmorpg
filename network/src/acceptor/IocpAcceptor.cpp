@@ -154,7 +154,7 @@ namespace highp::net::internal {
             overlapped->clientSocket,
             _listenSocket);
 
-        if (result == SOCKET_ERROR) {
+        if (!result) {
             _logger->Error("SO_UPDATE_ACCEPT_CONTEXT failed. error: {}", WSAGetLastError());
             closesocket(overlapped->clientSocket);
             return Res::Err(err::ENetworkError::SocketAcceptFailed);
