@@ -19,13 +19,11 @@ public:
 public:
     void Join(const std::shared_ptr<User>& user);
     void Leave(uint64_t userId);
-    void BroadcastUserJoined(uint64_t userId, std::string_view userName);
-    void BroadcastUserLeft(uint64_t userId, std::string_view userName);
-    void BroadcastChatMessage(uint64_t userId, std::string_view chatMessage);
-
-public:
     void Kick(uint64_t userId);
     void KickByDisconnected(const std::shared_ptr<highp::net::Client>& client);
+
+public:
+    void BroadcastChatMessage(uint64_t userId, std::string_view chatMessage);
 
 public:
     [[nodiscard]] uint64_t GetId() const { return _roomId; }
@@ -33,9 +31,7 @@ public:
 
 private:
     std::shared_ptr<highp::log::Logger> _logger;
-
     mutable std::mutex _mtx;
     std::vector<std::shared_ptr<User>> _users;
-
     uint64_t _roomId{0};
 };

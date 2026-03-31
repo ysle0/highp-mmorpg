@@ -19,56 +19,46 @@ void Room::Join(const std::shared_ptr<User>& user) {
         return;
     }
 
-    this->BroadcastUserJoined(
-        static_cast<uint64_t>(user->GetId()),
-        user->GetUsername());
+    const uint64_t userId = user->GetId();
+    const std::string_view userName = user->GetUsername();
 
     std::scoped_lock lock{_mtx};
+
+    const flatbuffers::FlatBufferBuilder pkt =
+        highp::protocol::makeUserJoinedBroadcast(userId, userName);
+
+    for (const std::shared_ptr<User>& u : _users) {
+        u->Send(pkt);
+    }
+
     _users.emplace_back(user);
 }
 
 void Room::Leave(uint64_t userId) {
-    std::string_view username;
-    {
-        std::scoped_lock lock{_mtx};
-        if (_users.empty()) {
-            _logger->Warn("[Room #{}] user list is empty]", _roomId);
-            return;
-        }
-
-        const auto found = std::find_if(
-            _users.begin(),
-            _users.end(),
-            [userId](const std::shared_ptr<User>& user) {
-                return user->GetId() == userId;
-            });
-        if (found == _users.end()) {
-            _logger->Warn("[Room #{}] user not found in user list]", _roomId);
-            return;
-        }
-
-        username = (*found)->GetUsername();
-        _users.erase(found);
-    }
-    this->BroadcastUserLeft(static_cast<uint64_t>(userId), username);
-}
-
-void Room::BroadcastUserJoined(uint64_t userId, std::string_view userName) {
     std::scoped_lock lock{_mtx};
-    const auto pkt = highp::protocol::MakeUserJoinedBroadcast(userId, userName);
-    for (const auto& u : _users) {
-        if (u->GetId() == userId) {
-            continue;
-        }
-
-        u->Send(pkt);
+    if (_users.empty()) {
+        _logger->Warn("[Room #{}] user list is empty]", _roomId);
+        return;
     }
-}
 
-void Room::BroadcastUserLeft(uint64_t userId, std::string_view userName) {
-    std::scoped_lock lock{_mtx};
-    const auto pkt = highp::protocol::MakeUserLeftBroadcast(userId, userName);
-    for (const auto& u : _users) {
+    const auto found = std::find_if(
+        _users.begin(), _users.end(),
+        [userId](const std::shared_ptr<User>& user) {
+            return user->GetId() == userId;
+        });
+
+    if (found == _users.end()) {
+        _logger->Warn("[Room #{}] user not found in user list]", _roomId);
+        return;
+    }
+
+    const std::string username{(*found)->GetUsername()};
+    _users.erase(found);
+
+    const flatbuffers::FlatBufferBuilder pkt =
+        highp::protocol::makeUserLeftBroadcast(userId, username);
+
+    for (const std::shared_ptr<User>& u : _users) {
         if (u->GetId() == userId) {
             continue;
         }
@@ -79,9 +69,12 @@ void Room::BroadcastUserLeft(uint64_t userId, std::string_view userName) {
 
 void Room::BroadcastChatMessage(uint64_t userId, std::string_view chatMessage) {
     std::scoped_lock lock{_mtx};
-    const auto now = highp::protocol::now();
-    const auto pkt = highp::protocol::MakeChatMessageBroadcast(0, chatMessage, now);
-    for (const auto& u : _users) {
+
+    const highp::protocol::Common::Timestamp now = highp::protocol::now();
+    const flatbuffers::FlatBufferBuilder pkt =
+        highp::protocol::makeChatMessageBroadcast(0, chatMessage, now);
+
+    for (const std::shared_ptr<User>& u : _users) {
         if (u->GetId() == userId) {
             continue;
         }
