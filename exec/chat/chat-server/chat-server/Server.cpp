@@ -60,8 +60,9 @@ void Server::OnAccept(std::shared_ptr<highp::net::Client> client) {
 }
 
 void Server::OnRecv(std::shared_ptr<highp::net::Client> client, std::span<const char> data) {
-    _logger->Debug("[Server::OnRecv]: socket #{}, data: {}",
-                   client->socket, data.data());
+    _logger->Debug("[Server::OnRecv]: socket #{}, data length: {}",
+                   client->socket,
+                   data.size());
     _gameLoop->Receive(client, data);
 }
 
