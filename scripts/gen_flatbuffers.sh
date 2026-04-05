@@ -2,9 +2,11 @@
 # FlatBuffers schema compilation script
 
 # Configuration
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 FLATC_PATH="flatc"
-SCHEMAS_DIR="../protocol/flatbuf/schemas"
-OUTPUT_DIR="../protocol/gen"
+SCHEMAS_DIR="$REPO_ROOT/protocol/flatbuf/schemas"
+OUTPUT_DIR="$REPO_ROOT/protocol/flatbuf/gen"
 
 # Colors for output
 ERROR_COLOR="\033[0;31m"    # Red
@@ -50,7 +52,7 @@ FAIL_COUNT=0
 
 for file in "${FBS_FILES[@]}"; do
     # Get relative path for display
-    RELATIVE_PATH="${file#./}"
+    RELATIVE_PATH="${file#$REPO_ROOT/}"
     echo -e "${INFO_COLOR}Compiling: $RELATIVE_PATH${RESET_COLOR}"
 
     # Compile with C++ output
