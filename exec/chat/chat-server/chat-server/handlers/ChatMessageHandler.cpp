@@ -27,7 +27,7 @@ void ChatMessageHandler::Handle(
     }
 
     if (Room* room = _roomManager->GetRoom(user->GetRoomId()); !room) {
-        std::string_view msg{payload->message()->str()};
+        std::string msg{payload->message()->str()};
         _logger->Debug("[ChatMessageHandler] broadcasting message: {}", msg);
 
         room->BroadcastChatMessage(user->GetId(), msg);
