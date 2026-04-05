@@ -25,17 +25,22 @@ public:
     void Stop();
 
 private:
-    void OnAccept(std::shared_ptr<highp::net::Client> client) override;
-    void OnRecv(std::shared_ptr<highp::net::Client> client, std::span<const char> data) override;
-    void OnSend(std::shared_ptr<highp::net::Client> client, size_t bytesTransferred) override;
-    void OnDisconnect(std::shared_ptr<highp::net::Client> client) override;
+    void OnAccept(std::shared_ptr<net::Client> client) override;
+    void OnRecv(std::shared_ptr<net::Client> client, std::span<const char> data) override;
+    void OnSend(std::shared_ptr<net::Client> client, size_t bytesTransferred) override;
+    void OnDisconnect(std::shared_ptr<net::Client> client) override;
+
+    /// Logic thread 메인 루프
+    void LogicLoop(std::stop_token st);
 
 private:
-    std::shared_ptr<highp::log::Logger> _logger;
-    std::shared_ptr<highp::net::SocketOptionBuilder> _socketOptionBuilder;
-    highp::net::NetworkCfg _config;
-    std::atomic<bool> _hasStopped{false};
+    std::shared_ptr<log::Logger> _logger;
+    std::shared_ptr<net::SocketOptionBuilder> _socketOptionBuilder;
+    net::NetworkCfg _config;
+    std::unique_ptr<net::ServerLifeCycle> _lifecycle;
+    std::atomic<int> _tickMs;
 
-    std::unique_ptr<highp::net::ServerLifeCycle> _lifecycle;
+    net::PacketDispatcher _dispatcher;
+    std::atomic<bool> _hasStopped;
     std::unique_ptr<GameLoop> _gameLoop;
 };
