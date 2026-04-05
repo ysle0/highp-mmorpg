@@ -12,6 +12,9 @@ namespace highp::net {
         virtual ~IPacketHandler() = default;
 
         /// <summary>타입화된 페이로드를 처리한다.</summary>
-        virtual void Handle(std::shared_ptr<Client> client, const T* payload) = 0;
+        virtual void Handle(
+            const std::shared_ptr<Client>& client,
+            const T* payload
+        ) = 0;
     };
 }

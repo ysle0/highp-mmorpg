@@ -1,4 +1,5 @@
 #include "UserManager.h"
+#include "User.h"
 #include "SessionManager.h"
 
 UserManager::UserManager(
@@ -11,7 +12,7 @@ UserManager::UserManager(
 std::shared_ptr<User> UserManager::CreateUser(
     const std::shared_ptr<highp::net::Client>& client,
     std::string_view username,
-    uint32_t roomId
+    uint64_t roomId
 ) {
     auto session = _sessionManager->GetSessionByClient(client);
     if (!session) {
@@ -50,7 +51,7 @@ User* UserManager::GetUser(uint64_t userId) {
     return nullptr;
 }
 
-uint32_t UserManager::GetUserCount() const {
+size_t UserManager::GetUserCount() const {
     return _users.size();
 }
 

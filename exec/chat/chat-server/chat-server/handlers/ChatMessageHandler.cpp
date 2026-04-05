@@ -2,18 +2,39 @@
 #include "../SelfHandlerRegistry.h"
 #include <utility>
 
-ChatMessageHandler::ChatMessageHandler(std::shared_ptr<highp::log::Logger> logger)
-    : _logger(std::move(logger)) {
+ChatMessageHandler::ChatMessageHandler(
+    std::shared_ptr<highp::log::Logger> logger,
+    std::shared_ptr<RoomManager> roomManager,
+    std::shared_ptr<UserManager> userManager
+) : _logger(std::move(logger)),
+    _roomManager(std::move(roomManager)),
+    _userManager(std::move(userManager)) {
 }
 
 void ChatMessageHandler::Handle(
-    std::shared_ptr<highp::net::Client> client,
+    const std::shared_ptr<highp::net::Client>& client,
     const highp::protocol::messages::SendMessageRequest* payload
 ) {
     _logger->Info("[ChatMessageHandler] socket #{}, room_id={}, message={}",
-                  client->socket, payload->room_id(), payload->message()->c_str());
+                  client->socket,
+                  payload->room_id(),
+                  payload->message()->c_str());
 
-    // TODO: RoomManager를 통해 해당 방의 모든 유저에게 ChatMessageBroadcast 전송
+    const User* user = _userManager->GetUserByClient(client);
+    if (!user) {
+        _logger->Warn("[ChatMessageHandler] user not found");
+        return;
+    }
+
+    if (Room* room = _roomManager->GetRoom(user->GetRoomId()); !room) {
+        std::string_view msg{payload->message()->str()};
+        _logger->Debug("[ChatMessageHandler] broadcasting message: {}", msg);
+
+        room->BroadcastChatMessage(user->GetId(), msg);
+    }
+    else {
+        _logger->Warn("[ChatMessageHandler] room not found: {}", user->GetRoomId());
+    }
 }
 
 // NOTE(2026-03-27): .cpp 가 static library 로 묶이면 해당 translation unit 의 심볼을 

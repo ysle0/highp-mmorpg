@@ -6,7 +6,7 @@ User::User(
     std::shared_ptr<Session> session,
     uint64_t id,
     std::string_view username,
-    uint64_t roomId
+    uint32_t roomId
 ) : _session(std::move(session)),
     _id(id),
     _userName(std::move(username)),

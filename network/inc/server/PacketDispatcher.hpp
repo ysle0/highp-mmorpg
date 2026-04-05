@@ -39,16 +39,20 @@ namespace highp::net {
         void Tick();
 
         /// IPacketHandler<T>를 페이로드 타입별로 등록
+        /// std::unique_ptr 로 하지않는 이유 -> 내부 handler 의 lambda 에 handler 캡쳐는 c++23 std::move_only_function
+        /// 으로만 달성이 가능하므로 현재로는 불가능!
         template <typename TPayload> requires PayloadType<TPayload>
-        void RegisterHandler(IPacketHandler<TPayload>* handler) {
+        void RegisterHandler(std::shared_ptr<IPacketHandler<TPayload>> handler) {
             constexpr protocol::Payload key = protocol::PayloadTraits<TPayload>::enum_value;
-            _handlers[key] = [&handler](
-                std::shared_ptr<Client> client,
+            _handlers[key] = [this, handler](
+                const std::shared_ptr<Client>& client,
                 const protocol::Packet* packet
             ) {
                     const TPayload* payload = packet->payload_as<TPayload>();
-                    if (payload == nullptr)
+                    if (payload == nullptr) {
+                        _logger->Warn("[PacketDispatcher] failed to get payload. no handler called.");
                         return;
+                    }
 
                     handler->Handle(client, payload);
                 };
