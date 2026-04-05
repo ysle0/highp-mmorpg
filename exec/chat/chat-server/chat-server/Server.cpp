@@ -27,7 +27,10 @@ Server::Res Server::Start(std::shared_ptr<highp::net::ISocket> listenSocket) {
         _socketOptionBuilder,
         this);
 
-    GUARD(_lifecycle->Start(listenSocket, _config));
+    if (const Res lifecycleStartRes = _lifecycle->Start(listenSocket, _config);
+        lifecycleStartRes.HasErr()) {
+        return lifecycleStartRes;
+    }
 
     _logger->Info("Server started on port {}.", _config.server.port);
     _gameLoop->Start();

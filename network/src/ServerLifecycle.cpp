@@ -31,7 +31,10 @@ namespace highp::net {
         const auto workerCount = std::thread::hardware_concurrency() *
             _config.thread.maxWorkerThreadMultiplier;
 
-        GUARD(_iocp->Initialize(workerCount));
+        if (const internal::IocpIoMultiplexer::Res iocpInitRes = _iocp->Initialize(workerCount);
+            iocpInitRes.HasErr()) {
+            return iocpInitRes;
+        }
 
         // Acceptor 초기화
         _acceptor = std::make_unique<internal::IocpAcceptor>(
@@ -40,10 +43,11 @@ namespace highp::net {
             std::bind_front(&ServerLifeCycle::SetupClient, this)
         );
 
-        GUARD_EFFECT(
-            _acceptor->Initialize(listenSocket->GetSocketHandle(), _iocp->GetHandle()),
-            [this]{ return Res::Err(err::ENetworkError::IocpCreateFailed); }
-        );
+        if (const internal::IocpAcceptor::Res acceptorInitRes =
+            _acceptor->Initialize(listenSocket->GetSocketHandle(), _iocp->GetHandle());
+            acceptorInitRes.HasErr()) {
+            return Res::Err(err::ENetworkError::IocpCreateFailed);
+        }
 
         // Client 풀 사전 할당
         _clientPool.reserve(_config.server.maxClients);
@@ -52,9 +56,10 @@ namespace highp::net {
         }
 
         // Accept 요청 등록
-        GUARD_EFFECT(_acceptor->PostAccepts(_config.server.backlog), [this]{
-                     return Res::Err(err::ENetworkError::ThreadAcceptFailed);
-                     });
+        if (const internal::IocpAcceptor::Res postAcceptsRes = _acceptor->PostAccepts(_config.server.backlog);
+            postAcceptsRes.HasErr()) {
+            return Res::Err(err::ENetworkError::ThreadAcceptFailed);
+        }
 
         _logger->Debug("Server Lifecycle started.");
         return Res::Ok();

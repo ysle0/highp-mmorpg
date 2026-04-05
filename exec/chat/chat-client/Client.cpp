@@ -21,6 +21,7 @@ bool Client::Connect(std::string_view ipAddress, unsigned short port) {
     }
 
     auto sessionRes = highp::net::WsaSession::Create(_logger);
+    const highp::net::WsaSession::ResWithSession sessionRes = highp::net::WsaSession::Create(_logger);
     if (sessionRes.HasErr()) {
         _logger->Error("Failed to initialize WSA session.");
         return false;

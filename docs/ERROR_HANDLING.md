@@ -7,7 +7,7 @@ This document describes the error handling philosophy and patterns used in the h
 1. [Error Handling Philosophy](#error-handling-philosophy)
 2. [Result<T, E> Type](#resultt-e-type)
 3. [ENetworkError Enum](#enetworkerror-enum)
-4. [GUARD Macros](#guard-macros)
+4. [Explicit Result Checks](#explicit-result-checks)
 5. [Error Propagation Patterns](#error-propagation-patterns)
 6. [Error Handling in Async Operations](#error-handling-in-async-operations)
 7. [Logging Errors vs Propagating](#logging-errors-vs-propagating)
@@ -34,7 +34,7 @@ This project **does not use C++ exceptions** for error handling. The rationale:
 Instead of exceptions, we use the `Result<T, E>` type (similar to C++23's `std::expected` or Rust's `Result`):
 
 - **Type-safe**: Compile-time enforcement of error handling
-- **Composable**: Easy to chain operations with GUARD macros
+- **Composable**: Easy to chain operations with small explicit result checks
 - **Self-documenting**: Function signatures clearly indicate possible failures
 - **[[nodiscard]]**: Compiler warnings if results are ignored
 
@@ -252,189 +252,46 @@ ENetworkError::ThreadWorkerCreateFailed  -> "Create worker thread failed."
 
 ---
 
-## GUARD Macros
-
+## Explicit Result Checks
 ### Overview
-
-Located in `lib/Result.hpp`, GUARD macros provide early-return error propagation similar to Rust's `?` operator:
-
-```cpp
-#define GUARD(expr)
-#define GUARD_VOID(expr)
-#define GUARD_BREAK(expr)
-#define GUARD_EFFECT(expr, fn)
-#define GUARD_EFFECT_VOID(expr, fn)
-#define GUARD_EFFECT_BREAK(expr, fn)
-```
-
-### GUARD(expr)
-
-**Purpose**: Propagate errors in functions returning `Result<T, E>`
-
-**Signature**:
-```cpp
-#define GUARD(expr) \
-do { \
-    if (auto _result = (expr); _result.HasErr()) \
-        return _result; \
-} while (0)
-```
-
-**Usage**:
-```cpp
-Result<void, ENetworkError> Initialize() {
-    GUARD(LoadAcceptExFunctions());  // If fails, return the error
-    GUARD(PostAccept());              // If fails, return the error
-    return Result::Ok();
+Located in lib/Result.hpp, Result<T, E> is propagated with explicit conditionals instead of helper macros. The common patterns are:
+`cpp
+if (const auto result = expr; result.HasErr()) {
+    return result;
 }
-```
-
-**Expands to**:
-```cpp
-if (auto _result = LoadAcceptExFunctions(); _result.HasErr())
-    return _result;
-if (auto _result = PostAccept(); _result.HasErr())
-    return _result;
-return Result::Ok();
-```
-
-### GUARD_VOID(expr)
-
-**Purpose**: Propagate errors in void functions (no return value)
-
-**Signature**:
-```cpp
-#define GUARD_VOID(expr) \
-do { \
-    if (auto _result = (expr); _result.HasErr()) \
-        return; \
-} while (0)
-```
-
-**Usage**:
-```cpp
-void ProcessClient(Client* client) {
-    GUARD_VOID(client->PostRecv());  // If fails, return early
-    // Continue processing
+if (const auto result = expr; result.HasErr()) {
+    return;
 }
-```
-
-### GUARD_BREAK(expr)
-
-**Purpose**: Break from loop on error
-
-**Signature**:
-```cpp
-#define GUARD_BREAK(expr) \
-do { \
-    if (auto _result = (expr); _result.HasErr()) \
-        return; \
-} while (0)
-```
-
-**Usage**:
-```cpp
-void ProcessBatch() {
-    for (int i = 0; i < 10; ++i) {
-        GUARD_BREAK(ProcessItem(i));  // Break loop on first error
-    }
+if (const auto result = expr; result.HasErr()) {
+    break;
 }
-```
-
-**Note**: Current implementation has `return` instead of `break` - this appears to be a bug in the codebase.
-
-### GUARD_EFFECT(expr, fn)
-
-**Purpose**: Execute cleanup/side-effect before propagating error
-
-**Signature**:
-```cpp
-#define GUARD_EFFECT(expr, fn) \
-do { \
-    if (auto _result = (expr); _result.HasErr()) { \
-        fn(); \
-        return _result; \
-    } \
-} while (0)
-```
-
-**Usage**:
-```cpp
-Result<void, ENetworkError> ProcessRequest() {
-    GUARD_EFFECT(
-        SendData(),
-        [&]() { logger->Error("Failed to send data"); }
-    );
-    return Result::Ok();
+if (const auto result = expr; result.HasErr()) {
+    fn();
+    return result;
 }
-```
-
-### GUARD_EFFECT_VOID(expr, fn)
-
-**Purpose**: Execute side-effect before returning from void function
-
-**Signature**:
-```cpp
-#define GUARD_EFFECT_VOID(expr, fn) \
-do { \
-    if (auto _result = (expr); _result.HasErr()) { \
-        fn(); \
-        return; \
-    } \
-} while (0)
-```
-
-**Usage**:
-```cpp
-void OnRecv(Client* client, std::span<const char> data) {
-    GUARD_EFFECT_VOID(
-        client->PostSend(data),
-        [&]() { CloseClient(client); }
-    );
-}
-```
-
-### GUARD_EFFECT_BREAK(expr, fn)
-
-**Purpose**: Execute side-effect before breaking from loop
-
-**Signature**:
-```cpp
-#define GUARD_EFFECT_BREAK(expr, fn) \
-do { \
-    if (auto _result = (expr); _result.HasErr()) { \
-        fn(); \
-        break; \
-    } \
-} while (0)
-```
-
+`
 ### Comparison Table
-
-| Macro | Return Type | On Error | Side Effect |
-|-------|-------------|----------|-------------|
-| `GUARD` | `Result<T, E>` | Return error | None |
-| `GUARD_VOID` | `void` | Return | None |
-| `GUARD_BREAK` | Any | Break/Return | None |
-| `GUARD_EFFECT` | `Result<T, E>` | Return error | Execute `fn()` |
-| `GUARD_EFFECT_VOID` | `void` | Return | Execute `fn()` |
-| `GUARD_EFFECT_BREAK` | Any | Break | Execute `fn()` |
-
----
-
+| Pattern | Return Type | On Error | Side Effect |
+|---------|-------------|----------|-------------|
+| if (result.HasErr()) { return result; } | Result<T, E> | Return error | None |
+| if (result.HasErr()) { return; } | oid | Return | None |
+| if (result.HasErr()) { break; } | Loop body | Break | None |
+| if (result.HasErr()) { fn(); return result; } | Result<T, E> | Return error | Execute n() |
+| if (result.HasErr()) { fn(); return; } | oid | Return | Execute n() |
+| if (result.HasErr()) { fn(); break; } | Loop body | Break | Execute n() |
 ## Error Propagation Patterns
 
-### Pattern 1: Simple Propagation (GUARD)
+### Pattern 1: Simple Propagation (Explicit Return Check)
 
 **When to use**: Propagating errors up the call stack without modification
 
 ```cpp
 IocpAcceptor::Res IocpAcceptor::Initialize(SocketHandle listenSocket, HANDLE iocpHandle) {
     // Associate socket with IOCP
-    GUARD(AssociateWithIocp(listenSocket, iocpHandle));
+    if (const auto result = AssociateWithIocp(listenSocket, iocpHandle); result.HasErr()) { return result; }
 
     // Load Windows extension functions
-    GUARD(LoadAcceptExFunctions());
+    if (const auto result = LoadAcceptExFunctions(); result.HasErr()) { return result; }
 
     _logger->Info("IocpAcceptor initialized.");
     return Res::Ok();
@@ -524,7 +381,7 @@ ServerLifeCycle::Res ServerLifeCycle::Start(/* ... */) {
 ```cpp
 IocpAcceptor::Res IocpAcceptor::PostAccepts(int count) {
     for (int i = 0; i < count; ++i) {
-        GUARD(PostAccept());  // First failure stops the loop
+        if (const auto result = PostAccept(); result.HasErr()) { return result; }  // First failure stops the loop
     }
     _logger->Info("Posted {} AcceptEx requests.", count);
     return Res::Ok();
@@ -540,7 +397,7 @@ std::shared_ptr<ISocket> SocketHelper::MakeDefaultListener(/* ... */) {
     auto s = std::make_shared<WindowsAsyncSocket>(logger);
 
     if (auto res = s->Initialize(); res.HasErr()) {
-        return nullptr;  // Can't use GUARD here
+        return nullptr;  // Can't use return-result propagation here
     }
 
     if (auto res = s->CreateSocket(netTransport); res.HasErr()) {
@@ -727,7 +584,7 @@ IocpAcceptor::Res IocpAcceptor::LoadAcceptExFunctions() {
 ```cpp
 IocpAcceptor::Res IocpAcceptor::Initialize(SocketHandle listenSocket, HANDLE iocpHandle) {
     // Don't log here - LoadAcceptExFunctions already logged
-    GUARD(LoadAcceptExFunctions());
+    if (const auto result = LoadAcceptExFunctions(); result.HasErr()) { return result; }
 
     _logger->Info("IocpAcceptor initialized.");
     return Res::Ok();
@@ -814,16 +671,16 @@ if (auto res = ValidateInput(); res.HasErr()) {
     return res;
 }
 
-// GOOD - with GUARD
-GUARD(ValidateInput());
+// GOOD - explicit return check
+if (const auto result = ValidateInput(); result.HasErr()) { return result; }
 ```
 
-### 2. Prefer GUARD for Simple Cases
+### 2. Prefer Explicit Checks for Simple Cases
 
-GUARD macros reduce boilerplate and improve readability:
+Explicit checks keep propagation local and readable:
 
 ```cpp
-// Without GUARD - verbose
+// More verbose
 Result<void, ENetworkError> Initialize() {
     if (auto res = Step1(); res.HasErr()) {
         return res;
@@ -837,11 +694,11 @@ Result<void, ENetworkError> Initialize() {
     return Result::Ok();
 }
 
-// With GUARD - concise
+// Explicit and concise
 Result<void, ENetworkError> Initialize() {
-    GUARD(Step1());
-    GUARD(Step2());
-    GUARD(Step3());
+    if (const auto result = Step1(); result.HasErr()) { return result; }
+    if (const auto result = Step2(); result.HasErr()) { return result; }
+    if (const auto result = Step3(); result.HasErr()) { return result; }
     return Result::Ok();
 }
 ```
@@ -902,7 +759,7 @@ public:
     // Factory method with error handling
     static Result<std::unique_ptr<IocpAcceptor>, ENetworkError> Create(/* ... */) {
         auto acceptor = std::make_unique<IocpAcceptor>(/* ... */);
-        GUARD(acceptor->Initialize());
+        if (const auto result = acceptor->Initialize(); result.HasErr()) { return result; }
         return Result::Ok(std::move(acceptor));
     }
 
@@ -1040,7 +897,7 @@ Result<void, ENetworkError> HighLevel() {
 
 // GOOD - preserve error
 Result<void, ENetworkError> HighLevel() {
-    GUARD(LowLevel());  // Propagates original error
+    if (const auto result = LowLevel(); result.HasErr()) { return result; }  // Propagates original error
     return Res::Ok();
 }
 ```
@@ -1119,7 +976,7 @@ Result<void, ENetworkError> Layer1() {
 }
 
 Result<void, ENetworkError> Layer3() {
-    GUARD(Layer2());  // Propagate silently
+    if (const auto result = Layer2(); result.HasErr()) { return result; }  // Propagate silently
     return Res::Ok();
 }
 ```
@@ -1322,7 +1179,7 @@ ServerLifeCycle::Res ServerLifeCycle::Start(
     const auto workerCount = std::thread::hardware_concurrency() *
         _config.thread.maxWorkerThreadMultiplier;
 
-    // GUARD propagates error if IOCP init fails
+    // Explicit check propagates error if IOCP init fails
     if (auto res = _iocp->Initialize(workerCount); res.HasErr()) {
         return res;  // Returns original error code
     }
@@ -1479,7 +1336,7 @@ IocpAcceptor::Res IocpAcceptor::PostAccepts(int count) {
     // Post multiple accept requests
     // If any fails, stop and return error
     for (int i = 0; i < count; ++i) {
-        GUARD(PostAccept());  // First failure stops the loop
+        if (const auto result = PostAccept(); result.HasErr()) { return result; }  // First failure stops the loop
     }
 
     _logger->Info("Posted {} AcceptEx requests.", count);
@@ -1507,7 +1364,7 @@ std::shared_ptr<ISocket> SocketHelper::MakeDefaultListener(
 
     // ========== WSA Initialization ==========
     if (auto res = s->Initialize(); res.HasErr()) {
-        // Initialization failed - can't use GUARD with nullable return
+        // Initialization failed - can't use direct Result propagation with nullable return
         logger->Error("Failed to initialize socket");
         return nullptr;
     }
@@ -1717,7 +1574,7 @@ int main() {
 This document covers the comprehensive error handling strategy for the highp-mmorpg project:
 
 - **No exceptions**: All errors use `Result<T, E>` monad for type-safe, explicit error handling
-- **GUARD macros**: Provide concise error propagation with early returns
+- **Explicit result checks**: Provide concise error propagation with early returns
 - **ENetworkError enum**: Categorizes all network-related errors with descriptive messages
 - **Async operations**: Special handling for IOCP completions and `ERROR_IO_PENDING`
 - **Logging strategy**: Log at the point of failure with full context, propagate silently upward
