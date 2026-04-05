@@ -110,7 +110,7 @@ void Client::StartRecvLoop(RecvCallback callback) {
             }
 
             const highp::protocol::Packet* pkt = highp::protocol::GetPacket(recvBuffer.data());
-            if (!pkt) {
+            if (pkt) {
                 cb(pkt);
             }
         }
