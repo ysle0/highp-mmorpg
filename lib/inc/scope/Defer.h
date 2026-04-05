@@ -32,5 +32,5 @@ namespace highp::scope {
 #define GIVE_TEMP_NAME_TO_DEFER(a, b) DEFER_CONCAT(a, b)
 // 임시 이름 붙은 defer 로 변신함.
 // e.g. _defer_25, _defer_223, _defer_1
-#define DEFER(lambda) \
-    highp::scope::Defer GIVE_TEMP_NAME_TO_DEFER(_defer_, __LINE__)(lambda)
+#define DEFER(...) \
+    highp::scope::Defer GIVE_TEMP_NAME_TO_DEFER(_defer_, __LINE__)(__VA_ARGS__)
