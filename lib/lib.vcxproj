@@ -172,6 +172,15 @@
     <ClInclude Include="inc\memory\LockObjectPool.hpp" />
     <ClInclude Include="inc\memory\HybridObjectPool.hpp" />
     <ClInclude Include="inc\concurrency\MPSCCommandQueue.hpp" />
+    <ClInclude Include="inc\metrics\AtomicServerMetrics.h" />
+    <ClInclude Include="inc\metrics\IServerMetrics.h" />
+    <ClInclude Include="inc\metrics\NoopServerMetrics.h" />
+    <ClInclude Include="inc\metrics\RunManifest.h" />
+    <ClInclude Include="inc\metrics\ServerMetricsConfig.h" />
+    <ClInclude Include="inc\metrics\ServerMetricsCallbacks.h" />
+    <ClInclude Include="inc\metrics\ServerMetricsSnapshot.h" />
+    <ClInclude Include="inc\metrics\ServerMetricsWriter.h" />
+    <ClInclude Include="src\metrics\ServerMetricsSupport.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="inc\thread\LogicThread.cpp" />
@@ -184,6 +193,12 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="src\logger\TextLogger.cpp" />
+    <ClCompile Include="src\metrics\AtomicServerMetrics.cpp" />
+    <ClCompile Include="src\metrics\RunManifest.cpp" />
+    <ClCompile Include="src\metrics\ServerMetricsConfig.cpp" />
+    <ClCompile Include="src\metrics\ServerMetricsCallbacks.cpp" />
+    <ClCompile Include="src\metrics\ServerMetricsSupport.cpp" />
+    <ClCompile Include="src\metrics\ServerMetricsWriter.cpp" />
     <ClCompile Include="src\scope\Defer.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

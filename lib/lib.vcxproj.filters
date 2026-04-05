@@ -76,12 +76,57 @@
     <ClInclude Include="inc\concurrency\CommandQueue.hpp">
       <Filter>inc\concurrency</Filter>
     </ClInclude>
+    <ClInclude Include="inc\metrics\AtomicServerMetrics.h">
+      <Filter>inc\metrics</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\metrics\IServerMetrics.h">
+      <Filter>inc\metrics</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\metrics\NoopServerMetrics.h">
+      <Filter>inc\metrics</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\metrics\RunManifest.h">
+      <Filter>inc\metrics</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\metrics\ServerMetricsConfig.h">
+      <Filter>inc\metrics</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\metrics\ServerMetricsCallbacks.h">
+      <Filter>inc\metrics</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\metrics\ServerMetricsSnapshot.h">
+      <Filter>inc\metrics</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\metrics\ServerMetricsWriter.h">
+      <Filter>inc\metrics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\metrics\ServerMetricsSupport.h">
+      <Filter>src\metrics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="lib.cpp" />
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="src\logger\TextLogger.cpp">
       <Filter>src\logger</Filter>
+    </ClCompile>
+    <ClCompile Include="src\metrics\AtomicServerMetrics.cpp">
+      <Filter>src\metrics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\metrics\RunManifest.cpp">
+      <Filter>src\metrics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\metrics\ServerMetricsConfig.cpp">
+      <Filter>src\metrics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\metrics\ServerMetricsCallbacks.cpp">
+      <Filter>src\metrics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\metrics\ServerMetricsSupport.cpp">
+      <Filter>src\metrics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\metrics\ServerMetricsWriter.cpp">
+      <Filter>src\metrics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
