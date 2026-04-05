@@ -26,7 +26,7 @@ void ChatMessageHandler::Handle(
         return;
     }
 
-    if (Room* room = _roomManager->GetRoom(user->GetRoomId()); !room) {
+    if (Room* room = _roomManager->GetRoom(user->GetRoomId()); room) {
         std::string msg{payload->message()->str()};
         _logger->Debug("[ChatMessageHandler] broadcasting message: {}", msg);
 
