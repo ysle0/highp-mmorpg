@@ -12,6 +12,64 @@ namespace highp::net {
         Close(true);
     }
 
+    void Client::UseCallbacks(EventCallbacks callbacks) noexcept {
+        _callbacks = std::move(callbacks);
+    }
+
+    void Client::MarkConnectionEstablished() noexcept {
+        _connectionEstablished = true;
+        EmitConnectedEvent();
+    }
+
+    void Client::EmitConnectedEvent() {
+        if (!_connectionEstablished || _connectionEventCounted) {
+            return;
+        }
+
+        _connectionEventCounted = true;
+        if (_callbacks.onConnected) {
+            _callbacks.onConnected();
+        }
+    }
+
+    void Client::EmitDisconnectedEvent() {
+        if (!_connectionEstablished || !_connectionEventCounted) {
+            _connectionEstablished = false;
+            _connectionEventCounted = false;
+            return;
+        }
+
+        _connectionEventCounted = false;
+        _connectionEstablished = false;
+        if (_callbacks.onDisconnected) {
+            _callbacks.onDisconnected();
+        }
+    }
+
+    void Client::EmitRecvPosted() {
+        if (_callbacks.onRecvPosted) {
+            _callbacks.onRecvPosted();
+        }
+    }
+
+    void Client::EmitRecvPostFailed() {
+        if (_callbacks.onRecvPostFailed) {
+            _callbacks.onRecvPostFailed();
+        }
+    }
+
+    void Client::EmitSendPosted() {
+        if (_callbacks.onSendPosted) {
+            _callbacks.onSendPosted();
+        }
+    }
+
+    void Client::EmitSendPostFailed() {
+        if (_callbacks.onSendPostFailed) {
+            _callbacks.onSendPostFailed();
+        }
+    }
+
     Client::Res Client::PostRecv() {
         ZeroMemory(&recvOverlapped.overlapped, sizeof(WSAOVERLAPPED));
         recvOverlapped.bufDesc.buf = recvOverlapped.buf;
@@ -30,9 +88,11 @@ namespace highp::net {
             reinterpret_cast<LPWSAOVERLAPPED>(&recvOverlapped),
             nullptr);
         if (result == SOCKET_ERROR && WSAGetLastError() != ERROR_IO_PENDING) {
+            EmitRecvPostFailed();
             return Res::Err(err::ENetworkError::WsaRecvFailed);
         }
 
+        EmitRecvPosted();
         return Res::Ok();
     }
 
@@ -56,13 +116,23 @@ namespace highp::net {
             reinterpret_cast<LPWSAOVERLAPPED>(&sendOverlapped),
             nullptr);
         if (result == SOCKET_ERROR && WSAGetLastError() != ERROR_IO_PENDING) {
+            EmitSendPostFailed();
             return Res::Err(err::ENetworkError::WsaSendFailed);
         }
 
+        EmitSendPosted();
         return Res::Ok();
     }
 
     void Client::Close(bool isFireAndForget) {
+        (void)isFireAndForget;
+
+        EmitDisconnectedEvent();
+
+        if (socket == INVALID_SOCKET) {
+            return;
+        }
+
         // linger linger{ 0, 0 };
         // if (isFireAndForget) {
         //	linger.l_onoff = 1;

@@ -3,6 +3,7 @@
 #include "server/PacketDispatcher.hpp"
 #include "client/PacketStream.h"
 #include "config/Const.h"
+#include <time/time.h>
 #include <logger/Logger.hpp>
 
 #include "scope/Defer.h"
@@ -12,11 +13,18 @@ namespace highp::net {
         : _logger(std::move(logger)) {
     }
 
+    void PacketDispatcher::UseCallbacks(PacketDispatcherCallbacks callbacks) noexcept {
+        _callbacks = std::move(callbacks);
+    }
+
     void PacketDispatcher::Receive(const std::shared_ptr<Client>& client, std::span<const char> data) {
         auto& frameBuf = client->FrameBuf();
 
         if (!frameBuf.Append(data)) {
             _logger->Warn("[PacketDispatcher] frame buffer overflow");
+            if (_callbacks.onPacketValidationFailed) {
+                _callbacks.onPacketValidationFailed();
+            }
             client->Close(true);
             return;
         }
@@ -40,6 +48,9 @@ namespace highp::net {
                 _logger->Warn("[PacketDispatcher] payload too large: {} bytes", payloadLen);
                 _logger->Warn(
                     "[PacketDispatcher] disconnecting client. malevolent client has changed payloadLen for DoS attack.");
+                if (_callbacks.onPacketValidationFailed) {
+                    _callbacks.onPacketValidationFailed();
+                }
                 client->Close(true);
 
                 // #2. 악의적인 Packet 조작자를 랜덤 지연 후 드랍.
@@ -68,8 +79,15 @@ namespace highp::net {
             const auto payload = buf.subspan(PacketStream::kHeaderSize, payloadLen);
             const auto res = ParsePacket(payload);
             if (!res) {
+                if (_callbacks.onPacketValidationFailed) {
+                    _callbacks.onPacketValidationFailed();
+                }
                 client->Close(true);
                 return;
+            }
+
+            if (_callbacks.onPacketValidationSucceeded) {
+                _callbacks.onPacketValidationSucceeded();
             }
             
             // Packet Type 만 큐에 적재.
@@ -82,9 +100,22 @@ namespace highp::net {
     void PacketDispatcher::Tick() {
         _commandQueue.DrainTo(_tickBatch);
 
+        if (_callbacks.onQueueDrained) {
+            _callbacks.onQueueDrained(_tickBatch.size());
+        }
+
         for (auto& cmd : _tickBatch) {
             _logger->Debug("[PacketDispatcher::Tick] processing cmd, payloadType={}",
                            protocol::EnumNamePayload(cmd.payloadType));
+
+            if (cmd.enqueuedAtNs > 0) {
+                const auto queueWait = std::chrono::nanoseconds(
+                    highp::time::Time::NowInNs64() - cmd.enqueuedAtNs);
+                if (_callbacks.onQueueWait) {
+                    _callbacks.onQueueWait(queueWait);
+                }
+            }
+
             // command 를 통해 이동한 패킷 데이터는 다시 파싱.
             const protocol::Packet* packet = protocol::GetPacket(cmd.data.data());
             if (packet == nullptr) {
@@ -92,7 +123,15 @@ namespace highp::net {
                 continue;
             }
 
-            if (!DispatchPacket(cmd.client, packet)) {
+            const auto dispatchStartNs = highp::time::Time::NowInNs64();
+            const auto dispatchResult = DispatchPacket(cmd.client, packet);
+            if (_callbacks.onDispatchProcess) {
+                const auto dispatchElapsed = std::chrono::nanoseconds(
+                    highp::time::Time::NowInNs64() - dispatchStartNs);
+                _callbacks.onDispatchProcess(dispatchElapsed);
+            }
+
+            if (!dispatchResult) {
                 _logger->Warn("[PacketDispatcher::Tick] dispatch failed, closing client");
                 cmd.client->Close(true);
             }
@@ -111,8 +150,12 @@ namespace highp::net {
             .data = std::vector(
                 reinterpret_cast<const uint8_t*>(rawPayload.data()),
                 reinterpret_cast<const uint8_t*>(rawPayload.data()) + rawPayload.size()),
+            .enqueuedAtNs = highp::time::Time::NowInNs64(),
         };
         _commandQueue.Push(std::move(cmd));
+        if (_callbacks.onQueuePushed) {
+            _callbacks.onQueuePushed(1);
+        }
     }
 
     PacketDispatcher::Res PacketDispatcher::DispatchPacket(

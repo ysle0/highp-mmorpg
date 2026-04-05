@@ -1,9 +1,12 @@
 #pragma once
+
 #include <atomic>
+#include <functional>
 #include <memory>
 
 #include "GameLoop.h"
 #include "config/NetworkCfg.h"
+#include "logger/Logger.hpp"
 #include "server/ISessionEventReceiver.h"
 #include "server/ServerLifecycle.h"
 #include "socket/ISocket.h"
@@ -13,14 +16,20 @@ class Server final : public highp::net::ISessionEventReceiver {
     using Res = highp::fn::Result<void, highp::err::ENetworkError>;
 
 public:
+    struct EventCallbacks {
+        highp::net::ServerLifeCycle::EventCallbacks lifecycle;
+        std::function<void()> onStarted;
+        std::function<void()> onStopping;
+    };
+
     explicit Server(
         std::shared_ptr<highp::log::Logger> logger,
         std::unique_ptr<GameLoop> gameLoop,
         highp::net::NetworkCfg networkCfg,
-        std::shared_ptr<highp::net::SocketOptionBuilder> socketOptionBuilder
-    );
+        std::shared_ptr<highp::net::SocketOptionBuilder> socketOptionBuilder);
     ~Server() noexcept override;
 
+    void UseCallbacks(EventCallbacks callbacks) noexcept;
     Res Start(std::shared_ptr<highp::net::ISocket> listenSocket);
     void Stop();
 
@@ -38,4 +47,5 @@ private:
 
     std::unique_ptr<highp::net::ServerLifeCycle> _lifecycle;
     std::unique_ptr<GameLoop> _gameLoop;
+    EventCallbacks _callbacks;
 };

@@ -1,11 +1,13 @@
 #pragma once
 
+#include <functional>
+#include <string_view>
+
 #include "platform.h"
 #include "OverlappedExt.h"
 #include <error/NetworkError.h>
 #include <functional/Result.hpp>
 #include <memory>
-#include <string_view>
 
 #include "client/FrameBuffer.h"
 #include "io/CompletionTarget.hpp"
@@ -20,6 +22,15 @@ namespace highp::net {
     /// </remarks>
     struct Client : std::enable_shared_from_this<Client>, ICompletionTarget {
         using Res = fn::Result<void, err::ENetworkError>;
+
+        struct EventCallbacks {
+            std::function<void()> onConnected;
+            std::function<void()> onDisconnected;
+            std::function<void()> onRecvPosted;
+            std::function<void()> onRecvPostFailed;
+            std::function<void()> onSendPosted;
+            std::function<void()> onSendPostFailed;
+        };
 
         /// <summary>기본 생성자. 소켓을 INVALID_SOCKET으로 초기화.</summary>
         Client();
@@ -45,6 +56,30 @@ namespace highp::net {
         /// <param name="isFireAndForget">true면 linger 없이 즉시 종료</param>
         void Close(bool isFireAndForget);
 
+        /// <summary>이벤트 콜백을 연결한다.</summary>
+        void UseCallbacks(EventCallbacks callbacks) noexcept;
+
+        /// <summary>이 연결이 실제로 수락되었음을 표시한다.</summary>
+        void MarkConnectionEstablished() noexcept;
+
+        /// <summary>연결 성립 이벤트를 발생시킨다.</summary>
+        void EmitConnectedEvent();
+
+        /// <summary>연결 종료 이벤트를 발생시킨다.</summary>
+        void EmitDisconnectedEvent();
+
+        /// <summary>Recv 요청이 게시되었음을 알린다.</summary>
+        void EmitRecvPosted();
+
+        /// <summary>Recv 요청 게시 실패를 알린다.</summary>
+        void EmitRecvPostFailed();
+
+        /// <summary>Send 요청이 게시되었음을 알린다.</summary>
+        void EmitSendPosted();
+
+        /// <summary>Send 요청 게시 실패를 알린다.</summary>
+        void EmitSendPostFailed();
+
         /// <summary>프레임 조립용 누적 버퍼</summary>
         FrameBuffer& FrameBuf() { return _frameBuf; }
 
@@ -61,5 +96,8 @@ namespace highp::net {
 
     private:
         FrameBuffer _frameBuf;
+        EventCallbacks _callbacks;
+        bool _connectionEstablished = false;
+        bool _connectionEventCounted = false;
     };
 }

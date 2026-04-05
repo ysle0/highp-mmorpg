@@ -144,6 +144,7 @@
   <ItemGroup>
     <ClCompile Include="GameLoop.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MetricsCallbacksFactory.cpp" />
     <ClCompile Include="room\Room.cpp" />
     <ClCompile Include="room\RoomManager.cpp" />
     <ClCompile Include="Server.cpp" />
@@ -158,6 +159,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameLoop.h" />
+    <ClInclude Include="MetricsCallbacksFactory.h" />
     <ClInclude Include="room\Room.h" />
     <ClInclude Include="room\RoomManager.h" />
     <ClInclude Include="Server.h" />

@@ -21,13 +21,22 @@ Server::~Server() noexcept {
     }
 }
 
+void Server::UseCallbacks(EventCallbacks callbacks) noexcept {
+    _callbacks = std::move(callbacks);
+}
+
 Server::Res Server::Start(std::shared_ptr<highp::net::ISocket> listenSocket) {
     _lifecycle = std::make_unique<highp::net::ServerLifeCycle>(
         _logger,
         _socketOptionBuilder,
         this);
+    _lifecycle->UseCallbacks(_callbacks.lifecycle);
 
     GUARD(_lifecycle->Start(listenSocket, _config));
+
+    if (_callbacks.onStarted) {
+        _callbacks.onStarted();
+    }
 
     _logger->Info("Server started on port {}.", _config.server.port);
     _gameLoop->Start();
@@ -48,8 +57,11 @@ void Server::Stop() {
         _gameLoop->Stop();
         _gameLoop.reset();
     }
-}
 
+    if (_callbacks.onStopping) {
+        _callbacks.onStopping();
+    }
+}
 
 void Server::OnAccept(std::shared_ptr<highp::net::Client> client) {
     _logger->Debug("[Server::OnAccept]: socket #{}", client->socket);

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "client/windows/Client.h"
 #include "io/CompletionTarget.hpp"
 #include "client/windows/EIoType.h"
 #include "platform.h"
@@ -60,6 +61,11 @@ namespace highp::net::internal {
     /// </remarks>
     class IocpIoMultiplexer final {
     public:
+        struct EventCallbacks {
+            std::function<void()> onWorkerDispatchBegin;
+            std::function<void()> onWorkerDispatchEnd;
+        };
+
         /// <summary>IOCP 작업 결과 타입</summary>
         using Res = fn::Result<void, err::ENetworkError>;
 
@@ -152,6 +158,11 @@ namespace highp::net::internal {
         /// <returns>실행 중이면 true</returns>
         bool IsRunning() const noexcept;
 
+        /// <summary>
+        /// 이벤트 콜백을 연결한다.
+        /// </summary>
+        void UseCallbacks(EventCallbacks callbacks) noexcept;
+
     private:
         /// <summary>
         /// Worker 스레드에서 실행되는 메인 루프.
@@ -172,6 +183,9 @@ namespace highp::net::internal {
 
         /// <summary>IOCP 실행 상태 플래그</summary>
         std::atomic<bool> _isRunning{false};
+
+        /// <summary>이벤트 콜백</summary>
+        EventCallbacks _callbacks;
 
         /// <summary>완료 이벤트 처리 콜백</summary>
         CompletionHandler _completionHandler;

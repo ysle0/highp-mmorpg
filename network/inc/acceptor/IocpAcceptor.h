@@ -2,6 +2,7 @@
 
 #include "platform.h"
 #include "AcceptContext.h"
+#include "client/windows/Client.h"
 #include "client/windows/OverlappedExt.h"
 #include <logger/Logger.hpp>
 #include <functional/Result.hpp>
@@ -31,6 +32,14 @@ namespace highp::net::internal {
         /// Accept 완료 시 호출되는 콜백 함수 타입.
         /// </summary>
         using AcceptCallback = std::function<void(AcceptContext&)>;
+
+    public:
+        struct EventCallbacks {
+            std::function<void()> onAcceptPosted;
+            std::function<void()> onAcceptPostFailed;
+            std::function<void()> onAcceptCompleted;
+            std::function<void()> onAcceptCompletionFailed;
+        };
 
     public:
         /// <summary>IocpAcceptor 작업 결과 타입</summary>
@@ -106,6 +115,11 @@ namespace highp::net::internal {
         /// </summary>
         void Shutdown();
 
+        /// <summary>
+        /// 이벤트 콜백을 연결한다.
+        /// </summary>
+        void UseCallbacks(EventCallbacks callbacks) noexcept;
+
     private:
         /// <summary>
         /// WSAIoctl로 AcceptEx 및 GetAcceptExSockAddrs 함수 포인터를 획득한다.
@@ -128,6 +142,7 @@ namespace highp::net::internal {
         /// <summary>GetAcceptExSockAddrs 함수 포인터. WSAIoctl로 획득.</summary>
         LPFN_GETACCEPTEXSOCKADDRS _fnGetAcceptExSockAddrs = nullptr;
 
+        EventCallbacks _callbacks;
         AcceptCallback _acceptCallback;
 
         scope::DeferredItemHolder<AcceptOverlapped> _acceptOverlappedHolder;
