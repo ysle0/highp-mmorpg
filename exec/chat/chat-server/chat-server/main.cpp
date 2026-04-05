@@ -9,6 +9,7 @@
 #include <logger/TextLogger.h>
 #include <iostream>
 
+#include "SessionManager.h"
 #include "scope/Defer.h"
 
 using namespace highp;
