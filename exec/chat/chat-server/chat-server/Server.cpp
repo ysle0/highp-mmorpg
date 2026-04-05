@@ -32,7 +32,10 @@ Server::Res Server::Start(std::shared_ptr<highp::net::ISocket> listenSocket) {
         this);
     _lifecycle->UseCallbacks(_callbacks.lifecycle);
 
-    GUARD(_lifecycle->Start(listenSocket, _config));
+    if (const Res lifecycleStartRes = _lifecycle->Start(listenSocket, _config);
+        lifecycleStartRes.HasErr()) {
+        return lifecycleStartRes;
+    }
 
     if (_callbacks.onStarted) {
         _callbacks.onStarted();
@@ -69,8 +72,9 @@ void Server::OnAccept(std::shared_ptr<highp::net::Client> client) {
 }
 
 void Server::OnRecv(std::shared_ptr<highp::net::Client> client, std::span<const char> data) {
-    _logger->Debug("[Server::OnRecv]: socket #{}, data: {}",
-                   client->socket, data.data());
+    _logger->Debug("[Server::OnRecv]: socket #{}, data length: {}",
+                   client->socket,
+                   data.size());
     _gameLoop->Receive(client, data);
 }
 

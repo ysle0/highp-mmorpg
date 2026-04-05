@@ -35,8 +35,10 @@ namespace highp::net::internal {
             return Res::Err(err::ENetworkError::SocketCreateFailed);
         }
 
-        // 2) macro GUARD(expr)
-        GUARD(LoadAcceptExFunctions());
+        if (const Res loadAcceptExRes = LoadAcceptExFunctions();
+            loadAcceptExRes.HasErr()) {
+            return loadAcceptExRes;
+        }
 
         _logger->Debug("IocpAcceptor initialized. listen socket associated with IOCP.");
         return Res::Ok();
@@ -151,7 +153,10 @@ namespace highp::net::internal {
 
     IocpAcceptor::Res IocpAcceptor::PostAccepts(int count) {
         for (int i = 0; i < count; ++i) {
-            GUARD(PostAccept());
+            if (const Res postAcceptRes = PostAccept();
+                postAcceptRes.HasErr()) {
+                return postAcceptRes;
+            }
         }
         _logger->Debug("Posted {} AcceptEx requests.", count);
         return Res::Ok();
@@ -224,10 +229,11 @@ namespace highp::net::internal {
             _callbacks.onAcceptCompleted();
         }
 
-        // 3) 매크로 처리 + 후속 실행함수 추가
-        GUARD_EFFECT(PostAccept(), [this] {
-                     _logger->Error("Failed to re-post AcceptEx after completion.");
-                     });
+        if (const Res postAcceptRes = PostAccept();
+            postAcceptRes.HasErr()) {
+            _logger->Error("Failed to re-post AcceptEx after completion.");
+            return postAcceptRes;
+        }
 
         return Res::Ok();
     }

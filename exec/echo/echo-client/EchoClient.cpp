@@ -16,7 +16,7 @@ EchoClient::~EchoClient() noexcept {
 bool EchoClient::Connect(const char* ipAddress, unsigned short port) {
     Disconnect();
 
-    auto sessionRes = net::WsaSession::Create(_logger);
+    const net::WsaSession::ResWithSession sessionRes = net::WsaSession::Create(_logger);
     if (sessionRes.HasErr()) {
         _logger->Error("Failed to initialize WSA session.");
         return false;
@@ -26,7 +26,8 @@ bool EchoClient::Connect(const char* ipAddress, unsigned short port) {
 
     auto wsaSession = sessionRes.Data();
     auto socket = std::make_unique<net::TcpClientSocket>(_logger, wsaSession);
-    if (auto res = socket->Connect(ipAddress, port); res.HasErr()) {
+    if (const net::TcpClientSocket::Res connectRes = socket->Connect(ipAddress, port);
+        connectRes.HasErr()) {
         _logger->Error("Connect failed.");
         return false;
     }

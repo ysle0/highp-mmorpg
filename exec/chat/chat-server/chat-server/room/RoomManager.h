@@ -19,7 +19,7 @@ public:
 
 public:
     std::shared_ptr<Room> CreateRoom(std::optional<uint32_t> roomIdOverride = std::nullopt);
-    std::shared_ptr<Room> GetAvailableRoom();
+    std::shared_ptr<Room> GetOrCreateAvailableRoom();
     bool DestroyRoom(uint32_t roomId);
     bool IsRoomExist(uint32_t roomId) const;
     Room* GetRoom(uint32_t roomId);

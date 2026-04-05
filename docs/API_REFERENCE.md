@@ -169,7 +169,7 @@ Associates a socket with the IOCP for asynchronous I/O completion notifications.
 auto client = std::make_shared<Client>();
 client->socket = acceptedSocket;
 auto result = multiplexer->AssociateSocket(client->socket, client.get());
-GUARD(result);
+if (result.HasErr()) { return result; }
 ```
 
 #### PostCompletion
@@ -326,7 +326,7 @@ Initializes the acceptor by associating the listen socket with IOCP and loading 
 ```cpp
 auto result = acceptor->Initialize(listenSocket->GetSocketHandle(),
                                     multiplexer->GetHandle());
-GUARD(result);
+if (result.HasErr()) { return result; }
 ```
 
 #### PostAccept
@@ -358,7 +358,7 @@ Posts a single asynchronous AcceptEx request.
 **Example:**
 
 ```cpp
-GUARD(acceptor->PostAccept());
+if (const auto result = acceptor->PostAccept(); result.HasErr()) { return result; }
 ```
 
 #### PostAccepts
@@ -386,7 +386,7 @@ Posts multiple asynchronous AcceptEx requests.
 
 ```cpp
 // Post backlog number of accepts
-GUARD(acceptor->PostAccepts(config.server.backlog));
+if (const auto result = acceptor->PostAccepts(config.server.backlog); result.HasErr()) { return result; }
 ```
 
 #### OnAcceptComplete
@@ -546,10 +546,10 @@ Starts the server with specified configuration.
 
 ```cpp
 auto listenSocket = std::make_shared<WindowsAsyncSocket>(logger);
-GUARD(listenSocket->Initialize());
-GUARD(listenSocket->CreateSocket(NetworkTransport(ETransport::TCP)));
-GUARD(listenSocket->Bind(config.server.port));
-GUARD(listenSocket->Listen(config.server.backlog));
+if (const auto result = listenSocket->Initialize(); result.HasErr()) { return result; }
+if (const auto result = listenSocket->CreateSocket(NetworkTransport(ETransport::TCP)); result.HasErr()) { return result; }
+if (const auto result = listenSocket->Bind(config.server.port); result.HasErr()) { return result; }
+if (const auto result = listenSocket->Listen(config.server.backlog); result.HasErr()) { return result; }
 
 auto result = lifecycle->Start(listenSocket, config);
 if (result.HasErr()) {
@@ -734,7 +734,7 @@ Posts an asynchronous send operation.
 ```cpp
 std::string response = "Hello, client!";
 auto result = client->PostSend(response);
-GUARD(result);
+if (result.HasErr()) { return result; }
 ```
 
 #### Close
@@ -944,7 +944,7 @@ Initializes Winsock (calls `WSAStartup`).
 **Example:**
 
 ```cpp
-GUARD(socket->Initialize());
+if (const auto result = socket->Initialize(); result.HasErr()) { return result; }
 ```
 
 #### CreateSocket
@@ -969,7 +969,7 @@ Creates a socket with specified transport protocol.
 **Example:**
 
 ```cpp
-GUARD(socket->CreateSocket(NetworkTransport(ETransport::TCP)));
+if (const auto result = socket->CreateSocket(NetworkTransport(ETransport::TCP)); result.HasErr()) { return result; }
 ```
 
 #### Bind
@@ -992,7 +992,7 @@ Binds socket to specified port (INADDR_ANY).
 **Example:**
 
 ```cpp
-GUARD(socket->Bind(8080));
+if (const auto result = socket->Bind(8080); result.HasErr()) { return result; }
 ```
 
 #### Listen
@@ -1015,7 +1015,7 @@ Puts socket into listen state.
 **Example:**
 
 ```cpp
-GUARD(socket->Listen(128));
+if (const auto result = socket->Listen(128); result.HasErr()) { return result; }
 ```
 
 #### Cleanup
@@ -1261,34 +1261,41 @@ if (result.HasErr()) {
 }
 ```
 
-#### Helper Macros
-
-```cpp
-// Early return on error
-GUARD(expression)         // Returns result on error
-GUARD_VOID(expression)    // Returns void on error
-GUARD_BREAK(expression)   // Breaks loop on error
-
-// Early return with side effect
-GUARD_EFFECT(expression, function)      // Calls function(), then returns result
-GUARD_EFFECT_VOID(expression, function) // Calls function(), then returns void
-GUARD_EFFECT_BREAK(expression, function) // Calls function(), then breaks
-```
-
+#### Explicit Result Check Patterns
+`cpp
+if (const auto result = expression; result.HasErr()) {
+    return result;
+}
+if (const auto result = expression; result.HasErr()) {
+    return;
+}
+if (const auto result = expression; result.HasErr()) {
+    break;
+}
+if (const auto result = expression; result.HasErr()) {
+    function();
+    return result;
+}
+`
 **Example:**
-
-```cpp
+`cpp
 Result<void, ENetworkError> StartServer() {
-    GUARD(socket->Initialize());
-    GUARD(socket->CreateSocket(NetworkTransport(ETransport::TCP)));
-    GUARD(socket->Bind(8080));
-    GUARD(socket->Listen(128));
+    if (const auto initResult = socket->Initialize(); initResult.HasErr()) {
+        return initResult;
+    }
+    if (const auto createResult = socket->CreateSocket(NetworkTransport(ETransport::TCP)); createResult.HasErr()) {
+        return createResult;
+    }
+    if (const auto bindResult = socket->Bind(8080); bindResult.HasErr()) {
+        return bindResult;
+    }
+    if (const auto listenResult = socket->Listen(128); listenResult.HasErr()) {
+        return listenResult;
+    }
     return Result<void, ENetworkError>::Ok();
 }
-```
-
+`
 ---
-
 ### Logger
 
 Logging facade supporting multiple backends and std::format.
@@ -1742,11 +1749,11 @@ int main() {
     auto listenSocket = std::make_shared<network::WindowsAsyncSocket>(logger);
 
     // Initialize and bind
-    GUARD_VOID(listenSocket->Initialize());
-    GUARD_VOID(listenSocket->CreateSocket(
-        network::NetworkTransport(network::ETransport::TCP)));
-    GUARD_VOID(listenSocket->Bind(config.server.port));
-    GUARD_VOID(listenSocket->Listen(config.server.backlog));
+    if (const auto result = listenSocket->Initialize(); result.HasErr()) { return; }
+    if (const auto result = listenSocket->CreateSocket(
+        network::NetworkTransport(network::ETransport::TCP)); result.HasErr()) { return; }
+    if (const auto result = listenSocket->Bind(config.server.port); result.HasErr()) { return; }
+    if (const auto result = listenSocket->Listen(config.server.backlog); result.HasErr()) { return; }
 
     // Start server
     auto result = server.Start(listenSocket, config);
@@ -1823,7 +1830,7 @@ public:
             OnCompletion(event);
         });
 
-        GUARD_VOID(_iocp->Initialize(std::thread::hardware_concurrency()));
+        if (const auto result = _iocp->Initialize(std::thread::hardware_concurrency()); result.HasErr()) { return; }
         // ... continue setup
     }
 };
@@ -1869,12 +1876,12 @@ public:
 ### Error Handling Patterns
 
 ```cpp
-// Pattern 1: Early return with GUARD
+// Pattern 1: Early return with explicit result check
 fn::Result<void, err::ENetworkError> InitializeServer() {
-    GUARD(InitializeWinsock());
-    GUARD(CreateListenSocket());
-    GUARD(BindToPort(8080));
-    GUARD(StartListening());
+    if (const auto result = InitializeWinsock(); result.HasErr()) { return result; }
+    if (const auto result = CreateListenSocket(); result.HasErr()) { return result; }
+    if (const auto result = BindToPort(8080); result.HasErr()) { return result; }
+    if (const auto result = StartListening(); result.HasErr()) { return result; }
     return fn::Result<void, err::ENetworkError>::Ok();
 }
 
@@ -1886,11 +1893,11 @@ if (result.HasErr()) {
     return;
 }
 
-// Pattern 3: GUARD with side effect
-GUARD_EFFECT(
-    socket->Initialize(),
-    [&]() { _logger->Error("Socket initialization failed"); }
-);
+// Pattern 3: Explicit side effect before return
+if (const auto result = socket->Initialize(); result.HasErr()) {
+    _logger->Error("Socket initialization failed");
+    return result;
+}
 
 // Pattern 4: Chained operations
 auto InitChain() -> fn::Result<void, err::ENetworkError> {

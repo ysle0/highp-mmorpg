@@ -39,13 +39,17 @@ private:
     void OnSend(std::shared_ptr<highp::net::Client> client, size_t bytesTransferred) override;
     void OnDisconnect(std::shared_ptr<highp::net::Client> client) override;
 
+    /// Logic thread 메인 루프
+    void LogicLoop(std::stop_token st);
+
 private:
     std::shared_ptr<highp::log::Logger> _logger;
     std::shared_ptr<highp::net::SocketOptionBuilder> _socketOptionBuilder;
     highp::net::NetworkCfg _config;
-    std::atomic<bool> _hasStopped{false};
-
     std::unique_ptr<highp::net::ServerLifeCycle> _lifecycle;
+    std::atomic<int> _tickMs;
+
+    std::atomic<bool> _hasStopped;
     std::unique_ptr<GameLoop> _gameLoop;
     EventCallbacks _callbacks;
 };

@@ -14,9 +14,17 @@ std::shared_ptr<User> UserManager::CreateUser(
     std::string_view username,
     uint64_t roomId
 ) {
-    auto session = _sessionManager->GetSessionByClient(client);
+    std::shared_ptr<Session> session = _sessionManager->GetSessionByClient(client);
     if (!session) {
         _logger->Error("[UserManager::CreateUser] session not found for socket #{}", client->socket);
+        return nullptr;
+    }
+
+    if (const User* existingUser = GetUserByClient(client)) {
+        _logger->Warn("[UserManager::CreateUser] user already exists for socket #{}, userId={}, roomId={}",
+                      client->socket,
+                      existingUser->GetId(),
+                      existingUser->GetRoomId());
         return nullptr;
     }
 

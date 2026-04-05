@@ -67,7 +67,7 @@ void Room::Leave(uint64_t userId) {
     }
 }
 
-void Room::BroadcastChatMessage(uint64_t userId, std::string_view chatMessage) {
+void Room::BroadcastChatMessage(uint64_t userId, std::string chatMessage) {
     std::scoped_lock lock{_mtx};
 
     const highp::protocol::Common::Timestamp now = highp::protocol::now();

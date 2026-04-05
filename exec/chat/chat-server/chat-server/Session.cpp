@@ -1,5 +1,10 @@
 #include "Session.h"
 
+#include <cstring>
+#include <limits>
+#include <vector>
+
+#include "config/Const.h"
 #include "logger/Logger.hpp"
 
 Session::Session(
@@ -19,7 +24,23 @@ void Session::Send(const flatbuffers::FlatBufferBuilder& builder) const {
 
     const uint8_t* buf = builder.GetBufferPointer();
     const size_t size = builder.GetSize();
-    const std::string_view msg{reinterpret_cast<const char*>(buf), size};
+    if (size > std::numeric_limits<uint32_t>::max()) {
+        _logger->Error("Send failed. payload too large: {}", size);
+        return;
+    }
+
+    const size_t frameSize = sizeof(uint32_t) + size;
+    if (frameSize > highp::net::Const::Buffer::sendBufferSize) {
+        _logger->Error("Send failed. framed payload exceeds send buffer: {}", frameSize);
+        return;
+    }
+
+    std::vector<char> frame(frameSize, 0);
+    uint32_t payloadSize = htonl(static_cast<uint32_t>(size));
+    std::memcpy(frame.data(), &payloadSize, sizeof(payloadSize));
+    std::memcpy(frame.data() + sizeof(payloadSize), buf, size);
+
+    const std::string_view msg{frame.data(), frame.size()};
     if (!_tcpClient->PostSend(msg)) {
         _logger->Error("Send failed.");
         return;

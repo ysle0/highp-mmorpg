@@ -19,11 +19,20 @@ void JoinRoomHandler::Handle(
 ) {
     _logger->Info("[JoinRoomHandler] socket #{}", client->socket);
 
-    const std::shared_ptr<Room> room = _roomManager->GetAvailableRoom();
+    const std::shared_ptr<Room> room = _roomManager->GetOrCreateAvailableRoom();
     const std::shared_ptr<User> newUser = _userManager->CreateUser(
         client,
         payload->username()->c_str(),
         room->GetId());
+
+    // JoinRoomRequest 가 dispatcher queue 에 적재 되어 있어 pending 상태일 때,
+    // Client 가 Disconnected 가 되면 logic thread 가 Handle() 할 시점에
+    // CreateUser 의 결과가 nullptr 가 가능하므로 early-return 처리.
+    if (!newUser) {
+        _logger->Warn("[JoinRoomHandler] failed to create user for socket #{}",
+                      client->socket);
+        return;
+    }
 
     room->Join(newUser);
 

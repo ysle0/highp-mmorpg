@@ -12,11 +12,13 @@ namespace highp::net {
     ) {
         auto s = std::make_shared<internal::WindowsAsyncSocket>(logger);
 
-        if (auto res = s->Initialize(); res.HasErr()) {
+        if (const ISocket::Res initializeRes = s->Initialize();
+            initializeRes.HasErr()) {
             return nullptr;
         }
 
-        if (auto res = s->CreateSocket(netTransport); res.HasErr()) {
+        if (const ISocket::Res createSocketRes = s->CreateSocket(netTransport);
+            createSocketRes.HasErr()) {
             return nullptr;
         }
 
@@ -25,11 +27,13 @@ namespace highp::net {
         socketOptionBuilder->SetReuseAddr(sh, true);
         socketOptionBuilder->SetSendBufferSize(sh, Const::Buffer::sendBufferSize);
 
-        if (auto res = s->Bind(static_cast<unsigned short>(netCfg.server.port)); res.HasErr()) {
+        if (const ISocket::Res bindRes = s->Bind(static_cast<unsigned short>(netCfg.server.port));
+            bindRes.HasErr()) {
             return nullptr;
         }
 
-        if (auto res = s->Listen(netCfg.server.backlog); res.HasErr()) {
+        if (const ISocket::Res listenRes = s->Listen(netCfg.server.backlog);
+            listenRes.HasErr()) {
             return nullptr;
         }
 

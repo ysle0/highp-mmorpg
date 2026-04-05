@@ -93,6 +93,17 @@ namespace highp::net {
 
         const int recvBytes = recv(_socketHandle, buffer.data(), static_cast<int>(buffer.size()), 0);
         if (recvBytes == SocketError) {
+            const int wsaError = WSAGetLastError();
+            // WSAEINTR: 로컬 disconnect 로 blocking recv 가 종료됨.
+            // WSAENOTSOCK: 다른 스레드가 먼저 닫아서 소캣 핸들이 무효가 된 경우.
+            // WSAESHUTDOWN: shutdown(SD_BOTH) 이후라 recv 실패가 정상인 경우.
+            if (wsaError == WSAEINTR ||
+                wsaError == WSAENOTSOCK ||
+                wsaError == WSAESHUTDOWN
+            ) {
+                return ResWithSize::Err(err::ENetworkError::SocketInvalid);
+            }
+
             err::LogErrorWSA<err::ENetworkError::WsaRecvFailed>(_logger);
             return ResWithSize::Err(err::ENetworkError::WsaRecvFailed);
         }
