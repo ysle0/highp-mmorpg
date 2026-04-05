@@ -28,7 +28,7 @@ std::shared_ptr<Room> RoomManager::CreateRoom(std::optional<uint32_t> roomIdOver
     return room;
 }
 
-std::shared_ptr<Room> RoomManager::GetAvailableRoom() {
+std::shared_ptr<Room> RoomManager::GetOrCreateAvailableRoom() {
     std::scoped_lock lock{_mtx};
 
     for (const std::shared_ptr<Room>& room : _rooms) {

@@ -19,7 +19,7 @@ void JoinRoomHandler::Handle(
 ) {
     _logger->Info("[JoinRoomHandler] socket #{}", client->socket);
 
-    const std::shared_ptr<Room> room = _roomManager->GetAvailableRoom();
+    const std::shared_ptr<Room> room = _roomManager->GetOrCreateAvailableRoom();
     const std::shared_ptr<User> newUser = _userManager->CreateUser(
         client,
         payload->username()->c_str(),
