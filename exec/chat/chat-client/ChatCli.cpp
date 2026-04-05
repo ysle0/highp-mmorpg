@@ -1,7 +1,17 @@
 #include "ChatCli.h"
 
+#include <format>
 #include <iostream>
 #include <unordered_map>
+
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <Windows.h>
+
 #include "Client.h"
 #include "PacketSender.h"
 
@@ -24,16 +34,83 @@ namespace {
     }
 } // namespace
 
-ChatCli::ChatCli(Client* client, std::shared_ptr<highp::log::Logger> logger)
+void ConsoleState::Log(std::string_view level, std::string_view message) {
+    std::scoped_lock lock{_mtx};
+
+    if (_promptVisible) {
+        ClearPromptLineUnlocked();
+    }
+
+    std::cout << '[' << level << "] " << message << std::endl;
+
+    if (_promptVisible) {
+        PrintPromptUnlocked();
+    }
+}
+
+void ConsoleState::ShowPrompt(std::string prompt) {
+    std::scoped_lock lock{_mtx};
+
+    _prompt = std::move(prompt);
+    _promptVisible = true;
+    PrintPromptUnlocked();
+}
+
+void ConsoleState::HidePrompt() {
+    std::scoped_lock lock{_mtx};
+    _promptVisible = false;
+}
+
+void ConsoleState::ClearPromptLineUnlocked() const {
+    HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+    if (consoleHandle == INVALID_HANDLE_VALUE || consoleHandle == nullptr) {
+        std::cout << '\r';
+        return;
+    }
+
+    CONSOLE_SCREEN_BUFFER_INFO bufferInfo{};
+    if (!GetConsoleScreenBufferInfo(consoleHandle, &bufferInfo)) {
+        std::cout << '\r';
+        return;
+    }
+
+    COORD lineStart{0, bufferInfo.dwCursorPosition.Y};
+    DWORD written = 0;
+
+    FillConsoleOutputCharacterA(
+        consoleHandle,
+        ' ',
+        static_cast<DWORD>(bufferInfo.dwSize.X),
+        lineStart,
+        &written);
+    FillConsoleOutputAttribute(
+        consoleHandle,
+        bufferInfo.wAttributes,
+        static_cast<DWORD>(bufferInfo.dwSize.X),
+        lineStart,
+        &written);
+    SetConsoleCursorPosition(consoleHandle, lineStart);
+}
+
+void ConsoleState::PrintPromptUnlocked() const {
+    std::cout << "[INFO] " << _prompt << std::flush;
+}
+
+ChatCli::ChatCli(
+    Client* client,
+    std::shared_ptr<highp::log::Logger> logger,
+    std::shared_ptr<ConsoleState> console
+)
     : _client(client),
-      _logger(std::move(logger)) {
+      _logger(std::move(logger)),
+      _console(std::move(console)) {
     //
 }
 
 void ChatCli::PromptNickname() {
-    _logger->Info("Enter nickname: ");
-
+    _console->ShowPrompt("Enter nickname: ");
     std::getline(std::cin, _nickname);
+    _console->HidePrompt();
 
     if (_nickname.empty()) {
         _nickname = "guest";
@@ -44,13 +121,19 @@ void ChatCli::PromptNickname() {
 
 void ChatCli::Run() {
     PrintHelp();
-    PrintPrompt();
 
-    std::string line;
-    
-    while (std::getline(std::cin, line)) {
+    while (true) {
+        PrintPrompt();
+
+        std::string line;
+        if (!std::getline(std::cin, line)) {
+            _console->HidePrompt();
+            break;
+        }
+
+        _console->HidePrompt();
+
         if (line.empty()) {
-            PrintPrompt();
             continue;
         }
 
@@ -60,8 +143,6 @@ void ChatCli::Run() {
         ) {
             break;
         }
-
-        PrintPrompt();
     }
 }
 
@@ -124,10 +205,13 @@ void ChatCli::PrintHelp() const {
 }
 
 void ChatCli::PrintPrompt() const {
+    _console->ShowPrompt(BuildPrompt());
+}
+
+std::string ChatCli::BuildPrompt() const {
     if (_joined) {
-        _logger->Info("[{}] > ", _nickname);
+        return std::format("[{}] > ", _nickname);
     }
-    else {
-        _logger->Info("[not joined] > ");
-    }
+
+    return "[not joined] > ";
 }

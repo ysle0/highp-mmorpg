@@ -2,5 +2,9 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="chat-client.cpp" />
+    <ClCompile Include="PromptAwareTextLogger.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="PromptAwareTextLogger.h" />
   </ItemGroup>
 </Project>

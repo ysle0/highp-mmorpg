@@ -1,13 +1,17 @@
+#include <memory>
+
 #include <logger/Logger.hpp>
-#include <logger/TextLogger.h>
 #include "Client.h"
-#include "PacketReceiver.h"
 #include "ChatCli.h"
+#include "PacketReceiver.h"
+#include "PromptAwareTextLogger.h"
 #include "client/windows/Client.h"
 #include "scope/Defer.h"
 
 int main() {
-    auto logger = highp::log::Logger::Default<highp::log::TextLogger>();
+    const std::shared_ptr<ConsoleState> console = std::make_shared<ConsoleState>();
+    auto logger = std::make_shared<highp::log::Logger>(
+        std::make_unique<PromptAwareTextLogger>(console));
     logger->Info("Chat Client starting...");
 
     Client client(logger);
@@ -24,11 +28,12 @@ int main() {
         client.Disconnect();
         });
 
+    ChatCli cli(&client, logger, console);
+
     client.StartRecvLoop([logger](const highp::protocol::Packet* packet) {
         onPacketReceived(logger, packet);
     });
 
-    ChatCli cli(&client, logger);
     cli.PromptNickname();
     cli.Run();
 

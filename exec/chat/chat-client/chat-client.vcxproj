@@ -132,6 +132,7 @@
         <ClCompile Include="Client.cpp"/>
         <ClCompile Include="PacketReceiver.cpp"/>
         <ClCompile Include="PacketSender.cpp"/>
+        <ClCompile Include="PromptAwareTextLogger.cpp"/>
         <ClCompile Include="main.cpp"/>
     </ItemGroup>
     <ItemGroup>
@@ -139,6 +140,7 @@
         <ClInclude Include="Client.h"/>
         <ClInclude Include="PacketReceiver.h"/>
         <ClInclude Include="PacketSender.h"/>
+        <ClInclude Include="PromptAwareTextLogger.h"/>
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\..\..\lib\lib.vcxproj">
