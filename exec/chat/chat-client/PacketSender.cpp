@@ -14,7 +14,7 @@ void sendLeave(Client* client) {
     client->Send(fbb);
 }
 
-void sendMessage(Client* client, std::string_view message) {
-    const auto fbb = highp::protocol::makeSendMessageRequest(0, message);
+void sendMessage(Client* client, std::string_view username, std::string_view message) {
+    const auto fbb = highp::protocol::makeSendMessageRequest(0, username, message);
     client->Send(fbb);
 }

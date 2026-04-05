@@ -109,7 +109,7 @@ ChatCli::Action ChatCli::HandleChat(const std::string& line) const {
         _logger->Warn("Not joined. Use /join first.");
     }
     else {
-        sendMessage(_client, line);
+        sendMessage(_client, _nickname, line);
     }
     return Action::Continue;
 }

@@ -30,7 +30,11 @@ void ChatMessageHandler::Handle(
         std::string msg{payload->message()->str()};
         _logger->Debug("[ChatMessageHandler] broadcasting message: {}", msg);
 
-        room->BroadcastChatMessage(user->GetId(), msg);
+        room->BroadcastChatMessage(
+            static_cast<uint32_t>(user->GetId()),
+            user->GetId(),
+            user->GetUsername(),
+            msg);
     }
     else {
         _logger->Warn("[ChatMessageHandler] room not found: {}", user->GetRoomId());

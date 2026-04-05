@@ -71,6 +71,7 @@ namespace highp::protocol {
 
     [[nodiscard]] inline flatbuffers::FlatBufferBuilder makeSendMessageRequest(
         std::uint32_t roomId,
+        std::string_view username,
         std::string_view message,
         std::uint32_t sequence = 0
     ) {
@@ -78,12 +79,14 @@ namespace highp::protocol {
         const auto request = messages::CreateSendMessageRequest(
             builder,
             roomId,
+            detail::createStringOffset(builder, username),
             detail::createStringOffset(builder, message));
         detail::finishTypedPacket(builder, MessageType::CS_SendMessage, request, sequence);
         return builder;
     }
 
     [[nodiscard]] inline flatbuffers::FlatBufferBuilder makeUserJoinedBroadcast(
+        uint32_t roomId,
         std::uint64_t userId,
         std::string_view userName,
         UserStatus status = UserStatus::Online,
@@ -95,7 +98,7 @@ namespace highp::protocol {
             userId,
             detail::createStringOffset(builder, userName),
             status);
-        const auto broadcast = messages::CreateUserJoinedBroadcast(builder, user);
+        const auto broadcast = messages::CreateUserJoinedBroadcast(builder, roomId, user);
         detail::finishTypedPacket(builder, MessageType::B_UserJoined, broadcast, sequence);
         return builder;
     }
@@ -116,6 +119,7 @@ namespace highp::protocol {
 
     [[nodiscard]] inline flatbuffers::FlatBufferBuilder makeChatMessageBroadcast(
         std::uint32_t senderId,
+        std::string_view username,
         std::string_view message,
         const Common::Timestamp& timestamp,
         std::uint32_t sequence = 0
@@ -124,6 +128,7 @@ namespace highp::protocol {
         const auto broadcast = messages::CreateChatMessageBroadcast(
             builder,
             senderId,
+            detail::createStringOffset(builder, username),
             detail::createStringOffset(builder, message),
             &timestamp);
         detail::finishTypedPacket(builder, MessageType::B_ChatMessage, broadcast, sequence);
