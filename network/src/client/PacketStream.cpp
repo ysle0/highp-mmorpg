@@ -43,8 +43,9 @@ namespace highp::net {
         // 1) 길이 헤더(4바이트)를 정확히 수신한다.
         std::array<char, kHeaderSize> buf{};
         const auto span = std::span{buf.data(), buf.size()};
-        if (auto res = RecvExact(span); res.HasErr()) {
-            return ResWithSize::Err(res.Err());
+        if (const Res recvHeaderRes = RecvExact(span);
+            recvHeaderRes.HasErr()) {
+            return ResWithSize::Err(recvHeaderRes.Err());
         }
 
         // 2) 헤더에서 payload 길이를 읽는다.
@@ -70,8 +71,9 @@ namespace highp::net {
             outPayload.size()
         };
 
-        if (auto res = RecvExact(payloadSpan); !res) {
-            return ResWithSize::Err(res.Err());
+        if (const Res recvPayloadRes = RecvExact(payloadSpan);
+            recvPayloadRes.HasErr()) {
+            return ResWithSize::Err(recvPayloadRes.Err());
         }
 
         // 반환값은 실제 payload 크기.
@@ -82,7 +84,7 @@ namespace highp::net {
         // TCP는 partial recv가 일반적이므로 목표 바이트까지 반복 수신한다.
         size_t receivedBytes = 0;
         while (receivedBytes < buffer.size()) {
-            auto recvRes = _socket.RecvSome(buffer.subspan(receivedBytes));
+            const ResWithSize recvRes = _socket.RecvSome(buffer.subspan(receivedBytes));
             if (recvRes.HasErr()) {
                 return Res::Err(recvRes.Err());
             }

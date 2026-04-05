@@ -473,8 +473,10 @@ Document code evolution and alternatives considered:
 //    return res;
 //}
 
-// 2) macro GUARD(expr)
-GUARD(LoadAcceptExFunctions());
+// 2) explicit result check
+if (auto res = LoadAcceptExFunctions(); res.HasErr()) {
+    return res;
+}
 ```
 
 ---
@@ -495,7 +497,9 @@ if (result == NULL || result != _iocpHandle) {
 }
 
 for (int i = 0; i < count; ++i) {
-    GUARD(PostAccept());
+    if (auto res = PostAccept(); res.HasErr()) {
+        return res;
+    }
 }
 
 // Bad
@@ -743,45 +747,31 @@ Res IocpAcceptor::PostAccept() {
 }
 ```
 
-### GUARD Macros
-
-Use `GUARD` macros for error propagation:
-
-```cpp
-// GUARD - Propagate error if result has error
-GUARD(LoadAcceptExFunctions());
-
-// GUARD_EFFECT - Execute cleanup before propagating
-GUARD_EFFECT(PostAccept(), [this]() {
-    _logger->Error("Failed to re-post AcceptEx after completion.");
-});
-
-// Equivalent verbose code (avoid)
+### Explicit Result Checks
+Use explicit if statements for error propagation:
+`cpp
 if (auto res = LoadAcceptExFunctions(); res.HasErr()) {
     return res;
 }
-```
-
-Available GUARD variants:
-
-```cpp
-GUARD(expr)              // Return Result on error
-GUARD_VOID(expr)         // Return void on error
-GUARD_BREAK(expr)        // Break loop on error
-GUARD_EFFECT(expr, fn)   // Execute fn(), then return Result
-GUARD_EFFECT_VOID(expr, fn)    // Execute fn(), then return void
-GUARD_EFFECT_BREAK(expr, fn)   // Execute fn(), then break
-```
-
+if (auto res = PostAccept(); res.HasErr()) {
+    _logger->Error("Failed to re-post AcceptEx after completion.");
+    return res;
+}
+`
+Prefer small named temporaries and straightforward control flow over helper macros.
 ### Result Checking
 
-Check results explicitly or use GUARD:
+Check results explicitly:
 
 ```cpp
-// Good - Using GUARD
+// Good - Explicit propagation
 Res Start() {
-    GUARD(Initialize());
-    GUARD(PostAccepts(10));
+    if (auto res = Initialize(); res.HasErr()) {
+        return res;
+    }
+    if (auto res = PostAccepts(10); res.HasErr()) {
+        return res;
+    }
     return Res::Ok();
 }
 
@@ -957,11 +947,11 @@ Ensure resources are initialized before multi-threaded access:
 Res Start() {
     // Initialize IOCP
     _iocp = std::make_unique<IocpIoMultiplexer>(...);
-    GUARD(_iocp->Initialize(workerCount));  // Starts worker threads
+    if (auto res = _iocp->Initialize(workerCount); res.HasErr()) { return res; }  // Starts worker threads
 
     // Initialize acceptor
     _acceptor = std::make_unique<IocpAcceptor>(...);
-    GUARD(_acceptor->Initialize(...));
+    if (auto res = _acceptor->Initialize(...); res.HasErr()) { return res; }
 
     // Pre-allocate client pool before workers start processing
     _clientPool.reserve(_config.server.maxClients);
@@ -1063,8 +1053,8 @@ void Initialize() {
 
 // Good - Proper error propagation
 Res Initialize() {
-    GUARD(CreateSocket());
-    GUARD(Bind(8080));
+    if (auto res = CreateSocket(); res.HasErr()) { return res; }
+    if (auto res = Bind(8080); res.HasErr()) { return res; }
     return Res::Ok();
 }
 ```
@@ -1168,9 +1158,11 @@ Result<void, ENetworkError> LoadFunctions() {
     return Result<void, ENetworkError>::Ok();
 }
 
-// Good - Modern C++ (if-init, auto, GUARD)
+// Good - Modern C++ (if-init, auto, explicit checks)
 Res LoadFunctions() {
-    GUARD(LoadAcceptExFunctions());
+    if (auto res = LoadAcceptExFunctions(); res.HasErr()) {
+        return res;
+    }
     return Res::Ok();
 }
 
@@ -1281,10 +1273,11 @@ std::shared_ptr<Client> FindAvailableClient() {
     return nullptr;
 }
 
-// Good - Lambda for effect in GUARD_EFFECT
-GUARD_EFFECT(PostAccept(), [this]() {
+// Good - Lambda-equivalent side effect before return
+if (auto res = PostAccept(); res.HasErr()) {
     _logger->Error("Failed to re-post AcceptEx after completion.");
-});
+    return res;
+}
 ```
 
 ---
@@ -1298,7 +1291,7 @@ When writing new code, ensure:
 - [ ] snake_case for TOML configuration keys
 - [ ] XML documentation (`/// <summary>`) for public APIs
 - [ ] `#pragma once` for header guards
-- [ ] `Result<T, E>` for error handling with `GUARD` macros
+- [ ] `Result<T, E>` for error handling with explicit checks
 - [ ] Smart pointers (`shared_ptr`, `unique_ptr`) for ownership
 - [ ] RAII for resource management
 - [ ] `std::lock_guard` for thread safety

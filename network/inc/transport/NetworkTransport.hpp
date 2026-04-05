@@ -37,6 +37,8 @@ namespace highp::net {
             case ETransport::TCP: return {SOCK_STREAM, IPPROTO_TCP};
             case ETransport::UDP: return {SOCK_DGRAM, IPPROTO_UDP};
             }
+
+            return {SOCK_STREAM, IPPROTO_TCP};
         }
 
         ETransport GetTransportType() const {
@@ -60,9 +62,11 @@ namespace highp::net {
 
         [[nodiscard]] constexpr std::pair<INT, IPPROTO> GetInfos() const {
             switch (_transportType) {
-            case ETransport::TCP: return {};
-            case ETransport::UDP: return {};
+            case ETransport::TCP: return {SOCK_STREAM, IPPROTO_TCP};
+            case ETransport::UDP: return {SOCK_DGRAM, IPPROTO_UDP};
             }
+
+            return {SOCK_STREAM, IPPROTO_TCP};
         }
 
     private:

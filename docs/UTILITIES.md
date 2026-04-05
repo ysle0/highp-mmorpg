@@ -301,71 +301,34 @@ public:
 - Explicit factories (`Ok`, `Err`) prevent accidental construction
 - `void` specialization avoids dummy return values
 
-### Helper Macros (`lib/Result.hpp`)
-
-Early-return macros for concise error propagation:
-
-```cpp
+### Explicit Result Check Patterns
+Use explicit Result checks for early exit instead of helper macros:
+`cpp
 // Return error if result has error
-#define GUARD(expr) \
-do { \
-    if (auto _result = (expr); _result.HasErr()) \
-        return _result; \
-} while (0)
-
+if (const auto result = expr; result.HasErr()) {
+    return result;
+}
 // Return void if result has error
-#define GUARD_VOID(expr) \
-do { \
-    if (auto _result = (expr); _result.HasErr()) \
-        return; \
-} while (0)
-
+if (const auto result = expr; result.HasErr()) {
+    return;
+}
 // Break loop if result has error
-#define GUARD_BREAK(expr) \
-do { \
-    if (auto _result = (expr); _result.HasErr()) \
-        break; \
-} while (0)
-
+if (const auto result = expr; result.HasErr()) {
+    break;
+}
 // Execute effect function before returning error
-#define GUARD_EFFECT(expr, fn) \
-do { \
-    if (auto _result = (expr); _result.HasErr()) { \
-        fn(); \
-        return _result; \
-    } \
-} while (0)
-
-// Execute effect and return void
-#define GUARD_EFFECT_VOID(expr, fn) \
-do { \
-    if (auto _result = (expr); _result.HasErr()) { \
-        fn(); \
-        return; \
-    } \
-} while (0)
-
-// Execute effect and break
-#define GUARD_EFFECT_BREAK(expr, fn) \
-do { \
-    if (auto _result = (expr); _result.HasErr()) { \
-        fn(); \
-        break; \
-    } \
-} while (0)
-```
-
+if (const auto result = expr; result.HasErr()) {
+    fn();
+    return result;
+}
+`
 ### Usage Examples
-
 #### Basic Result Handling
-
-```cpp
+`cpp
 #include <Result.hpp>
 #include <NetworkError.h>
-
 using namespace highp::fn;
 using namespace highp::err;
-
 // Function returning result with data
 Result<int, ENetworkError> ConnectToServer(const char* host) {
     int socket = CreateSocket();
@@ -374,7 +337,6 @@ Result<int, ENetworkError> ConnectToServer(const char* host) {
     }
     return Result<int, ENetworkError>::Ok(socket);
 }
-
 // Function returning void result
 Result<void, ENetworkError> BindSocket(int socket, int port) {
     if (bind(socket, ...) != 0) {
@@ -382,7 +344,6 @@ Result<void, ENetworkError> BindSocket(int socket, int port) {
     }
     return Result<void, ENetworkError>::Ok();
 }
-
 // Checking results
 void Example1() {
     auto result = ConnectToServer("127.0.0.1");
@@ -393,64 +354,54 @@ void Example1() {
         std::cerr << "Connection failed: " << ToString(result.Err()) << std::endl;
     }
 }
-```
-
-#### Using GUARD Macros
-
-```cpp
+`
+#### Explicit Early Return
+`cpp
 Result<void, ENetworkError> InitializeNetwork() {
-    // If WSAStartup fails, immediately return the error result
-    GUARD(WSAStartup(...));
-
-    // If socket creation fails, return error
+    if (const auto wsaResult = WSAStartup(...); wsaResult.HasErr()) {
+        return wsaResult;
+    }
     auto socketResult = ConnectToServer("127.0.0.1");
-    GUARD(socketResult);
-
+    if (socketResult.HasErr()) {
+        return socketResult;
+    }
     int socket = socketResult.Data();
-
-    // If bind fails, return error
-    GUARD(BindSocket(socket, 8080));
-
-    return Result<void, ENetworkError>::Ok();
-}
-```
-
-#### GUARD_EFFECT for Cleanup
-
-```cpp
-Result<void, ENetworkError> PostAccepts(int count) {
-    for (int i = 0; i < count; ++i) {
-        // If PostAccept fails, log and return error
-        GUARD_EFFECT(PostAccept(), [this]() {
-            _logger->Error("Failed to post accept #{}", i);
-        });
+    if (const auto bindResult = BindSocket(socket, 8080); bindResult.HasErr()) {
+        return bindResult;
     }
     return Result<void, ENetworkError>::Ok();
 }
-```
-
+`
+#### Explicit Cleanup Before Return
+`cpp
+Result<void, ENetworkError> PostAccepts(int count) {
+    for (int i = 0; i < count; ++i) {
+        if (const auto postAcceptResult = PostAccept(); postAcceptResult.HasErr()) {
+            _logger->Error("Failed to post accept #{}", i);
+            return postAcceptResult;
+        }
+    }
+    return Result<void, ENetworkError>::Ok();
+}
+`
 #### Practical Example from Codebase
-
-From `network/IocpAcceptor.cpp`:
-
-```cpp
+From 
+etwork/IocpAcceptor.cpp:
+`cpp
 Result<void, ENetworkError> IocpAcceptor::Initialize(
     SocketHandle listenSocket,
     HANDLE iocpHandle) {
-
     _listenSocket = listenSocket;
     _iocpHandle = iocpHandle;
-
-    // 1) Connect socket to IOCP - return error if fails
-    GUARD(ConnectToIocp());
-
-    // 2) Load AcceptEx function pointer - return error if fails
-    GUARD(LoadAcceptExFunctions());
-
+    if (const auto iocpResult = ConnectToIocp(); iocpResult.HasErr()) {
+        return iocpResult;
+    }
+    if (const auto loadAcceptExResult = LoadAcceptExFunctions(); loadAcceptExResult.HasErr()) {
+        return loadAcceptExResult;
+    }
     return Result<void, ENetworkError>::Ok();
 }
-```
-
+`
 ### Error Type Guidelines
 
 - Use strongly-typed enums (e.g., `ENetworkError`, `EConfigError`)
@@ -1286,16 +1237,16 @@ try {
 ### Result Type Usage
 
 1. **Always check results**: `[[nodiscard]]` enforces this at compile-time
-2. **Use GUARD macros**: Simplify error propagation
-3. **Prefer early returns**: Reduce nesting with `GUARD`
+2. **Use explicit result checks**: Simplify error propagation
+3. **Prefer early returns**: Reduce nesting with small `if` blocks
 4. **Specific error types**: Create domain-specific error enums
 
 ```cpp
-// Good: Early return with GUARD
+// Good: Early return with explicit checks
 Result<void, ENetworkError> Initialize() {
-    GUARD(Step1());
-    GUARD(Step2());
-    GUARD(Step3());
+    if (const auto result = Step1(); result.HasErr()) { return result; }
+    if (const auto result = Step2(); result.HasErr()) { return result; }
+    if (const auto result = Step3(); result.HasErr()) { return result; }
     return Result<void, ENetworkError>::Ok();
 }
 

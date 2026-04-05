@@ -48,7 +48,7 @@ Client sends → GQCS wakes worker → OnRecv → PacketDispatcher.Receive()
 
 ### Critical Invariants
 - `OverlappedExt.overlapped` (WSAOVERLAPPED) MUST be the first struct member for `reinterpret_cast` from OVERLAPPED*
-- Use `Result<T, E>` + `GUARD(...)` for error propagation, not exceptions
+- Use `Result<T, E>` with explicit `if (result.HasErr())` propagation, not exceptions
 - `std::shared_ptr<Client>` for connection lifetime management
 - PascalCase for types/methods, camelCase for locals/params, `_camelCase` for private members
 

@@ -2,6 +2,7 @@
 #include <atomic>
 
 #include "SessionManager.h"
+#include "UserManager.h"
 #include "config/NetworkCfg.h"
 #include "room/RoomManager.h"
 #include "server/PacketDispatcher.hpp"
@@ -14,9 +15,10 @@ public:
     explicit GameLoop(
         std::shared_ptr<highp::log::Logger> logger,
         std::unique_ptr<highp::net::PacketDispatcher> packetDispatcher,
-        std::unique_ptr<RoomManager> roomManager,
-        std::unique_ptr<SessionManager> sessionManager,
-        highp::net::NetworkCfg networkConfig
+        std::shared_ptr<RoomManager> roomManager,
+        std::shared_ptr<SessionManager> sessionManager,
+        std::shared_ptr<UserManager> userManager,
+        const highp::net::NetworkCfg& networkConfig
     );
     ~GameLoop() noexcept;
 
@@ -29,7 +31,7 @@ public:
 
 private:
     /// Logic thread 메인 루프
-    void Update(std::stop_token st) const;
+    void Update(std::stop_token st);
 
 private:
     std::shared_ptr<highp::log::Logger> _logger;
@@ -37,6 +39,7 @@ private:
     std::unique_ptr<highp::net::PacketDispatcher> _dispatcher;
     highp::thread::LogicThread _logicThread;
     std::atomic<bool> _hasStopped{false};
-    std::unique_ptr<RoomManager> _roomManager;
-    std::unique_ptr<SessionManager> _sessionManager;
+    std::shared_ptr<RoomManager> _roomManager;
+    std::shared_ptr<SessionManager> _sessionManager;
+    std::shared_ptr<UserManager> _userManager;
 };

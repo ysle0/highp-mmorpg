@@ -27,7 +27,10 @@ Server::Res Server::Start(std::shared_ptr<highp::net::ISocket> listenSocket) {
         _socketOptionBuilder,
         this);
 
-    GUARD(_lifecycle->Start(listenSocket, _config));
+    if (const Res lifecycleStartRes = _lifecycle->Start(listenSocket, _config);
+        lifecycleStartRes.HasErr()) {
+        return lifecycleStartRes;
+    }
 
     _logger->Info("Server started on port {}.", _config.server.port);
     _gameLoop->Start();
@@ -36,9 +39,8 @@ Server::Res Server::Start(std::shared_ptr<highp::net::ISocket> listenSocket) {
 
 void Server::Stop() {
     DEFER([this] {
-        _gameLoop->Stop();
         _hasStopped.store(true);
-    });
+        });
 
     if (_lifecycle) {
         _lifecycle->Stop();
@@ -57,9 +59,10 @@ void Server::OnAccept(std::shared_ptr<highp::net::Client> client) {
     _gameLoop->Connect(client);
 }
 
-void Server::OnRecv(std::shared_ptr<net::Client> client, std::span<const char> data) {
-    _logger->Debug("[Server::OnRecv]: socket #{}, data len: {}",
-        client->socket, data.size());
+void Server::OnRecv(std::shared_ptr<highp::net::Client> client, std::span<const char> data) {
+    _logger->Debug("[Server::OnRecv]: socket #{}, data length: {}",
+                   client->socket,
+                   data.size());
     _gameLoop->Receive(client, data);
 }
 

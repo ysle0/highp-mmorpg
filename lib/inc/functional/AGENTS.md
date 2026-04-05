@@ -4,12 +4,12 @@
 # lib/inc/functional
 
 ## Purpose
-Functional programming utilities. Provides `Result<T,E>`, a C++23 `std::expected`-style type for explicit error propagation without exceptions, along with supporting macros.
+Functional programming utilities. Provides `Result<T,E>`, a C++23 `std::expected`-style type for explicit error propagation without exceptions.
 
 ## Key Files
 | File | Description |
 |------|-------------|
-| Result.hpp | `Result<T,E>` type with `Ok`/`Err` factory methods. Includes `void` specialization for operations that succeed without a return value. Also defines the `GUARD` macro for early-return error propagation. |
+| Result.hpp | `Result<T,E>` type with `Ok`/`Err` factory methods. Includes `void` specialization for operations that succeed without a return value. |
 
 ## Subdirectories (if any)
 None.
@@ -19,17 +19,19 @@ None.
 - `Result<T,E>` is the primary error-handling mechanism across the entire codebase. Prefer it over exceptions, `std::optional`, or raw error codes.
 - `Ok(value)` constructs a success result; `Err(error)` constructs a failure result.
 - `Result<void, E>` is the specialization for operations that succeed without returning data (e.g., `PostRecv`, `PostSend`).
-- The `GUARD` macro pattern:
+- Propagate failures with explicit checks:
   ```cpp
-  GUARD(auto value, SomeFallibleCall());
-  // value is unwrapped; on error, the enclosing function returns the error Result early
+  const Result<T, E> result = SomeFallibleCall();
+  if (result.HasErr()) {
+      return result;
+  }
   ```
 - Do not unwrap `Result` with `.value()` without first checking `.IsOk()`; treat it like `std::optional`.
 - When adding methods to `Result`, ensure both the `T` and `void` specializations are updated consistently.
 
 ### Common Patterns
 - Fallible functions return `Result<T, ESomeError>`.
-- Chain of calls uses `GUARD` at each step to avoid deeply nested if-chains.
+- Chain of calls uses small explicit `if (result.HasErr())` checks to avoid deeply nested logic.
 - At the top level (e.g., in a completion handler), match on the result and log the error before discarding it.
 
 ## Dependencies

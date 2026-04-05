@@ -6,15 +6,21 @@
 GameLoop::GameLoop(
     std::shared_ptr<highp::log::Logger> logger,
     std::unique_ptr<highp::net::PacketDispatcher> packetDispatcher,
-    std::unique_ptr<RoomManager> roomManager,
-    std::unique_ptr<SessionManager> sessionManager,
-    highp::net::NetworkCfg networkConfig
+    std::shared_ptr<RoomManager> roomManager,
+    std::shared_ptr<SessionManager> sessionManager,
+    std::shared_ptr<UserManager> userManager,
+    const highp::net::NetworkCfg& networkConfig
 ) : _logger(std::move(logger)),
     _dispatcher(std::move(packetDispatcher)),
     _roomManager(std::move(roomManager)),
-    _sessionManager(std::move(sessionManager)) {
+    _sessionManager(std::move(sessionManager)),
+    _userManager(std::move(userManager)) {
     _tickMs.store(networkConfig.server.tickMs);
-    SelfHandlerRegistry::Instance().RegisterAll(*_dispatcher, _logger);
+    SelfHandlerRegistry::Instance().RegisterAll(
+        _dispatcher,
+        _logger,
+        _roomManager,
+        _userManager);
 }
 
 GameLoop::~GameLoop() noexcept {
@@ -33,9 +39,10 @@ void GameLoop::Connect(const std::shared_ptr<highp::net::Client>& client) {
         return;
     }
 
-    const auto session = _sessionManager->CreateSession(client);
+    const std::shared_ptr<Session> session = _sessionManager->CreateSession(client);
     _logger->Info("[GameLoop::Connect] session #{} connected on socket #{}",
-                  session->GetId(), client->socket);
+                  session->GetId(),
+                  client->socket);
 }
 
 void GameLoop::Start() {
@@ -73,17 +80,18 @@ void GameLoop::Receive(
     _dispatcher->Receive(client, data);
 }
 
-void GameLoop::Update(std::stop_token st) const {
+void GameLoop::Update(std::stop_token st) {
     _logger->Info("[LogicThread] Update started. ServerTick={}ms", _tickMs.load());
-    DEFER([this] {
+
+    highp::scope::Defer defer([this] {
         // 종료 전 잔여 커맨드 처리
         _dispatcher->Tick();
         _logger->Info("[LogicThread] stopped.");
-        });
+    });
 
     while (!st.stop_requested()) {
         // 시작 전 목표 시각을 고정.
-        const auto targetingNextTick =
+        const std::chrono::time_point<std::chrono::steady_clock> targetingNextTick =
             std::chrono::steady_clock::now() +
             std::chrono::milliseconds(_tickMs.load());
 
@@ -101,7 +109,9 @@ void GameLoop::Update(std::stop_token st) const {
     }
 }
 
-void GameLoop::Disconnect(const std::shared_ptr<highp::net::Client>& client) {
+void GameLoop::Disconnect(
+    const std::shared_ptr<highp::net::Client>& client
+) {
     if (_roomManager != nullptr) {
         _roomManager->KickDisconnected(client);
     }

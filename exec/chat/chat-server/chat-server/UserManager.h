@@ -1,10 +1,18 @@
 #pragma once
+#include <atomic>
+#include <memory>
+#include <string_view>
 #include <unordered_map>
+#include <vector>
 
-#include "User.h"
 #include "logger/Logger.hpp"
 
+namespace highp::net {
+    struct Client;
+}
+
 class SessionManager;
+class User;
 
 class UserManager {
 public:
@@ -15,14 +23,14 @@ public:
     std::shared_ptr<User> CreateUser(
         const std::shared_ptr<highp::net::Client>& client,
         std::string_view username,
-        uint32_t roomId);
+        uint64_t roomId);
 
     void RemoveUser(const User& user);
     void RemoveUserByUserId(uint64_t userId);
 
     [[nodiscard]] bool IsUserExist(uint64_t userId) const;
     [[nodiscard]] User* GetUser(uint64_t userId);
-    [[nodiscard]] uint32_t GetUserCount() const;
+    [[nodiscard]] size_t GetUserCount() const;
     [[nodiscard]] std::vector<const User*> GetAllUsers() const;
     [[nodiscard]] User* GetUserByClient(const std::shared_ptr<highp::net::Client>& client);
 

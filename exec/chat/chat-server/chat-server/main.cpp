@@ -10,23 +10,26 @@
 #include <iostream>
 
 #include "SessionManager.h"
+#include "UserManager.h"
 #include "scope/Defer.h"
 
 using namespace highp;
 
 int main() {
-    auto logger = log::Logger::Default<log::TextLogger>();
-    auto c = net::NetworkCfg::FromFile("config.runtime.toml");
-    auto tp = net::NetworkTransport(net::ETransport::TCP);
-    auto sockOptBuilder = std::make_shared<net::SocketOptionBuilder>(logger);
+    std::shared_ptr<log::Logger> logger = log::Logger::Default<log::TextLogger>();
+    net::NetworkCfg c = net::NetworkCfg::FromFile("config.runtime.toml");
+    const auto tp = net::NetworkTransport(net::ETransport::TCP);
+    const auto sockOptBuilder = std::make_shared<net::SocketOptionBuilder>(logger);
     auto packetDispatcher = std::make_unique<net::PacketDispatcher>(logger);
-    auto roomMgr = std::make_unique<RoomManager>(logger, 1, c.room.maxCapacity);
-    auto sessionMgr = std::make_unique<SessionManager>(logger);
+    auto roomMgr = std::make_shared<RoomManager>(logger, 1, c.room.maxCapacity);
+    auto sessionMgr = std::make_shared<SessionManager>(logger);
+    auto userMgr = std::make_shared<UserManager>(logger, sessionMgr);
     auto gameLoop = std::make_unique<GameLoop>(
         logger,
         std::move(packetDispatcher),
         std::move(roomMgr),
         std::move(sessionMgr),
+        std::move(userMgr),
         c);
 
     Server s(logger, std::move(gameLoop), c, sockOptBuilder);
@@ -34,7 +37,7 @@ int main() {
         s.Stop();
         });
 
-    auto listenSocket = net::SocketHelper::MakeDefaultListener(
+    const std::shared_ptr<net::ISocket> listenSocket = net::SocketHelper::MakeDefaultListener(
         logger,
         tp,
         c,

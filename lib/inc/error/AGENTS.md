@@ -26,7 +26,7 @@ None.
 
 ### Common Patterns
 - Return errors via `Result<T,E>::Err(ENetworkError::kAcceptFailed)` rather than throwing or returning raw integers.
-- Use `GUARD` macro (from `functional/Result.hpp`) to propagate errors up the call stack without verbose if-chains.
+- Use explicit `if (result.HasErr())` checks with `Result<T,E>` to propagate errors up the call stack.
 
 ## Dependencies
 ### Internal

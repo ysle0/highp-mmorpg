@@ -30,7 +30,7 @@ Static library providing shared utilities used across the entire project - Resul
 
 ### Common Patterns
 - Use `Result<T, E>` (from `inc/functional/Result.hpp`) for fallible operations instead of exceptions or raw error codes.
-- Use the `GUARD` macro to propagate errors early without verbose if-chains.
+- Use explicit `if (result.HasErr())` checks to propagate errors early without exceptions.
 - Prefer `HybridObjectPool` for high-frequency allocations on hot paths (e.g., overlapped I/O contexts).
 - All log calls go through the `Logger` template; choose verbosity via `ELoggerVerbosity`.
 

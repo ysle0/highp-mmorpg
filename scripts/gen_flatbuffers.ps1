@@ -2,9 +2,11 @@
 # FlatBuffers schema compilation script
 
 # Configuration
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$repoRoot = (Resolve-Path (Join-Path $scriptDir "..")).Path
 $flatcPath = "flatc"
-$schemasDir = "..\protocol\flatbuf\schemas"
-$outputDir = "..\protocol\flatbuf\gen"
+$schemasDir = Join-Path $repoRoot "protocol\flatbuf\schemas"
+$outputDir = Join-Path $repoRoot "protocol\flatbuf\gen"
 
 # Colors for output
 $ErrorColor = "Red"
@@ -55,7 +57,12 @@ $failCount = 0
 
 foreach ($file in $fbsFiles)
 {
-    $relativePath = $file.FullName.Substring((Get-Location).Path.Length + 1)
+    if ($file.FullName.StartsWith($repoRoot)) {
+        $relativePath = $file.FullName.Substring($repoRoot.Length).TrimStart('\', '/')
+    }
+    else {
+        $relativePath = $file.FullName
+    }
     Write-Host "Compiling: $relativePath" -ForegroundColor $InfoColor
 
     # Compile with C++ output

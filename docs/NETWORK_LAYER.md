@@ -1404,33 +1404,22 @@ Res PostAccept() {
 }
 ```
 
-#### Pattern 2: GUARD Macro
-
-```cpp
-GUARD(LoadAcceptExFunctions());
-// If error, immediately returns
-
-// Continue if successful
-PostAccepts(backlog);
-```
-
-The `GUARD` macro expands to:
-```cpp
+#### Pattern 2: Explicit Result Check
+`cpp
 if (auto res = LoadAcceptExFunctions(); res.HasErr()) {
     return res;
 }
-```
-
-#### Pattern 3: GUARD_EFFECT Macro
-
-```cpp
-GUARD_EFFECT(PostAccept(), [this]() {
+// Continue if successful
+PostAccepts(backlog);
+`
+#### Pattern 3: Explicit Side Effect Before Return
+`cpp
+if (auto res = PostAccept(); res.HasErr()) {
     _logger->Error("Failed to re-post AcceptEx after completion.");
-});
-```
-
-Executes effect function on error before returning.
-
+    return res;
+}
+`
+Executes the side effect on error before returning.
 ### Network Error Types
 
 ```cpp

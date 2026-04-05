@@ -11,8 +11,9 @@ namespace highp::net {
 
     WsaSession::ResWithSession WsaSession::Create(std::shared_ptr<log::Logger> logger) {
         auto session = std::make_shared<WsaSession>(logger);
-        if (auto res = session->Initialize(); res.HasErr()) {
-            return ResWithSession::Err(res.Err());
+        if (const Res initializeRes = session->Initialize();
+            initializeRes.HasErr()) {
+            return ResWithSession::Err(initializeRes.Err());
         }
 
         return ResWithSession::Ok(std::move(session));

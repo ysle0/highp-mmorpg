@@ -47,7 +47,7 @@ namespace highp::protocol {
     }
 
 
-    [[nodiscard]] inline flatbuffers::FlatBufferBuilder MakeJoinRoomRequest(
+    [[nodiscard]] inline flatbuffers::FlatBufferBuilder makeJoinRoomRequest(
         std::string_view nickname,
         std::uint32_t sequence = 0
     ) {
@@ -59,7 +59,7 @@ namespace highp::protocol {
         return builder;
     }
 
-    [[nodiscard]] inline flatbuffers::FlatBufferBuilder MakeLeaveRoomRequest(
+    [[nodiscard]] inline flatbuffers::FlatBufferBuilder makeLeaveRoomRequest(
         std::uint32_t roomId = 0,
         std::uint32_t sequence = 0
     ) {
@@ -69,7 +69,7 @@ namespace highp::protocol {
         return builder;
     }
 
-    [[nodiscard]] inline flatbuffers::FlatBufferBuilder MakeSendMessageRequest(
+    [[nodiscard]] inline flatbuffers::FlatBufferBuilder makeSendMessageRequest(
         std::uint32_t roomId,
         std::string_view message,
         std::uint32_t sequence = 0
@@ -83,8 +83,8 @@ namespace highp::protocol {
         return builder;
     }
 
-    [[nodiscard]] inline flatbuffers::FlatBufferBuilder MakeUserJoinedBroadcast(
-        std::uint32_t userId,
+    [[nodiscard]] inline flatbuffers::FlatBufferBuilder makeUserJoinedBroadcast(
+        std::uint64_t userId,
         std::string_view userName,
         UserStatus status = UserStatus::Online,
         std::uint32_t sequence = 0
@@ -100,8 +100,8 @@ namespace highp::protocol {
         return builder;
     }
 
-    [[nodiscard]] inline flatbuffers::FlatBufferBuilder MakeUserLeftBroadcast(
-        std::uint32_t userId,
+    [[nodiscard]] inline flatbuffers::FlatBufferBuilder makeUserLeftBroadcast(
+        std::uint64_t userId,
         std::string_view userName,
         std::uint32_t sequence = 0
     ) {
@@ -114,7 +114,7 @@ namespace highp::protocol {
         return builder;
     }
 
-    [[nodiscard]] inline flatbuffers::FlatBufferBuilder MakeChatMessageBroadcast(
+    [[nodiscard]] inline flatbuffers::FlatBufferBuilder makeChatMessageBroadcast(
         std::uint32_t senderId,
         std::string_view message,
         const Common::Timestamp& timestamp,
@@ -130,14 +130,14 @@ namespace highp::protocol {
         return builder;
     }
 
-    [[nodiscard]] inline flatbuffers::FlatBufferBuilder MakeJoinedRoomResponse() {
+    [[nodiscard]] inline flatbuffers::FlatBufferBuilder makeJoinedRoomResponse() {
         flatbuffers::FlatBufferBuilder builder(128);
         const auto resp = messages::CreateJoinedRoomResponse(builder);
         detail::finishTypedPacket(builder, MessageType::SC_JoinedRoom, resp);
         return builder;
     }
 
-    [[nodiscard]] inline flatbuffers::FlatBufferBuilder MakeLeftRoomResponse() {
+    [[nodiscard]] inline flatbuffers::FlatBufferBuilder makeLeftRoomResponse() {
         flatbuffers::FlatBufferBuilder builder(128);
         const auto resp = messages::CreateLeftRoomResponse(builder);
         detail::finishTypedPacket(builder, MessageType::SC_LeftRoom, resp);

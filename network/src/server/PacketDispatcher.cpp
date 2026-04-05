@@ -58,7 +58,7 @@ namespace highp::net {
                 break;
             }
 
-            scope::Defer defer([&frameBuf, frameSize] {
+            DEFER([&frameBuf, frameSize] {
                 // 소비한 프레임만큼 버퍼에서 제거
                 // 패킷 파싱 성공여부와 상관없이 frameBuf 를 비워줘야함.
                 frameBuf.Consume(frameSize);
@@ -66,15 +66,15 @@ namespace highp::net {
 
             // payload 영역을 파싱 
             const auto payload = buf.subspan(PacketStream::kHeaderSize, payloadLen);
-            const auto res = ParsePacket(payload);
-            if (!res) {
+            const ParseResult parsePacketRes = ParsePacket(payload);
+            if (!parsePacketRes) {
                 client->Close(true);
                 return;
             }
             
             // Packet Type 만 큐에 적재.
             // 현재 파싱한 패킷의 원본은 frameBuf 에 존재. -> packet 은 framebuf.Consume 이후에 반드시 제거되므로 소유권 이전필요.
-            const protocol::Payload packetType = res.Data()->payload_type();
+            const protocol::Payload packetType = parsePacketRes.Data()->payload_type();
             PushCommand(client, packetType, payload);
         }
     }

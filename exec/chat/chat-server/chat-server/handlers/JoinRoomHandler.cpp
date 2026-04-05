@@ -1,17 +1,43 @@
 #include "JoinRoomHandler.h"
 #include <utility>
 
+#include "PacketFactory.h"
 #include "../SelfHandlerRegistry.h"
 
-JoinRoomHandler::JoinRoomHandler(std::shared_ptr<highp::log::Logger> logger)
-    : _logger(std::move(logger)) {
+JoinRoomHandler::JoinRoomHandler(
+    std::shared_ptr<highp::log::Logger> logger,
+    std::shared_ptr<RoomManager> roomManager,
+    std::shared_ptr<UserManager> userManager
+) : _logger(std::move(logger)),
+    _roomManager(std::move(roomManager)),
+    _userManager(std::move(userManager)) {
 }
 
 void JoinRoomHandler::Handle(
-    std::shared_ptr<highp::net::Client> client,
+    const std::shared_ptr<highp::net::Client>& client,
     const highp::protocol::messages::JoinRoomRequest* payload
 ) {
     _logger->Info("[JoinRoomHandler] socket #{}", client->socket);
+
+    const std::shared_ptr<Room> room = _roomManager->GetOrCreateAvailableRoom();
+    const std::shared_ptr<User> newUser = _userManager->CreateUser(
+        client,
+        payload->username()->c_str(),
+        room->GetId());
+
+    // JoinRoomRequest 가 dispatcher queue 에 적재 되어 있어 pending 상태일 때,
+    // Client 가 Disconnected 가 되면 logic thread 가 Handle() 할 시점에
+    // CreateUser 의 결과가 nullptr 가 가능하므로 early-return 처리.
+    if (!newUser) {
+        _logger->Warn("[JoinRoomHandler] failed to create user for socket #{}",
+                      client->socket);
+        return;
+    }
+
+    room->Join(newUser);
+
+    const flatbuffers::FlatBufferBuilder resp = highp::protocol::makeJoinedRoomResponse();
+    newUser->Send(resp);
 }
 
 // NOTE(2026-03-27): .cpp 가 static library 로 묶이면 해당 translation unit 의 심볼을 
