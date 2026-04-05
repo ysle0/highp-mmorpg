@@ -129,4 +129,18 @@ namespace highp::protocol {
         detail::finishTypedPacket(builder, MessageType::B_ChatMessage, broadcast, sequence);
         return builder;
     }
+
+    [[nodiscard]] inline flatbuffers::FlatBufferBuilder MakeJoinedRoomResponse() {
+        flatbuffers::FlatBufferBuilder builder(128);
+        const auto resp = messages::CreateJoinedRoomResponse(builder);
+        detail::finishTypedPacket(builder, MessageType::SC_JoinedRoom, resp);
+        return builder;
+    }
+
+    [[nodiscard]] inline flatbuffers::FlatBufferBuilder MakeLeftRoomResponse() {
+        flatbuffers::FlatBufferBuilder builder(128);
+        const auto resp = messages::CreateLeftRoomResponse(builder);
+        detail::finishTypedPacket(builder, MessageType::SC_LeftRoom, resp);
+        return builder;
+    }
 } // namespace highp::protocol

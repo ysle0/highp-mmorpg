@@ -8,6 +8,9 @@ max_clients = 1000
 backlog = 10
 tick_ms = 16 # 60fps target!
 
+[room]
+max_capacity = 100
+
 [thread]
 max_worker_thread_multiplier = 2
 max_acceptor_thread_count = 2
