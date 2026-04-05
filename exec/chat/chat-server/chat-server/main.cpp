@@ -20,7 +20,7 @@ int main() {
 	auto sockOptBuilder = std::make_shared<net::SocketOptionBuilder>(logger);
 
 	Server s(logger, c, sockOptBuilder);
-	scope::Defer _([&s] {
+	DEFER([&s] {
 		s.Stop();
 	});
 

@@ -41,7 +41,7 @@ bool Client::Connect(const char* ipAddress, unsigned short port) {
 }
 
 void Client::Disconnect() {
-    scope::Defer _([this] {
+    DEFER([this] {
         _isConnected = false;
     });
 
