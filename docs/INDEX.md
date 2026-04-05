@@ -21,6 +21,8 @@
 - **[Repository Guidelines](../AGENTS.md)** - Contributor workflow, coding/testing expectations, and PR conventions
 - **[Architecture Overview](ARCHITECTURE.md)** - System architecture, design patterns, and layer separation
 - **[API Reference](API_REFERENCE.md)** - Complete API documentation for all classes and functions
+- **[Server Metrics Guide](SERVER_METRICS.md)** - Server observability metrics and diagnosis flow
+- **[Client Metrics Guide](CLIENT_METRICS.md)** - Client observability metrics and diagnosis flow
 - **[Network Layer Guide](NETWORK_LAYER.md)** - IOCP, async I/O, and network primitives
 - **[Protocol Specification](PROTOCOL.md)** - FlatBuffers schemas and message formats
 - **[Configuration Guide](CONFIGURATION.md)** - Compile-time and runtime configuration
@@ -29,6 +31,8 @@
 - **[IOCP Echo Server Architecture](IOCP_EchoServer_Architecture.md)** - Detailed echo server implementation
 - **[Echo Server Sequence Diagrams](EchoServer_Sequence_diagram.md)** - Visual flow diagrams
 - **[Building and Testing](BUILD_AND_TEST.md)** - Build instructions, testing procedures
+- **[Server Metrics Architecture](SERVER_METRICS_ARCHITECTURE.md)** - Execution-context-aware metrics design and writer flow
+- **[Load Test Reproducibility Guide](LOAD_TEST_REPRODUCIBILITY.md)** - How to preserve and compare repeatable load-test results
 
 ### Reference Materials
 - **[Error Handling](ERROR_HANDLING.md)** - Result types, error codes, and error handling patterns
@@ -56,6 +60,10 @@
 |-------|---------------|
 | **Getting Started** | [README.md](../README.md), [AGENTS.md](../AGENTS.md), [CLAUDE.md](../CLAUDE.md) |
 | **IOCP Concepts** | [IOCP Echo Server Architecture](IOCP_EchoServer_Architecture.md) |
+| **Server Observability** | [Server Metrics Guide](SERVER_METRICS.md) |
+| **Server Metrics Design** | [Server Metrics Architecture](SERVER_METRICS_ARCHITECTURE.md) |
+| **Client Observability** | [Client Metrics Guide](CLIENT_METRICS.md) |
+| **Load Test Evidence** | [Load Test Reproducibility Guide](LOAD_TEST_REPRODUCIBILITY.md) |
 | **Async I/O Flow** | [Echo Server Sequence Diagrams](EchoServer_Sequence_diagram.md) |
 | **Protocol Design** | [Protocol Specification](PROTOCOL.md) |
 | **Error Handling** | [Error Handling Guide](ERROR_HANDLING.md) |

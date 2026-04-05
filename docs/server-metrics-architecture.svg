@@ -1,0 +1,158 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="980" viewBox="0 0 1600 980" role="img" aria-labelledby="title desc">
+  <title id="title">Server Metrics Architecture</title>
+  <desc id="desc">Reusable server metrics module architecture for highp-mmorpg.</desc>
+
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#45556c"/>
+    </marker>
+    <style>
+      .bg { fill: #f6f8fb; }
+      .panel { fill: #ffffff; stroke: #cbd5e1; stroke-width: 2; rx: 18; ry: 18; }
+      .title { font: 700 34px 'Segoe UI', Arial, sans-serif; fill: #162033; }
+      .subtitle { font: 500 18px 'Segoe UI', Arial, sans-serif; fill: #516076; }
+      .group-title { font: 700 22px 'Segoe UI', Arial, sans-serif; fill: #172033; }
+      .box-title { font: 700 18px 'Segoe UI', Arial, sans-serif; fill: #172033; }
+      .body { font: 15px 'Segoe UI', Arial, sans-serif; fill: #314155; }
+      .label { font: 700 16px 'Segoe UI', Arial, sans-serif; fill: #314155; }
+      .small { font: 14px 'Segoe UI', Arial, sans-serif; fill: #4a5a6f; }
+      .app { fill: #eef6ff; stroke: #7aa5d8; stroke-width: 2; rx: 14; ry: 14; }
+      .net { fill: #effaf3; stroke: #79b88d; stroke-width: 2; rx: 14; ry: 14; }
+      .metric { fill: #fff7e9; stroke: #d5a655; stroke-width: 2; rx: 14; ry: 14; }
+      .artifact { fill: #f7efff; stroke: #9d82d6; stroke-width: 2; rx: 14; ry: 14; }
+      .note { fill: #fdfcf6; stroke: #d8cf9c; stroke-width: 1.5; rx: 12; ry: 12; }
+      .line { stroke: #45556c; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .dashed { stroke-dasharray: 10 8; }
+      .connector-label { font: 600 14px 'Segoe UI', Arial, sans-serif; fill: #45556c; }
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1600" height="980"/>
+
+  <text class="title" x="60" y="62">Server Metrics Architecture</text>
+  <text class="subtitle" x="60" y="96">Observer-based metrics collection, 1-second snapshots, and run artifact output</text>
+
+  <rect class="panel" x="40" y="125" width="360" height="690"/>
+  <text class="group-title" x="68" y="160">Server App Layer</text>
+
+  <rect class="app" x="68" y="190" width="304" height="132"/>
+  <text class="box-title" x="88" y="220">main.cpp</text>
+  <text class="body" x="88" y="250">- load metrics config</text>
+  <text class="body" x="88" y="276">- auto-generate run_id</text>
+  <text class="body" x="88" y="302">- start / stop writer</text>
+
+  <rect class="app" x="68" y="350" width="304" height="116"/>
+  <text class="box-title" x="88" y="380">Server</text>
+  <text class="body" x="88" y="410">- owns ServerLifeCycle</text>
+  <text class="body" x="88" y="436">- receives session events</text>
+  <text class="body" x="88" y="462">- bridges app and network</text>
+
+  <rect class="app" x="68" y="494" width="304" height="146"/>
+  <text class="box-title" x="88" y="524">GameLoop</text>
+  <text class="body" x="88" y="554">- dedicated logic thread</text>
+  <text class="body" x="88" y="580">- measures tick duration</text>
+  <text class="body" x="88" y="606">- measures tick lag</text>
+  <text class="body" x="88" y="632">- reports logic CPU handle</text>
+
+  <rect class="note" x="68" y="675" width="304" height="116"/>
+  <text class="label" x="88" y="706">Core rule</text>
+  <text class="small" x="88" y="734">Existing logic does not write files.</text>
+  <text class="small" x="88" y="758">It only emits metrics events.</text>
+
+  <rect class="panel" x="430" y="125" width="370" height="690"/>
+  <text class="group-title" x="458" y="160">Network + Logic Events</text>
+
+  <rect class="net" x="458" y="190" width="314" height="112"/>
+  <text class="box-title" x="478" y="220">ServerLifeCycle</text>
+  <text class="body" x="478" y="250">- client connected / disconnected</text>
+  <text class="body" x="478" y="276">- recv / send completed</text>
+
+  <rect class="net" x="458" y="330" width="314" height="112"/>
+  <text class="box-title" x="478" y="360">IocpAcceptor + Client</text>
+  <text class="body" x="478" y="390">- accept posted / completed / failed</text>
+  <text class="body" x="478" y="416">- recv/send posted / failed</text>
+
+  <rect class="net" x="458" y="470" width="314" height="112"/>
+  <text class="box-title" x="478" y="500">IocpIoMultiplexer</text>
+  <text class="body" x="478" y="530">- worker dispatch begin / end</text>
+  <text class="body" x="478" y="556">- runnable worker approximation</text>
+
+  <rect class="net" x="458" y="610" width="314" height="154"/>
+  <text class="box-title" x="478" y="640">PacketDispatcher</text>
+  <text class="body" x="478" y="670">- packet validation success / failure</text>
+  <text class="body" x="478" y="696">- queue pushed / drained</text>
+  <text class="body" x="478" y="722">- queue wait time</text>
+  <text class="body" x="478" y="748">- dispatch process time</text>
+
+  <rect class="panel" x="830" y="125" width="400" height="690"/>
+  <text class="group-title" x="858" y="160">Reusable Metrics Module (lib/metrics)</text>
+
+  <rect class="metric" x="858" y="190" width="344" height="98"/>
+  <text class="box-title" x="878" y="220">IServerMetrics</text>
+  <text class="body" x="878" y="250">Observer interface used by server code</text>
+  <text class="body" x="878" y="276">No storage or file I/O in hot path</text>
+
+  <rect class="metric" x="858" y="314" width="344" height="116"/>
+  <text class="box-title" x="878" y="344">NoopServerMetrics</text>
+  <text class="body" x="878" y="374">- used when metrics are disabled</text>
+  <text class="body" x="878" y="400">- keeps server path lightweight</text>
+
+  <rect class="metric" x="858" y="456" width="344" height="140"/>
+  <text class="box-title" x="878" y="486">AtomicServerMetrics</text>
+  <text class="body" x="878" y="516">- counters / gauges / timing windows</text>
+  <text class="body" x="878" y="542">- 1s delta calculation</text>
+  <text class="body" x="878" y="568">- snapshot source of truth</text>
+
+  <rect class="metric" x="858" y="622" width="344" height="168"/>
+  <text class="box-title" x="878" y="652">ServerMetricsWriter</text>
+  <text class="body" x="878" y="682">- 1s snapshot thread</text>
+  <text class="body" x="878" y="708">- reads process CPU / logic CPU / thread count</text>
+  <text class="body" x="878" y="734">- writes JSONL snapshots</text>
+  <text class="body" x="878" y="760">- builds final summary</text>
+
+  <rect class="panel" x="1260" y="125" width="300" height="690"/>
+  <text class="group-title" x="1288" y="160">Run Artifacts</text>
+
+  <rect class="artifact" x="1288" y="190" width="244" height="112"/>
+  <text class="box-title" x="1308" y="220">manifest.json</text>
+  <text class="body" x="1308" y="250">- run metadata</text>
+  <text class="body" x="1308" y="276">- config + commit + run_id</text>
+
+  <rect class="artifact" x="1288" y="340" width="244" height="132"/>
+  <text class="box-title" x="1308" y="370">server-metrics.jsonl</text>
+  <text class="body" x="1308" y="400">- one snapshot per second</text>
+  <text class="body" x="1308" y="426">- append-only time series</text>
+  <text class="body" x="1308" y="452">- source for later analysis</text>
+
+  <rect class="artifact" x="1288" y="510" width="244" height="112"/>
+  <text class="box-title" x="1308" y="540">summary.md</text>
+  <text class="body" x="1308" y="570">- key metrics only</text>
+  <text class="body" x="1308" y="596">- bottleneck guess</text>
+
+  <rect class="note" x="1288" y="662" width="244" height="129"/>
+  <text class="label" x="1308" y="693">Output path</text>
+  <text class="small" x="1308" y="721">artifacts/load-tests/&lt;run-id&gt;/</text>
+  <text class="small" x="1308" y="747">run_id: auto-generated</text>
+  <text class="small" x="1308" y="773">override by env var if needed</text>
+
+  <path class="line" d="M 372 256 C 410 256, 420 246, 458 246"/>
+  <text class="connector-label" x="384" y="236">owns / starts</text>
+
+  <path class="line" d="M 372 548 C 410 548, 420 700, 458 700"/>
+  <text class="connector-label" x="383" y="586">logic events</text>
+
+  <path class="line dashed" d="M 772 246 C 810 246, 820 236, 858 236"/>
+  <path class="line dashed" d="M 772 386 C 810 386, 820 372, 858 372"/>
+  <path class="line dashed" d="M 772 526 C 810 526, 820 516, 858 516"/>
+  <path class="line dashed" d="M 772 686 C 810 686, 820 676, 858 676"/>
+  <text class="connector-label" x="790" y="206">observer events only</text>
+
+  <path class="line" d="M 1202 676 C 1240 676, 1250 246, 1288 246"/>
+  <path class="line" d="M 1202 700 C 1240 700, 1250 406, 1288 406"/>
+  <path class="line" d="M 1202 724 C 1240 724, 1250 566, 1288 566"/>
+  <text class="connector-label" x="1213" y="642">snapshot + output</text>
+
+  <rect class="note" x="40" y="850" width="1520" height="90"/>
+  <text class="label" x="66" y="885">Key flow</text>
+  <text class="small" x="66" y="912">Server and network code emit observer events -&gt; AtomicServerMetrics aggregates counters, gauges, and timings -&gt; Writer samples every 1 second -&gt; run artifacts are stored as manifest.json, server-metrics.jsonl, and summary.md.</text>
+</svg>
