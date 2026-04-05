@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <functional>
 #include <memory>
 #include <thread>
@@ -41,5 +42,5 @@ private:
 
     std::jthread _recvThread;
 
-    bool _isConnected = false;
+    std::atomic_bool _isConnected = false;
 };

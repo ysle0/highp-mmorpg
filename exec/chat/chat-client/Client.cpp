@@ -3,24 +3,22 @@
 #include <client/PacketStream.h>
 #include <client/TcpClientSocket.h>
 #include <client/WsaSession.h>
-#include "scope/Defer.h"
 
 Client::Client(std::shared_ptr<highp::log::Logger> logger)
     : _logger(std::move(logger)) {
 }
 
 Client::~Client() noexcept {
-    if (_isConnected) {
+    if (_isConnected.load()) {
         Disconnect();
     }
 }
 
 bool Client::Connect(std::string_view ipAddress, unsigned short port) {
-    if (_isConnected) {
+    if (_isConnected.load()) {
         Disconnect();
     }
 
-    auto sessionRes = highp::net::WsaSession::Create(_logger);
     const highp::net::WsaSession::ResWithSession sessionRes = highp::net::WsaSession::Create(_logger);
     if (sessionRes.HasErr()) {
         _logger->Error("Failed to initialize WSA session.");
@@ -40,33 +38,33 @@ bool Client::Connect(std::string_view ipAddress, unsigned short port) {
     _tcpClientSocket = std::move(socket);
     _packetStream = std::make_unique<highp::net::PacketStream>(*_tcpClientSocket);
 
-    _isConnected = true;
+    _isConnected.store(true);
     _logger->Info("Connected to {}:{}", ipAddress, port);
     return true;
 }
 
 void Client::Disconnect() {
-    DEFER([this] {
-        _isConnected = false;
-        });
+    const bool wasConnected = _isConnected.exchange(false);
 
     if (_recvThread.joinable()) {
         _recvThread.request_stop();
     }
 
-    if (!_tcpClientSocket) return;
-
-    _packetStream.reset();
-    (void)_tcpClientSocket->Close();
-    _tcpClientSocket.reset();
+    if (_tcpClientSocket) {
+        (void)_tcpClientSocket->Close();
+    }
 
     if (_recvThread.joinable()) {
         _recvThread.join();
     }
 
+    _packetStream.reset();
+    _tcpClientSocket.reset();
     _wsaSession.reset();
 
-    _logger->Info("Disconnected from server.");
+    if (wasConnected) {
+        _logger->Info("Disconnected from server.");
+    }
 }
 
 void Client::Send(const flatbuffers::FlatBufferBuilder& builder) {
@@ -90,12 +88,12 @@ void Client::StartRecvLoop(RecvCallback callback) {
     _recvThread = std::jthread([this, cb = std::move(callback)](const std::stop_token& st) {
         std::vector<uint8_t> recvBuffer;
 
-        while (!st.stop_requested() && _isConnected) {
+        while (!st.stop_requested() && _isConnected.load()) {
             recvBuffer.clear();
 
             highp::fn::Result<size_t, highp::err::ENetworkError> res = _packetStream->RecvFrame(recvBuffer);
             if (!res) {
-                if (!st.stop_requested() && _isConnected) {
+                if (!st.stop_requested() && _isConnected.load()) {
                     _logger->Error("RecvFrame failed.");
                 }
                 break;
