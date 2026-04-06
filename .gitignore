@@ -368,3 +368,9 @@ FodyWeavers.xsd
 **/*_generated.h
 **/.omc/**
 **/.omc
+.idea
+build
+cmake-build-*/
+.omx/*
+!.omx/plans/
+!.omx/plans/*.md
