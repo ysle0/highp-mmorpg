@@ -1,5 +1,7 @@
 #pragma once
 #include <functional>
+#include <stop_token>
+#include <thread>
 
 namespace highp::thread {
     // NOTE: 2026-03-27 std::jthread 자체에 가상 소멸자가 없기 때문에
