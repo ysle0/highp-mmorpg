@@ -3,8 +3,8 @@
 #include <iostream>
 #include <utility>
 
-#include <metrics/ServerMetricsCallbacks.h>
-#include <metrics/ServerMetricsWriter.h>
+#include <metrics/server/ServerMetricsCallbacks.h>
+#include <metrics/server/ServerMetricsWriter.h>
 
 namespace {
     [[nodiscard]] highp::net::PacketDispatcherCallbacks MakePacketDispatcherCallbacks(

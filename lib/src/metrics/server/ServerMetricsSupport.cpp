@@ -1,12 +1,13 @@
 #include "pch.h"
 
-#include "src/metrics/ServerMetricsSupport.h"
+#include "src/metrics/server/ServerMetricsSupport.h"
 
 #include "scope/DeferContext.hpp"
 
 #include <TlHelp32.h>
 
 #include <algorithm>
+#include <charconv>
 #include <cctype>
 #include <cstdlib>
 #include <ctime>
@@ -51,6 +52,23 @@ namespace highp::metrics::internal {
         }
 
         return fallback;
+    }
+
+    uint64_t ParseUnsigned(std::string value, uint64_t fallback) {
+        value = Trim(std::move(value));
+        if (value.empty()) {
+            return fallback;
+        }
+
+        uint64_t parsed = 0;
+        const auto* begin = value.data();
+        const auto* end = value.data() + value.size();
+        const auto [ptr, ec] = std::from_chars(begin, end, parsed);
+        if (ec != std::errc{} || ptr != end) {
+            return fallback;
+        }
+
+        return parsed;
     }
 
     std::optional<std::string> ReadEnv(const char* name) {
@@ -160,7 +178,8 @@ namespace highp::metrics::internal {
                 if (entry.th32OwnerProcessID == processId) {
                     ++count;
                 }
-            } while (Thread32Next(snapshot, &entry));
+            }
+            while (Thread32Next(snapshot, &entry));
         }
 
         return count;
@@ -181,13 +200,20 @@ namespace highp::metrics::internal {
         std::ostringstream oss;
         for (const char ch : value) {
             switch (ch) {
-            case '\\': oss << "\\\\"; break;
-            case '"': oss << "\\\""; break;
-            case '\b': oss << "\\b"; break;
-            case '\f': oss << "\\f"; break;
-            case '\n': oss << "\\n"; break;
-            case '\r': oss << "\\r"; break;
-            case '\t': oss << "\\t"; break;
+            case '\\': oss << "\\\\";
+                break;
+            case '"': oss << "\\\"";
+                break;
+            case '\b': oss << "\\b";
+                break;
+            case '\f': oss << "\\f";
+                break;
+            case '\n': oss << "\\n";
+                break;
+            case '\r': oss << "\\r";
+                break;
+            case '\t': oss << "\\t";
+                break;
             default:
                 if (static_cast<unsigned char>(ch) < 0x20) {
                     oss << "\\u"
@@ -196,7 +222,8 @@ namespace highp::metrics::internal {
                         << std::setfill('0')
                         << static_cast<int>(static_cast<unsigned char>(ch))
                         << std::dec;
-                } else {
+                }
+                else {
                     oss << ch;
                 }
                 break;

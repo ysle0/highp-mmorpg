@@ -2,7 +2,7 @@
 
 #include "metrics/RunManifest.h"
 
-#include "src/metrics/ServerMetricsSupport.h"
+#include "src/metrics/server/ServerMetricsSupport.h"
 
 #include <sstream>
 

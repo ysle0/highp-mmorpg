@@ -1,8 +1,8 @@
 #include "pch.h"
 
-#include "metrics/ClientMetricsConfig.h"
+#include "metrics/client/ClientMetricsConfig.h"
 
-#include "src/metrics/ServerMetricsSupport.h"
+#include "src/metrics/server/ServerMetricsSupport.h"
 
 #include <algorithm>
 #include <limits>

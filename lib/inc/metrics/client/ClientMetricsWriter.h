@@ -1,7 +1,7 @@
 #pragma once
 
-#include "metrics/ClientMetricsConfig.h"
-#include "metrics/IClientMetrics.h"
+#include "metrics/client/ClientMetricsConfig.h"
+#include "metrics/client/IClientMetrics.h"
 #include "metrics/RunManifest.h"
 
 #include <atomic>

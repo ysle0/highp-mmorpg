@@ -1,6 +1,6 @@
 #include "pch.h"
 
-#include "metrics/AtomicClientMetrics.h"
+#include "metrics/client/impl/AtomicClientMetrics.h"
 
 namespace highp::metrics {
     void AtomicClientMetrics::Increment(std::atomic<int64_t>& value, int64_t delta) noexcept {

@@ -7,11 +7,11 @@
 #include <config/NetworkCfg.h>
 #include <logger/Logger.hpp>
 #include <logger/TextLogger.h>
-#include <metrics/AtomicServerMetrics.h>
-#include <metrics/NoopServerMetrics.h>
+#include <metrics/server/impl/AtomicServerMetrics.h>
+#include <metrics/server/impl/NullServerMetrics.h>
 #include <metrics/RunManifest.h>
-#include <metrics/ServerMetricsConfig.h>
-#include <metrics/ServerMetricsWriter.h>
+#include <metrics/server/ServerMetricsConfig.h>
+#include <metrics/server/ServerMetricsWriter.h>
 #include <socket/SocketHelper.h>
 #include <socket/SocketOptionBuilder.h>
 
@@ -36,7 +36,7 @@ int main() {
     if (metricsConfig.enabled) {
         metrics = std::make_shared<metrics::AtomicServerMetrics>();
     } else {
-        metrics = std::make_shared<metrics::NoopServerMetrics>();
+        metrics = std::make_shared<metrics::NullServerMetrics>();
     }
 
     metrics::RunManifest metricsManifest{

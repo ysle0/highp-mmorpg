@@ -1,6 +1,6 @@
 #pragma once
 
-#include "metrics/ClientMetricsSnapshot.h"
+#include "metrics/client/ClientMetricsSnapshot.h"
 
 #include <chrono>
 #include <cstddef>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "metrics/ServerMetricsSnapshot.h"
+#include "metrics/server/ServerMetricsSnapshot.h"
 #include <chrono>
 #include <cstddef>
 
@@ -39,6 +39,6 @@ namespace highp::metrics {
         virtual void ObserveTickDuration(std::chrono::nanoseconds duration) = 0;
         virtual void ObserveTickLag(std::chrono::nanoseconds duration) = 0;
 
-        [[nodiscard]] virtual ServerMetricsSnapshot TakeSnapshot() const = 0;
+        [[nodiscard]] virtual ServerMetricsSnapshot TakeSnapshot() = 0;
     };
 } // namespace highp::metrics

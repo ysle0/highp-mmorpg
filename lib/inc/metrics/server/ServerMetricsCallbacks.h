@@ -1,6 +1,6 @@
 #pragma once
 
-#include "metrics/IServerMetrics.h"
+#include "metrics/server/IServerMetrics.h"
 #include <chrono>
 #include <cstddef>
 #include <functional>

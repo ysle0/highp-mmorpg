@@ -154,6 +154,23 @@
     <ClInclude Include="inc\config\runTime\TomlEntry.hpp" />
     <ClInclude Include="inc\config\runTime\TomlParser.hpp" />
     <ClInclude Include="inc\error\PacketError.h" />
+    <ClInclude Include="inc\metrics\client\ClientMetricsConfig.h" />
+    <ClInclude Include="inc\metrics\client\ClientMetricsSnapshot.h" />
+    <ClInclude Include="inc\metrics\client\ClientMetricsWriter.h" />
+    <ClInclude Include="inc\metrics\client\IClientMetrics.h" />
+    <ClInclude Include="inc\metrics\client\impl\AtomicClientMetrics.h" />
+    <ClInclude Include="inc\metrics\client\impl\NoopClientMetrics.h" />
+    <ClInclude Include="inc\metrics\server\impl\AtomicServerMetrics.h" />
+    <ClInclude Include="inc\metrics\server\impl\NullServerMetrics.h" />
+    <ClInclude Include="inc\metrics\server\IServerMetrics.h" />
+    <ClInclude Include="inc\metrics\server\ServerMetricsCallbacks.h" />
+    <ClInclude Include="inc\metrics\server\ServerMetricsConfig.h" />
+    <ClInclude Include="inc\metrics\server\ServerMetricsSnapshot.h" />
+    <ClInclude Include="inc\metrics\server\ServerMetricsWriter.h" />
+    <ClInclude Include="inc\metrics\server\writer\RuntimeSampler.h" />
+    <ClInclude Include="inc\metrics\server\writer\SnapshotRecord.h" />
+    <ClInclude Include="inc\metrics\server\writer\SummaryAccumulator.h" />
+    <ClInclude Include="inc\metrics\server\writer\JsonFields.h" />
     <ClInclude Include="inc\thread\LogicThread.h" />
     <ClInclude Include="inc\logger\ELoggerVerbosity.h" />
     <ClInclude Include="framework.h" />
@@ -172,15 +189,9 @@
     <ClInclude Include="inc\memory\LockObjectPool.hpp" />
     <ClInclude Include="inc\memory\HybridObjectPool.hpp" />
     <ClInclude Include="inc\concurrency\MPSCCommandQueue.hpp" />
-    <ClInclude Include="inc\metrics\AtomicServerMetrics.h" />
-    <ClInclude Include="inc\metrics\IServerMetrics.h" />
-    <ClInclude Include="inc\metrics\NoopServerMetrics.h" />
     <ClInclude Include="inc\metrics\RunManifest.h" />
-    <ClInclude Include="inc\metrics\ServerMetricsConfig.h" />
-    <ClInclude Include="inc\metrics\ServerMetricsCallbacks.h" />
-    <ClInclude Include="inc\metrics\ServerMetricsSnapshot.h" />
-    <ClInclude Include="inc\metrics\ServerMetricsWriter.h" />
-    <ClInclude Include="src\metrics\ServerMetricsSupport.h" />
+    <ClInclude Include="inc\metrics\TimingWindow.h" />
+    <ClInclude Include="src\metrics\server\ServerMetricsSupport.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="inc\thread\LogicThread.cpp" />
@@ -193,12 +204,17 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="src\logger\TextLogger.cpp" />
-    <ClCompile Include="src\metrics\AtomicServerMetrics.cpp" />
+    <ClCompile Include="src\metrics\client\ClientMetricsConfig.cpp" />
+    <ClCompile Include="src\metrics\client\ClientMetricsWriter.cpp" />
+    <ClCompile Include="src\metrics\client\impl\AtomicClientMetrics.cpp" />
     <ClCompile Include="src\metrics\RunManifest.cpp" />
-    <ClCompile Include="src\metrics\ServerMetricsConfig.cpp" />
-    <ClCompile Include="src\metrics\ServerMetricsCallbacks.cpp" />
-    <ClCompile Include="src\metrics\ServerMetricsSupport.cpp" />
-    <ClCompile Include="src\metrics\ServerMetricsWriter.cpp" />
+    <ClCompile Include="src\metrics\server\impl\AtomicServerMetrics.cpp" />
+    <ClCompile Include="src\metrics\server\ServerMetricsCallbacks.cpp" />
+    <ClCompile Include="src\metrics\server\ServerMetricsConfig.cpp" />
+    <ClCompile Include="src\metrics\server\ServerMetricsSupport.cpp" />
+    <ClCompile Include="src\metrics\server\ServerMetricsWriter.cpp" />
+    <ClCompile Include="src\metrics\server\writer\RuntimeSampler.cpp" />
+    <ClCompile Include="src\metrics\server\writer\SummaryAccumulator.cpp" />
     <ClCompile Include="src\scope\Defer.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

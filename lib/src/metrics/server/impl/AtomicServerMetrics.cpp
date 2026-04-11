@@ -1,6 +1,6 @@
 #include "pch.h"
 
-#include "metrics/AtomicServerMetrics.h"
+#include "metrics/server/impl/AtomicServerMetrics.h"
 
 namespace highp::metrics {
     void AtomicServerMetrics::Increment(std::atomic<int64_t>& value, int64_t delta) noexcept {
@@ -8,27 +8,12 @@ namespace highp::metrics {
     }
 
     void AtomicServerMetrics::Decrement(std::atomic<int64_t>& value, int64_t delta) noexcept {
-        int64_t current = value.load(std::memory_order_relaxed);
-        while (current > 0) {
-            const int64_t next = current > delta ? current - delta : 0;
-            if (value.compare_exchange_weak(
-                current,
-                next,
-                std::memory_order_relaxed,
-                std::memory_order_relaxed)) {
-                return;
-            }
-        }
+        value.fetch_sub(delta, std::memory_order_relaxed);
     }
 
     void AtomicServerMetrics::ObserveMax(std::atomic<uint64_t>& currentMax, uint64_t value) noexcept {
-        uint64_t observed = currentMax.load(std::memory_order_relaxed);
-        while (observed < value &&
-            !currentMax.compare_exchange_weak(
-                observed,
-                value,
-                std::memory_order_relaxed,
-                std::memory_order_relaxed)) {
+        if (value > currentMax.load(std::memory_order_relaxed)) {
+            currentMax.store(value, std::memory_order_relaxed);
         }
     }
 
@@ -159,7 +144,7 @@ namespace highp::metrics {
         ObserveWindow(_tickLag, static_cast<uint64_t>(duration.count()));
     }
 
-    ServerMetricsSnapshot AtomicServerMetrics::TakeSnapshot() const {
+    ServerMetricsSnapshot AtomicServerMetrics::TakeSnapshot() {
         ServerMetricsSnapshot snapshot{};
         snapshot.capturedAt = ServerMetricsSnapshot::Clock::now();
 

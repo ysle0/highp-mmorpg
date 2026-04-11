@@ -1,6 +1,6 @@
 #pragma once
 
-#include "metrics/IClientMetrics.h"
+#include "metrics/client/IClientMetrics.h"
 
 namespace highp::metrics {
     class NoopClientMetrics final : public IClientMetrics {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "metrics/IClientMetrics.h"
+#include "metrics/client/IClientMetrics.h"
 
 #include <atomic>
 #include <mutex>

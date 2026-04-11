@@ -1,6 +1,6 @@
 #pragma once
 
-#include "metrics/ServerMetricsSnapshot.h"
+#include "metrics/TimingWindow.h"
 
 #include <Windows.h>
 
@@ -15,6 +15,7 @@ namespace highp::metrics::internal {
     [[nodiscard]] std::string Trim(std::string value);
     [[nodiscard]] std::string ToLower(std::string value);
     [[nodiscard]] bool ParseBool(std::string value, bool fallback);
+    [[nodiscard]] uint64_t ParseUnsigned(std::string value, uint64_t fallback);
     [[nodiscard]] std::optional<std::string> ReadEnv(const char* name);
     [[nodiscard]] std::filesystem::path ReadEnvPath(const char* name);
     [[nodiscard]] std::string SanitizePathComponent(std::string value);

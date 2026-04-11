@@ -76,32 +76,65 @@
     <ClInclude Include="inc\concurrency\CommandQueue.hpp">
       <Filter>inc\concurrency</Filter>
     </ClInclude>
-    <ClInclude Include="inc\metrics\AtomicServerMetrics.h">
-      <Filter>inc\metrics</Filter>
+    <ClInclude Include="inc\metrics\client\impl\AtomicClientMetrics.h">
+      <Filter>inc\metrics\client\impl</Filter>
     </ClInclude>
-    <ClInclude Include="inc\metrics\IServerMetrics.h">
-      <Filter>inc\metrics</Filter>
+    <ClInclude Include="inc\metrics\server\impl\AtomicServerMetrics.h">
+      <Filter>inc\metrics\server\impl</Filter>
     </ClInclude>
-    <ClInclude Include="inc\metrics\NoopServerMetrics.h">
-      <Filter>inc\metrics</Filter>
+    <ClInclude Include="inc\metrics\client\ClientMetricsConfig.h">
+      <Filter>inc\metrics\client</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\metrics\client\ClientMetricsSnapshot.h">
+      <Filter>inc\metrics\client</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\metrics\client\ClientMetricsWriter.h">
+      <Filter>inc\metrics\client</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\metrics\client\IClientMetrics.h">
+      <Filter>inc\metrics\client</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\metrics\server\IServerMetrics.h">
+      <Filter>inc\metrics\server</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\metrics\client\impl\NoopClientMetrics.h">
+      <Filter>inc\metrics\client\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\metrics\server\impl\NullServerMetrics.h">
+      <Filter>inc\metrics\server\impl</Filter>
     </ClInclude>
     <ClInclude Include="inc\metrics\RunManifest.h">
       <Filter>inc\metrics</Filter>
     </ClInclude>
-    <ClInclude Include="inc\metrics\ServerMetricsConfig.h">
+    <ClInclude Include="inc\metrics\server\ServerMetricsConfig.h">
+      <Filter>inc\metrics\server</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\metrics\server\ServerMetricsCallbacks.h">
+      <Filter>inc\metrics\server</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\metrics\server\ServerMetricsSnapshot.h">
+      <Filter>inc\metrics\server</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\metrics\server\ServerMetricsWriter.h">
+      <Filter>inc\metrics\server</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\metrics\server\writer\RuntimeSampler.h">
+      <Filter>inc\metrics\server\writer</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\metrics\server\writer\SnapshotRecord.h">
+      <Filter>inc\metrics\server\writer</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\metrics\server\writer\SummaryAccumulator.h">
+      <Filter>inc\metrics\server\writer</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\metrics\server\writer\JsonFields.h">
+      <Filter>inc\metrics\server\writer</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\metrics\TimingWindow.h">
       <Filter>inc\metrics</Filter>
     </ClInclude>
-    <ClInclude Include="inc\metrics\ServerMetricsCallbacks.h">
-      <Filter>inc\metrics</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\metrics\ServerMetricsSnapshot.h">
-      <Filter>inc\metrics</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\metrics\ServerMetricsWriter.h">
-      <Filter>inc\metrics</Filter>
-    </ClInclude>
-    <ClInclude Include="src\metrics\ServerMetricsSupport.h">
-      <Filter>src\metrics</Filter>
+    <ClInclude Include="src\metrics\server\ServerMetricsSupport.h">
+      <Filter>src\metrics\server</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -110,23 +143,38 @@
     <ClCompile Include="src\logger\TextLogger.cpp">
       <Filter>src\logger</Filter>
     </ClCompile>
-    <ClCompile Include="src\metrics\AtomicServerMetrics.cpp">
-      <Filter>src\metrics</Filter>
+    <ClCompile Include="src\metrics\client\impl\AtomicClientMetrics.cpp">
+      <Filter>src\metrics\client\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="src\metrics\server\impl\AtomicServerMetrics.cpp">
+      <Filter>src\metrics\server\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="src\metrics\client\ClientMetricsConfig.cpp">
+      <Filter>src\metrics\client</Filter>
+    </ClCompile>
+    <ClCompile Include="src\metrics\client\ClientMetricsWriter.cpp">
+      <Filter>src\metrics\client</Filter>
     </ClCompile>
     <ClCompile Include="src\metrics\RunManifest.cpp">
       <Filter>src\metrics</Filter>
     </ClCompile>
-    <ClCompile Include="src\metrics\ServerMetricsConfig.cpp">
-      <Filter>src\metrics</Filter>
+    <ClCompile Include="src\metrics\server\ServerMetricsConfig.cpp">
+      <Filter>src\metrics\server</Filter>
     </ClCompile>
-    <ClCompile Include="src\metrics\ServerMetricsCallbacks.cpp">
-      <Filter>src\metrics</Filter>
+    <ClCompile Include="src\metrics\server\ServerMetricsCallbacks.cpp">
+      <Filter>src\metrics\server</Filter>
     </ClCompile>
-    <ClCompile Include="src\metrics\ServerMetricsSupport.cpp">
-      <Filter>src\metrics</Filter>
+    <ClCompile Include="src\metrics\server\ServerMetricsSupport.cpp">
+      <Filter>src\metrics\server</Filter>
     </ClCompile>
-    <ClCompile Include="src\metrics\ServerMetricsWriter.cpp">
-      <Filter>src\metrics</Filter>
+    <ClCompile Include="src\metrics\server\ServerMetricsWriter.cpp">
+      <Filter>src\metrics\server</Filter>
+    </ClCompile>
+    <ClCompile Include="src\metrics\server\writer\RuntimeSampler.cpp">
+      <Filter>src\metrics\server\writer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\metrics\server\writer\SummaryAccumulator.cpp">
+      <Filter>src\metrics\server\writer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -154,6 +202,21 @@
     <Filter Include="inc\metrics">
       <UniqueIdentifier>{46d49bbb-c963-414f-b082-37d3fc5c78de}</UniqueIdentifier>
     </Filter>
+    <Filter Include="inc\metrics\client">
+      <UniqueIdentifier>{a1b2c3d4-1001-4001-8001-000000000001}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="inc\metrics\client\impl">
+      <UniqueIdentifier>{a1b2c3d4-1001-4001-8001-000000000002}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="inc\metrics\server">
+      <UniqueIdentifier>{a1b2c3d4-1001-4001-8001-000000000003}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="inc\metrics\server\impl">
+      <UniqueIdentifier>{a1b2c3d4-1001-4001-8001-000000000004}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="inc\metrics\server\writer">
+      <UniqueIdentifier>{a1b2c3d4-1001-4001-8001-000000000005}</UniqueIdentifier>
+    </Filter>
     <Filter Include="inc\thread">
       <UniqueIdentifier>{38ce1621-d0ff-44eb-acd0-c87db3ea39d4}</UniqueIdentifier>
     </Filter>
@@ -174,6 +237,21 @@
     </Filter>
     <Filter Include="src\metrics">
       <UniqueIdentifier>{09b3f1b6-37ec-4ff6-b1a8-383937670eaf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\metrics\client">
+      <UniqueIdentifier>{a1b2c3d4-1001-4001-8001-000000000006}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\metrics\client\impl">
+      <UniqueIdentifier>{a1b2c3d4-1001-4001-8001-000000000007}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\metrics\server">
+      <UniqueIdentifier>{a1b2c3d4-1001-4001-8001-000000000008}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\metrics\server\impl">
+      <UniqueIdentifier>{a1b2c3d4-1001-4001-8001-000000000009}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\metrics\server\writer">
+      <UniqueIdentifier>{a1b2c3d4-1001-4001-8001-00000000000a}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\system">
       <UniqueIdentifier>{1edeed7a-6116-4c05-92b0-c1e4f5268727}</UniqueIdentifier>

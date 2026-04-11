@@ -1,6 +1,6 @@
 #pragma once
 
-#include "metrics/IServerMetrics.h"
+#include "metrics/server/IServerMetrics.h"
 #include <atomic>
 
 namespace highp::metrics {
@@ -38,7 +38,7 @@ namespace highp::metrics {
         void ObserveTickDuration(std::chrono::nanoseconds duration) override;
         void ObserveTickLag(std::chrono::nanoseconds duration) override;
 
-        [[nodiscard]] ServerMetricsSnapshot TakeSnapshot() const override;
+        [[nodiscard]] ServerMetricsSnapshot TakeSnapshot() override;
 
     private:
         struct TimingWindowState {
@@ -70,9 +70,9 @@ namespace highp::metrics {
         std::atomic<int64_t> _dispatcherQueueLength{0};
         std::atomic<int64_t> _runnableWorkerThreadCount{0};
 
-        mutable TimingWindowState _queueWait;
-        mutable TimingWindowState _dispatchProcess;
-        mutable TimingWindowState _tickDuration;
-        mutable TimingWindowState _tickLag;
+        TimingWindowState _queueWait;
+        TimingWindowState _dispatchProcess;
+        TimingWindowState _tickDuration;
+        TimingWindowState _tickLag;
     };
 } // namespace highp::metrics
