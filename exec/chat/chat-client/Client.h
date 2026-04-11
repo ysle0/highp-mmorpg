@@ -49,6 +49,8 @@ public:
 
     void StartRecvLoop(RecvCallback callback);
 
+    [[nodiscard]] bool IsConnected() const noexcept { return _isConnected.load(); }
+
 private:
     std::shared_ptr<highp::log::Logger> _logger;
     std::shared_ptr<highp::metrics::IClientMetrics> _metrics;
