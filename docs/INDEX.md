@@ -33,6 +33,7 @@
 - **[Building and Testing](BUILD_AND_TEST.md)** - Build instructions, testing procedures
 - **[Server Metrics Architecture](SERVER_METRICS_ARCHITECTURE.md)** - Execution-context-aware metrics design and writer flow
 - **[Load Test Reproducibility Guide](LOAD_TEST_REPRODUCIBILITY.md)** - How to preserve and compare repeatable load-test results
+- **[Load Test Scenarios And Plan](LOAD_TEST_SCENARIOS_AND_PLAN.md)** - Scenario catalog and Phase 1 implementation plan for server-layer diagnosis
 
 ### Reference Materials
 - **[Error Handling](ERROR_HANDLING.md)** - Result types, error codes, and error handling patterns
@@ -64,6 +65,7 @@
 | **Server Metrics Design** | [Server Metrics Architecture](SERVER_METRICS_ARCHITECTURE.md) |
 | **Client Observability** | [Client Metrics Guide](CLIENT_METRICS.md) |
 | **Load Test Evidence** | [Load Test Reproducibility Guide](LOAD_TEST_REPRODUCIBILITY.md) |
+| **Load Test Planning** | [Load Test Scenarios And Plan](LOAD_TEST_SCENARIOS_AND_PLAN.md) |
 | **Async I/O Flow** | [Echo Server Sequence Diagrams](EchoServer_Sequence_diagram.md) |
 | **Protocol Design** | [Protocol Specification](PROTOCOL.md) |
 | **Error Handling** | [Error Handling Guide](ERROR_HANDLING.md) |

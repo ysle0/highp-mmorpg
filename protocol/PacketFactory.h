@@ -21,7 +21,7 @@ namespace highp::protocol::detail {
         flatbuffers::FlatBufferBuilder& builder,
         MessageType type,
         flatbuffers::Offset<TPayload> payload,
-        std::uint32_t sequence = 0
+        std::uint32_t sequence
     ) {
         static_assert(
             PayloadTraits<TPayload>::enum_value != Payload::NONE,
@@ -135,17 +135,21 @@ namespace highp::protocol {
         return builder;
     }
 
-    [[nodiscard]] inline flatbuffers::FlatBufferBuilder makeJoinedRoomResponse() {
+    [[nodiscard]] inline flatbuffers::FlatBufferBuilder makeJoinedRoomResponse(
+        std::uint32_t sequence = 0
+    ) {
         flatbuffers::FlatBufferBuilder builder(128);
         const auto resp = messages::CreateJoinedRoomResponse(builder);
-        detail::finishTypedPacket(builder, MessageType::SC_JoinedRoom, resp);
+        detail::finishTypedPacket(builder, MessageType::SC_JoinedRoom, resp, sequence);
         return builder;
     }
 
-    [[nodiscard]] inline flatbuffers::FlatBufferBuilder makeLeftRoomResponse() {
+    [[nodiscard]] inline flatbuffers::FlatBufferBuilder makeLeftRoomResponse(
+        std::uint32_t sequence = 0
+    ) {
         flatbuffers::FlatBufferBuilder builder(128);
         const auto resp = messages::CreateLeftRoomResponse(builder);
-        detail::finishTypedPacket(builder, MessageType::SC_LeftRoom, resp);
+        detail::finishTypedPacket(builder, MessageType::SC_LeftRoom, resp, sequence);
         return builder;
     }
 } // namespace highp::protocol
