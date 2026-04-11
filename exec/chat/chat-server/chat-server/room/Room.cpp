@@ -71,13 +71,14 @@ void Room::BroadcastChatMessage(
     uint32_t senderId,
     uint64_t userId,
     std::string_view username,
-    std::string_view chatMessage
+    std::string_view chatMessage,
+    uint32_t sequence
 ) {
     std::scoped_lock lock{_mtx};
 
     const highp::protocol::Common::Timestamp now = highp::protocol::now();
     const flatbuffers::FlatBufferBuilder pkt = highp::protocol::makeChatMessageBroadcast(
-        senderId, username, chatMessage, now);
+        senderId, username, chatMessage, now, sequence);
 
     for (const std::shared_ptr<User>& u : _users) {
         if (u->GetId() == userId) {

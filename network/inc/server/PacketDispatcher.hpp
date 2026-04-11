@@ -70,7 +70,7 @@ namespace highp::net {
                         return;
                     }
 
-                    handler->Handle(client, payload);
+                    handler->Handle(client, packet, payload);
                 };
         }
 

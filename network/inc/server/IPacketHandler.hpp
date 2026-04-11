@@ -1,5 +1,9 @@
 #pragma once
+
 #include <memory>
+
+#include <flatbuf/gen/packet_generated.h>
+
 #include "client/windows/Client.h"
 
 namespace highp::net {
@@ -14,6 +18,7 @@ namespace highp::net {
         /// <summary>타입화된 페이로드를 처리한다.</summary>
         virtual void Handle(
             const std::shared_ptr<Client>& client,
+            const protocol::Packet* packet,
             const T* payload
         ) = 0;
     };
