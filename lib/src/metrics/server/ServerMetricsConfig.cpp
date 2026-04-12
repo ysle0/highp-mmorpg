@@ -1,8 +1,7 @@
 #include "pch.h"
 
 #include "metrics/server/ServerMetricsConfig.h"
-
-#include "src/metrics/server/ServerMetricsSupport.h"
+#include "metrics/server/ServerMetricsSupport.h"
 
 #include <sstream>
 

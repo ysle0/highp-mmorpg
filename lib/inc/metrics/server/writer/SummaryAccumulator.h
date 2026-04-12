@@ -20,10 +20,6 @@ namespace highp::metrics {
         void Reset() noexcept;
 
     private:
-        static double ComputeRate(
-            uint64_t current,
-            uint64_t prior,
-            std::chrono::nanoseconds elapsed) noexcept;
         [[nodiscard]] double Average(double sum) const noexcept;
 
         uint64_t _snapshots = 0;

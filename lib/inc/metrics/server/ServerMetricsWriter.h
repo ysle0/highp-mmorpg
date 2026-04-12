@@ -42,26 +42,17 @@ namespace highp::metrics {
         void ThreadMain(const std::stop_token& st);
         bool InitializeArtifacts();
         bool WriteManifest();
-        bool CaptureAndWriteSnapshot(bool finalSnapshot);
-        std::string BuildSnapshotJson(
-            const SnapshotRecord* record,
-            const SnapshotRecord* previous) const;
-        static double ToPerSecond(
-            uint64_t delta,
-            std::chrono::nanoseconds elapsed) noexcept;
-        static double ComputeRate(
-            uint64_t current,
-            uint64_t prior,
-            std::chrono::nanoseconds elapsed) noexcept;
+        bool CaptureAndWriteSnapshot();
+        std::string BuildSnapshotJson(const SnapshotRecord* record, const SnapshotRecord* previous) const;
 
+    private:
         std::shared_ptr<IServerMetrics> _metrics;
         ServerMetricsConfig _config;
         RunManifest _manifest;
 
         RuntimeSampler _runtimeSampler;
         SummaryAccumulator _summary;
-        SnapshotRecord _previousRecord{};
-        bool _hasPreviousRecord = false;
+        SnapshotRecord _previousRecord;
 
         std::filesystem::path _outputDirectory;
         std::filesystem::path _manifestPath;

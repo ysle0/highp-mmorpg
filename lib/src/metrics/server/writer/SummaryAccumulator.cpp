@@ -1,7 +1,7 @@
 #include "pch.h"
 
 #include "metrics/server/writer/SummaryAccumulator.h"
-#include "src/metrics/server/ServerMetricsSupport.h"
+#include "metrics/server/ServerMetricsSupport.h"
 
 #ifdef max
 #undef max
@@ -13,16 +13,7 @@
 #include <algorithm>
 #include <sstream>
 
-namespace highp::metrics { namespace {
-        double ToPerSecond(uint64_t delta, std::chrono::nanoseconds elapsed) noexcept {
-            const double seconds = std::chrono::duration<double>(elapsed).count();
-            if (seconds <= 0.0) {
-                return 0.0;
-            }
-            return static_cast<double>(delta) / seconds;
-        }
-    } // anonymous namespace
-
+namespace highp::metrics {
     void SummaryAccumulator::Observe(
         const SnapshotRecord* record,
         const SnapshotRecord* previous) {
@@ -44,14 +35,24 @@ namespace highp::metrics { namespace {
                                  ? std::chrono::seconds{1}
                                  : std::chrono::duration_cast<std::chrono::nanoseconds>(
                                      record->capturedAt - previous->capturedAt);
-
-        const double acceptPerSec = previous == nullptr ? 0.0 : ComputeRate(record->acceptTotal, previous->acceptTotal, elapsed);
+        const double acceptPerSec = previous == nullptr
+                                        ? 0.0
+                                        : internal::ComputeRate(
+                                            record->acceptTotal,
+                                            previous->acceptTotal,
+                                            elapsed);
         const double recvPacketsPerSec = previous == nullptr
                                              ? 0.0
-                                             : ComputeRate(record->recvPacketsTotal, previous->recvPacketsTotal, elapsed);
+                                             : internal::ComputeRate(
+                                                 record->recvPacketsTotal,
+                                                 previous->recvPacketsTotal,
+                                                 elapsed);
         const double sendPacketsPerSec = previous == nullptr
                                              ? 0.0
-                                             : ComputeRate(record->sendPacketsTotal, previous->sendPacketsTotal, elapsed);
+                                             : internal::ComputeRate(
+                                                 record->sendPacketsTotal,
+                                                 previous->sendPacketsTotal,
+                                                 elapsed);
 
         _acceptPerSecSum += acceptPerSec;
         _recvPacketsPerSecSum += recvPacketsPerSec;
@@ -149,13 +150,6 @@ namespace highp::metrics { namespace {
         _maxThreadCount = 0;
         _disconnectTotal = 0;
         _packetValidationFailureTotal = 0;
-    }
-
-    double SummaryAccumulator::ComputeRate(
-        uint64_t current,
-        uint64_t prior,
-        std::chrono::nanoseconds elapsed) noexcept {
-        return ToPerSecond(current >= prior ? current - prior : 0, elapsed);
     }
 
     double SummaryAccumulator::Average(double sum) const noexcept {

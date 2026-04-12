@@ -166,11 +166,12 @@
     <ClInclude Include="inc\metrics\server\ServerMetricsCallbacks.h" />
     <ClInclude Include="inc\metrics\server\ServerMetricsConfig.h" />
     <ClInclude Include="inc\metrics\server\ServerMetricsSnapshot.h" />
+    <ClInclude Include="inc\metrics\server\ServerMetricsSupport.h" />
     <ClInclude Include="inc\metrics\server\ServerMetricsWriter.h" />
     <ClInclude Include="inc\metrics\server\writer\RuntimeSampler.h" />
     <ClInclude Include="inc\metrics\server\writer\SnapshotRecord.h" />
     <ClInclude Include="inc\metrics\server\writer\SummaryAccumulator.h" />
-    <ClInclude Include="inc\metrics\server\writer\JsonFields.h" />
+    <ClInclude Include="inc\metrics\server\writer\JsonFields.hpp" />
     <ClInclude Include="inc\thread\LogicThread.h" />
     <ClInclude Include="inc\logger\ELoggerVerbosity.h" />
     <ClInclude Include="framework.h" />
@@ -191,7 +192,6 @@
     <ClInclude Include="inc\concurrency\MPSCCommandQueue.hpp" />
     <ClInclude Include="inc\metrics\RunManifest.h" />
     <ClInclude Include="inc\metrics\TimingWindow.h" />
-    <ClInclude Include="src\metrics\server\ServerMetricsSupport.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="inc\thread\LogicThread.cpp" />

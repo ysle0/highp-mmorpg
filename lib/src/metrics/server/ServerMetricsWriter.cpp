@@ -1,8 +1,8 @@
 #include "pch.h"
 
 #include "metrics/server/ServerMetricsWriter.h"
-#include "metrics/server/writer/JsonFields.h"
-#include "src/metrics/server/ServerMetricsSupport.h"
+#include "metrics/server/writer/JsonFields.hpp"
+#include "metrics/server/ServerMetricsSupport.h"
 #include "scope/DeferContext.hpp"
 
 #include <chrono>
@@ -37,8 +37,6 @@ namespace highp::metrics {
             return true;
         }
 
-        _previousRecord = {};
-        _hasPreviousRecord = false;
         _summary.Reset();
         _runtimeSampler.Reset();
         _manifest.startedAt.reset();
@@ -72,7 +70,7 @@ namespace highp::metrics {
             return false;
         }
 
-        if (!CaptureAndWriteSnapshot(false)) {
+        if (!CaptureAndWriteSnapshot()) {
             return false;
         }
 
@@ -112,8 +110,8 @@ namespace highp::metrics {
                 _manifest.finishedAt = std::chrono::system_clock::now();
             }
 
-            const bool finalSnapshotWritten = CaptureAndWriteSnapshot(true);
-            const bool manifestWritten = WriteManifest();
+            CaptureAndWriteSnapshot();
+            WriteManifest();
 
             std::ofstream summary(_summaryPath, std::ios::out | std::ios::trunc);
             if (summary.is_open()) {
@@ -145,7 +143,7 @@ namespace highp::metrics {
                 break;
             }
 
-            if (!CaptureAndWriteSnapshot(false)) {
+            if (!CaptureAndWriteSnapshot()) {
                 break;
             }
         }
@@ -185,11 +183,12 @@ namespace highp::metrics {
         return true;
     }
 
-    bool ServerMetricsWriter::CaptureAndWriteSnapshot(bool finalSnapshot) {
+    bool ServerMetricsWriter::CaptureAndWriteSnapshot() {
         const ServerMetricsSnapshot snapshot = _metrics->TakeSnapshot();
 
         SnapshotRecord record{};
         record.capturedAt = snapshot.capturedAt;
+        record.capturedAtSteady = std::chrono::steady_clock::now();
         record.acceptTotal = snapshot.acceptTotal;
         record.disconnectTotal = snapshot.disconnectTotal;
         record.recvPacketsTotal = snapshot.recvPacketsTotal;
@@ -219,34 +218,20 @@ namespace highp::metrics {
         record.logicThreadCpuPercent = runtime.logicThreadCpuPercent;
         record.threadCount = runtime.threadCount;
 
-        if (!_hasPreviousRecord) {
-            _previousRecord = record;
-            _hasPreviousRecord = true;
-            if (!finalSnapshot) {
-                return true;
-            }
-        }
-
         std::ofstream out(_snapshotPath, std::ios::out | std::ios::app);
         if (!out.is_open()) {
             _lastError = "failed to open metrics snapshot file";
             return false;
         }
 
-        const SnapshotRecord* previous = _hasPreviousRecord ? &_previousRecord : nullptr;
-        if (previous != nullptr && previous == &record) {
-            previous = nullptr;
-        }
-
-        out << BuildSnapshotJson(&record, previous) << '\n';
+        out << BuildSnapshotJson(&record, &_previousRecord) << '\n';
         if (!out.good()) {
             _lastError = "failed to write metrics snapshot";
             return false;
         }
 
-        _summary.Observe(&record, previous);
+        _summary.Observe(&record, &_previousRecord);
         _previousRecord = record;
-        _hasPreviousRecord = true;
         return true;
     }
 
@@ -254,68 +239,58 @@ namespace highp::metrics {
         const SnapshotRecord* record,
         const SnapshotRecord* previous
     ) const {
-        const std::chrono::seconds elapsed = previous == nullptr
-            ? std::chrono::seconds{1}
-            : std::chrono::duration_cast<std::chrono::seconds>(
-                record->capturedAt - previous->capturedAt);
+        std::chrono::seconds elapsed;
+        if (!previous) {
+            elapsed = std::chrono::seconds{1};
+        }
+        else {
+            elapsed = std::chrono::duration_cast<std::chrono::seconds>(
+                record->capturedAtSteady - previous->capturedAtSteady);
+        }
 
         const auto rate = [&](uint64_t current, uint64_t prior) {
-            return previous ? ComputeRate(current, prior, elapsed) : 0.0;
+            return previous ? internal::ComputeRate(current, prior, elapsed) : 0.0;
         };
 
         std::ostringstream oss;
         JsonObjectWriter json(oss);
         json << JsonTimestamp{"ts", record->capturedAt}
-             << JsonCounter{"accept_total", record->acceptTotal}
-             << JsonNumber{"accept_per_sec", rate(record->acceptTotal, previous ? previous->acceptTotal : 0)}
-             << JsonCounter{"disconnect_total", record->disconnectTotal}
-             << JsonNumber{"disconnect_per_sec", rate(record->disconnectTotal, previous ? previous->disconnectTotal : 0)}
-             << JsonCounter{"recv_packets_total", record->recvPacketsTotal}
-             << JsonNumber{"recv_packets_per_sec", rate(record->recvPacketsTotal, previous ? previous->recvPacketsTotal : 0)}
-             << JsonCounter{"send_packets_total", record->sendPacketsTotal}
-             << JsonNumber{"send_packets_per_sec", rate(record->sendPacketsTotal, previous ? previous->sendPacketsTotal : 0)}
-             << JsonCounter{"recv_bytes_total", record->recvBytesTotal}
-             << JsonNumber{"recv_bytes_per_sec", rate(record->recvBytesTotal, previous ? previous->recvBytesTotal : 0)}
-             << JsonCounter{"send_bytes_total", record->sendBytesTotal}
-             << JsonNumber{"send_bytes_per_sec", rate(record->sendBytesTotal, previous ? previous->sendBytesTotal : 0)}
-             << JsonCounter{"send_fail_total", record->sendFailTotal}
-             << JsonCounter{"packet_validation_total", record->packetValidationTotal}
-             << JsonCounter{"packet_validation_failure_total", record->packetValidationFailureTotal}
-             << JsonGauge{"connected_clients", record->connectedClients}
-             << JsonGauge{"pending_accept_count", record->pendingAcceptCount}
-             << JsonGauge{"pending_recv_count", record->pendingRecvCount}
-             << JsonGauge{"pending_send_count", record->pendingSendCount}
-             << JsonGauge{"dispatcher_queue_length", record->dispatcherQueueLength}
-             << JsonGauge{"runnable_worker_thread_count", record->runnableWorkerThreadCount}
-             << JsonNumber{"queue_wait_ms_avg", record->queueWaitMsAvg}
-             << JsonNumber{"queue_wait_ms_max", record->queueWaitMsMax}
-             << JsonNumber{"dispatch_process_ms_avg", record->dispatchProcessMsAvg}
-             << JsonNumber{"dispatch_process_ms_max", record->dispatchProcessMsMax}
-             << JsonNumber{"tick_duration_ms_avg", record->tickDurationMsAvg}
-             << JsonNumber{"tick_duration_ms_max", record->tickDurationMsMax}
-             << JsonNumber{"tick_lag_ms_avg", record->tickLagMsAvg}
-             << JsonNumber{"tick_lag_ms_max", record->tickLagMsMax}
-             << JsonNumber{"process_cpu_percent", record->processCpuPercent}
-             << JsonNumber{"logic_thread_cpu_percent", record->logicThreadCpuPercent}
-             << JsonUint{"thread_count", record->threadCount};
+            << JsonCounter{"accept_total", record->acceptTotal}
+            << JsonNumber{"accept_per_sec", rate(record->acceptTotal, previous ? previous->acceptTotal : 0)}
+            << JsonCounter{"disconnect_total", record->disconnectTotal}
+            << JsonNumber{"disconnect_per_sec", rate(record->disconnectTotal, previous ? previous->disconnectTotal : 0)}
+            << JsonCounter{"recv_packets_total", record->recvPacketsTotal}
+            << JsonNumber{
+                "recv_packets_per_sec", rate(record->recvPacketsTotal, previous ? previous->recvPacketsTotal : 0)
+            }
+            << JsonCounter{"send_packets_total", record->sendPacketsTotal}
+            << JsonNumber{
+                "send_packets_per_sec", rate(record->sendPacketsTotal, previous ? previous->sendPacketsTotal : 0)
+            }
+            << JsonCounter{"recv_bytes_total", record->recvBytesTotal}
+            << JsonNumber{"recv_bytes_per_sec", rate(record->recvBytesTotal, previous ? previous->recvBytesTotal : 0)}
+            << JsonCounter{"send_bytes_total", record->sendBytesTotal}
+            << JsonNumber{"send_bytes_per_sec", rate(record->sendBytesTotal, previous ? previous->sendBytesTotal : 0)}
+            << JsonCounter{"send_fail_total", record->sendFailTotal}
+            << JsonCounter{"packet_validation_total", record->packetValidationTotal}
+            << JsonCounter{"packet_validation_failure_total", record->packetValidationFailureTotal}
+            << JsonGauge{"connected_clients", record->connectedClients}
+            << JsonGauge{"pending_accept_count", record->pendingAcceptCount}
+            << JsonGauge{"pending_recv_count", record->pendingRecvCount}
+            << JsonGauge{"pending_send_count", record->pendingSendCount}
+            << JsonGauge{"dispatcher_queue_length", record->dispatcherQueueLength}
+            << JsonGauge{"runnable_worker_thread_count", record->runnableWorkerThreadCount}
+            << JsonNumber{"queue_wait_ms_avg", record->queueWaitMsAvg}
+            << JsonNumber{"queue_wait_ms_max", record->queueWaitMsMax}
+            << JsonNumber{"dispatch_process_ms_avg", record->dispatchProcessMsAvg}
+            << JsonNumber{"dispatch_process_ms_max", record->dispatchProcessMsMax}
+            << JsonNumber{"tick_duration_ms_avg", record->tickDurationMsAvg}
+            << JsonNumber{"tick_duration_ms_max", record->tickDurationMsMax}
+            << JsonNumber{"tick_lag_ms_avg", record->tickLagMsAvg}
+            << JsonNumber{"tick_lag_ms_max", record->tickLagMsMax}
+            << JsonNumber{"process_cpu_percent", record->processCpuPercent}
+            << JsonNumber{"logic_thread_cpu_percent", record->logicThreadCpuPercent}
+            << JsonUint{"thread_count", record->threadCount};
         return oss.str();
-    }
-
-    double ServerMetricsWriter::ToPerSecond(
-        uint64_t delta,
-        std::chrono::nanoseconds elapsed) noexcept {
-        const double seconds = std::chrono::duration<double>(elapsed).count();
-        if (seconds <= 0.0) {
-            return 0.0;
-        }
-
-        return static_cast<double>(delta) / seconds;
-    }
-
-    double ServerMetricsWriter::ComputeRate(
-        uint64_t current,
-        uint64_t prior,
-        std::chrono::nanoseconds elapsed) noexcept {
-        return ToPerSecond(current >= prior ? current - prior : 0, elapsed);
     }
 }

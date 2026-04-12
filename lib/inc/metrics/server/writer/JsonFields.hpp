@@ -1,10 +1,9 @@
 #pragma once
 
-#include "src/metrics/server/ServerMetricsSupport.h"
+#include "metrics/server/ServerMetricsSupport.h"
 
 #include <chrono>
 #include <cstdint>
-#include <ostream>
 #include <string_view>
 
 namespace highp::metrics {
@@ -14,7 +13,7 @@ namespace highp::metrics {
 
         friend std::ostream& operator<<(std::ostream& os, const JsonTimestamp& f) {
             return os << "\"" << f.name << "\":\""
-                      << internal::JsonEscape(internal::FormatUtcTime(f.value)) << "\"";
+                << internal::JsonEscape(internal::FormatUtcTime(f.value)) << "\"";
         }
     };
 
@@ -62,7 +61,7 @@ namespace highp::metrics {
         JsonObjectWriter(const JsonObjectWriter&) = delete;
         JsonObjectWriter& operator=(const JsonObjectWriter&) = delete;
 
-        template<typename T>
+        template <typename T>
         JsonObjectWriter& operator<<(const T& field) {
             if (!_first) { _os << ','; }
             _first = false;
