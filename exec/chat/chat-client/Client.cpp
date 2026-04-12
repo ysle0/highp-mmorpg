@@ -4,6 +4,8 @@
 #include <client/TcpClientSocket.h>
 #include <client/WsaSession.h>
 
+std::atomic_uint32_t Client::_nextSequence{1};
+
 namespace {
     [[nodiscard]] const char* toDisconnectMessage(highp::metrics::ClientDisconnectReason reason) noexcept {
         switch (reason) {

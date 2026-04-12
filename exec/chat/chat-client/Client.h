@@ -66,5 +66,5 @@ private:
     std::jthread _recvThread;
 
     std::atomic_bool _isConnected = false;
-    std::atomic_uint32_t _nextSequence{1};
+    static std::atomic_uint32_t _nextSequence;
 };
