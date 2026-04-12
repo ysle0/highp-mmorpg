@@ -1,7 +1,7 @@
 #include "pch.h"
 
 #include "metrics/server/writer/RuntimeSampler.h"
-#include "src/metrics/server/ServerMetricsSupport.h"
+#include "metrics/server/ServerMetricsSupport.h"
 #include "scope/DeferContext.hpp"
 
 namespace highp::metrics {

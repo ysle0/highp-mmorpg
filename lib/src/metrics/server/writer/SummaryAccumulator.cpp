@@ -1,7 +1,7 @@
 #include "pch.h"
 
 #include "metrics/server/writer/SummaryAccumulator.h"
-#include "src/metrics/server/ServerMetricsSupport.h"
+#include "metrics/server/ServerMetricsSupport.h"
 
 #ifdef max
 #undef max

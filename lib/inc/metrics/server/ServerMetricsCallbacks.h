@@ -2,7 +2,6 @@
 
 #include "metrics/server/IServerMetrics.h"
 #include <chrono>
-#include <cstddef>
 #include <functional>
 #include <memory>
 

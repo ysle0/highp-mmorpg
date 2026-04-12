@@ -2,7 +2,7 @@
 
 #include "metrics/client/ClientMetricsWriter.h"
 #include "metrics/client/impl/NoopClientMetrics.h"
-#include "src/metrics/server/ServerMetricsSupport.h"
+#include "metrics/server/ServerMetricsSupport.h"
 
 #include <algorithm>
 #include <chrono>

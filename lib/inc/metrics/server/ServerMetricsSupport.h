@@ -28,4 +28,11 @@ namespace highp::metrics::internal {
     [[nodiscard]] std::string FormatNumber(double value, int precision = 3);
     [[nodiscard]] double TimingAverageMs(const TimingWindow& window);
     [[nodiscard]] double TimingMaxMs(const TimingWindow& window);
+    [[nodiscard]] double ToPerSecond(
+        uint64_t delta,
+        std::chrono::nanoseconds elapsed) noexcept;
+    [[nodiscard]] double ComputeRate(
+        uint64_t current,
+        uint64_t prior,
+        std::chrono::nanoseconds elapsed) noexcept;
 } // namespace highp::metrics::internal

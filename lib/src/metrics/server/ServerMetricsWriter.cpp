@@ -1,8 +1,8 @@
 #include "pch.h"
 
 #include "metrics/server/ServerMetricsWriter.h"
-#include "metrics/server/writer/JsonFields.h"
-#include "src/metrics/server/ServerMetricsSupport.h"
+#include "metrics/server/writer/JsonFields.hpp"
+#include "metrics/server/ServerMetricsSupport.h"
 #include "scope/DeferContext.hpp"
 
 #include <chrono>

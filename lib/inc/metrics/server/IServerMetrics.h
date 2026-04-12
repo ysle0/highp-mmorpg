@@ -2,7 +2,6 @@
 
 #include "metrics/server/ServerMetricsSnapshot.h"
 #include <chrono>
-#include <cstddef>
 
 namespace highp::metrics {
     class IServerMetrics {
