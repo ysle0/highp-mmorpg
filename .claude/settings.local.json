@@ -31,7 +31,12 @@
       "WebFetch(domain:luminousmen.com)",
       "WebFetch(domain:www.pullrequest.com)",
       "WebFetch(domain:www.hackerone.com)",
-      "Bash(gh pr:*)"
+      "Bash(gh pr:*)",
+      "Bash(while IFS=' ' read -r hash msg)",
+      "Bash(do echo:*)",
+      "Bash(git diff-tree:*)",
+      "Bash(done)",
+      "Bash(git mv:*)"
     ]
   }
 }

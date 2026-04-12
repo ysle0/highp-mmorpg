@@ -7,6 +7,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MetricsCallbacksFactory.cpp" />
     <ClCompile Include="Server.cpp" />
     <ClCompile Include="handlers\ChatMessageHandler.cpp">
       <Filter>handlers</Filter>
@@ -16,6 +17,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="MetricsCallbacksFactory.h" />
     <ClInclude Include="Server.h" />
     <ClInclude Include="handlers\ChatMessageHandler.h">
       <Filter>handlers</Filter>

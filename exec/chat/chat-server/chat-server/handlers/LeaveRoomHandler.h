@@ -16,6 +16,7 @@ public:
 
     void Handle(
         const std::shared_ptr<highp::net::Client>& client,
+        const highp::protocol::Packet* packet,
         const highp::protocol::messages::LeaveRoomRequest* payload
     ) override;
 

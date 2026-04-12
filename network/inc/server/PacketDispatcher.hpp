@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <vector>
 #include <cstdint>
+#include <chrono>
 #include <flatbuf/gen/packet_generated.h>
 #include "IPacketHandler.hpp"
 #include "error/PacketError.h"
@@ -22,6 +23,16 @@ namespace highp::net {
         std::shared_ptr<Client> client;
         protocol::Payload payloadType;
         std::vector<uint8_t> data;
+        int64_t enqueuedAtNs = 0;
+    };
+
+    struct PacketDispatcherCallbacks {
+        std::function<void()> onPacketValidationSucceeded;
+        std::function<void()> onPacketValidationFailed;
+        std::function<void(size_t count)> onQueuePushed;
+        std::function<void(size_t count)> onQueueDrained;
+        std::function<void(std::chrono::nanoseconds duration)> onQueueWait;
+        std::function<void(std::chrono::nanoseconds duration)> onDispatchProcess;
     };
 
     class PacketDispatcher {
@@ -31,6 +42,11 @@ namespace highp::net {
 
     public:
         explicit PacketDispatcher(std::shared_ptr<log::Logger> logger);
+
+        /// <summary>
+        /// 이벤트 콜백을 연결한다.
+        /// </summary>
+        void UseCallbacks(PacketDispatcherCallbacks callbacks) noexcept;
 
         /// IOCP worker thread에서 호출: 프레임 조립 + 파싱 + 큐 적재
         void Receive(const std::shared_ptr<Client>& client, std::span<const char> data);
@@ -54,7 +70,7 @@ namespace highp::net {
                         return;
                     }
 
-                    handler->Handle(client, payload);
+                    handler->Handle(client, packet, payload);
                 };
         }
 
@@ -73,6 +89,7 @@ namespace highp::net {
 
     private:
         std::shared_ptr<log::Logger> _logger;
+        PacketDispatcherCallbacks _callbacks;
         std::unordered_map<protocol::Payload, DispatchFn> _handlers;
         concurrency::MPSCCommandQueue<PacketCommand> _commandQueue;
         std::vector<PacketCommand> _tickBatch;

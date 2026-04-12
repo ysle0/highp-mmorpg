@@ -5,6 +5,7 @@
 #include "client/windows/Client.h"
 #include "config/NetworkCfg.h"
 #include "ISessionEventReceiver.h"
+#include <atomic>
 #include <logger/Logger.hpp>
 #include <functional/Result.hpp>
 #include <error/NetworkError.h>
@@ -27,6 +28,14 @@ namespace highp::net
     {
     public:
         using Res = fn::Result<void, err::ENetworkError>;
+
+        struct EventCallbacks {
+            Client::EventCallbacks client;
+            internal::IocpAcceptor::EventCallbacks acceptor;
+            internal::IocpIoMultiplexer::EventCallbacks iocp;
+            std::function<void(size_t bytesTransferred, bool countPayload)> onRecvCompleted;
+            std::function<void(size_t bytesTransferred, bool countPayload)> onSendCompleted;
+        };
 
         /// <summary>
         /// ServerCore 생성자.
@@ -72,6 +81,11 @@ namespace highp::net
         /// <summary>서버가 실행 중인지 확인</summary>
         bool IsRunning() const noexcept;
 
+        /// <summary>
+        /// ServerLifeCycle 및 하위 네트워크 이벤트 콜백을 연결한다.
+        /// </summary>
+        void UseCallbacks(EventCallbacks callbacks) noexcept;
+
     private:
         /// <summary>IOCP 완료 이벤트 핸들러</summary>
         void OnCompletion(internal::CompletionEvent event);
@@ -88,6 +102,9 @@ namespace highp::net
         /// <summary>Client 풀에서 사용 가능한 슬롯을 찾는다</summary>
         std::shared_ptr<Client> FindAvailableClient();
 
+        /// <summary>Client 이벤트 콜백을 구성한다.</summary>
+        Client::EventCallbacks BuildClientCallbacks();
+
         std::shared_ptr<log::Logger> _logger;
         std::shared_ptr<SocketOptionBuilder> _socketOptionBuilder;
         ISessionEventReceiver* _handler = nullptr;
@@ -97,6 +114,7 @@ namespace highp::net
 
         std::vector<std::shared_ptr<Client>> _clientPool;
         std::atomic<size_t> _connectedClientCount{0};
+        EventCallbacks _callbacks;
 
         NetworkCfg _config;
     };

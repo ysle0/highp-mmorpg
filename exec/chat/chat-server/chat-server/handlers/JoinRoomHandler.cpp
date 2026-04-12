@@ -15,6 +15,7 @@ JoinRoomHandler::JoinRoomHandler(
 
 void JoinRoomHandler::Handle(
     const std::shared_ptr<highp::net::Client>& client,
+    const highp::protocol::Packet* packet,
     const highp::protocol::messages::JoinRoomRequest* payload
 ) {
     _logger->Info("[JoinRoomHandler] socket #{}", client->socket);
@@ -36,7 +37,8 @@ void JoinRoomHandler::Handle(
 
     room->Join(newUser);
 
-    const flatbuffers::FlatBufferBuilder resp = highp::protocol::makeJoinedRoomResponse();
+    const uint32_t sequence = packet != nullptr ? packet->sequence() : 0;
+    const flatbuffers::FlatBufferBuilder resp = highp::protocol::makeJoinedRoomResponse(sequence);
     newUser->Send(resp);
 }
 

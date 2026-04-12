@@ -3,6 +3,11 @@
 #include "SelfHandlerRegistry.h"
 #include "scope/Defer.h"
 
+#include <chrono>
+#include <thread>
+
+using namespace std::chrono_literals;
+
 GameLoop::GameLoop(
     std::shared_ptr<highp::log::Logger> logger,
     std::unique_ptr<highp::net::PacketDispatcher> packetDispatcher,
@@ -27,6 +32,11 @@ GameLoop::~GameLoop() noexcept {
     if (!_hasStopped.load()) {
         Stop();
     }
+}
+
+void GameLoop::UseCallbacks(EventCallbacks callbacks) noexcept {
+    _callbacks = std::move(callbacks);
+    _dispatcher->UseCallbacks(_callbacks.dispatcher);
 }
 
 void GameLoop::Connect(const std::shared_ptr<highp::net::Client>& client) {
@@ -62,9 +72,6 @@ void GameLoop::Stop() {
     _logger->Debug("[GameLoop::Stop] stopping...");
     _hasStopped.store(true);
 
-    // TODO: 게임 로직 (방/zone 정지)
-
-    // Tick() 의 sleep_until 은 즉시 깨울 수 없어 tickMs 정도 기다릴 수 있음.
     _logicThread.Exit();
 }
 
@@ -83,29 +90,38 @@ void GameLoop::Receive(
 void GameLoop::Update(std::stop_token st) {
     _logger->Info("[LogicThread] Update started. ServerTick={}ms", _tickMs.load());
 
+    if (_callbacks.onLogicThreadStarted) {
+        _callbacks.onLogicThreadStarted(GetCurrentThreadId());
+    }
+
     highp::scope::Defer defer([this] {
-        // 종료 전 잔여 커맨드 처리
         _dispatcher->Tick();
         _logger->Info("[LogicThread] stopped.");
     });
 
     while (!st.stop_requested()) {
-        // 시작 전 목표 시각을 고정.
-        const std::chrono::time_point<std::chrono::steady_clock> targetingNextTick =
-            std::chrono::steady_clock::now() +
-            std::chrono::milliseconds(_tickMs.load());
+        const auto tickStart = std::chrono::steady_clock::now();
+        const auto targetNextTick = tickStart + std::chrono::milliseconds(_tickMs.load());
 
         _dispatcher->Tick();
 
-        // 이미 targetingNextTick 이  sleep 할 필요없이 바로 다음 tick 으로 넘어감.
-        const bool alreadyPassedNextTick = targetingNextTick < std::chrono::steady_clock::now();
-        if (alreadyPassedNextTick) {
+        const auto tickEnd = std::chrono::steady_clock::now();
+        if (_callbacks.onTickDuration) {
+            _callbacks.onTickDuration(tickEnd - tickStart);
+        }
+        if (_callbacks.onTickLag) {
+            _callbacks.onTickLag(
+                tickEnd > targetNextTick
+                    ? std::chrono::duration_cast<std::chrono::nanoseconds>(tickEnd - targetNextTick)
+                    : 0ns);
+        }
+
+        if (targetNextTick < tickEnd) {
             std::this_thread::yield();
             continue;
         }
 
-        // _dispatcher->Tick() 이후 남은 tick 만큼만 sleep!
-        std::this_thread::sleep_until(targetingNextTick);
+        std::this_thread::sleep_until(targetNextTick);
     }
 }
 

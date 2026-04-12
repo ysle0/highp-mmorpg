@@ -23,7 +23,12 @@ public:
     void KickByDisconnected(const std::shared_ptr<highp::net::Client>& client);
 
 public:
-    void BroadcastChatMessage(uint64_t userId, std::string chatMessage);
+    void BroadcastChatMessage(
+        uint32_t senderId,
+        uint64_t userId,
+        std::string_view username,
+        std::string_view chatMessage,
+        uint32_t sequence = 0);
 
 public:
     [[nodiscard]] uint64_t GetId() const { return _roomId; }

@@ -5,6 +5,7 @@ namespace highp.protocol.messages;
 
 // 유저 입장 알림
 table UserJoinedBroadcast {
+    room_id: uint32;
     user: User (required);
 }
 
@@ -17,6 +18,7 @@ table UserLeftBroadcast {
 // 채팅 메시지  
 table ChatMessageBroadcast {
     sender_id: uint32;
+    username: string (required);
     message: string (required);
     timestamp: Common.Timestamp;
 }

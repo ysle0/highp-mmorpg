@@ -15,6 +15,7 @@ LeaveRoomHandler::LeaveRoomHandler(
 
 void LeaveRoomHandler::Handle(
     const std::shared_ptr<highp::net::Client>& client,
+    const highp::protocol::Packet* packet,
     const highp::protocol::messages::LeaveRoomRequest* payload
 ) {
     _logger->Info("[LeaveRoomHandler] socket #{}, room_id={}",
@@ -32,7 +33,8 @@ void LeaveRoomHandler::Handle(
 
     _logger->Info("[LeaveRoomHandler] user left room");
 
-    const flatbuffers::FlatBufferBuilder resp = highp::protocol::makeLeftRoomResponse();
+    const uint32_t sequence = packet != nullptr ? packet->sequence() : 0;
+    const flatbuffers::FlatBufferBuilder resp = highp::protocol::makeLeftRoomResponse(sequence);
     user->Send(resp);
 
     _userManager->RemoveUserByUserId(user->GetId());

@@ -13,8 +13,8 @@ void onPacketReceived(const std::shared_ptr<log::Logger>& logger, const Packet* 
 
     switch (packet->type()) {
     case MessageType::SC_JoinedRoom: {
-        auto* resp = packet->payload_as_messages_JoinedRoomResponse();
-        if (auto* err = resp->error(); err != nullptr) {
+        const JoinedRoomResponse* resp = packet->payload_as_messages_JoinedRoomResponse();
+        if (const Error* err = resp->error(); err != nullptr) {
             logger->Warn("[JoinedRoom] err={}", err->message()->c_str());
             break;
         }
@@ -24,8 +24,8 @@ void onPacketReceived(const std::shared_ptr<log::Logger>& logger, const Packet* 
     }
 
     case MessageType::SC_LeftRoom: {
-        auto* resp = packet->payload_as_messages_LeftRoomResponse();
-        if (auto* err = resp->error(); err != nullptr) {
+        const LeftRoomResponse* resp = packet->payload_as_messages_LeftRoomResponse();
+        if (const Error* err = resp->error(); err != nullptr) {
             logger->Warn("[LeftRoom] err={}", err->message()->c_str());
             break;
         }
@@ -35,29 +35,32 @@ void onPacketReceived(const std::shared_ptr<log::Logger>& logger, const Packet* 
     }
 
     case MessageType::B_UserJoined: {
-        auto* bc = packet->payload_as_messages_UserJoinedBroadcast();
-        auto* user = bc->user();
-        logger->Info("[UserJoined] user={}", user->username()->c_str());
+        const UserJoinedBroadcast* bc = packet->payload_as_messages_UserJoinedBroadcast();
+        const User* user = bc->user();
+        const uint32_t roomId = bc->room_id();
+        logger->Info("[UserJoined] user={} roomId={}",
+                     user->username()->c_str(),
+                     roomId);
         break;
     }
 
     case MessageType::B_UserLeft: {
-        auto* bc = packet->payload_as_messages_UserLeftBroadcast();
+        const UserLeftBroadcast* bc = packet->payload_as_messages_UserLeftBroadcast();
         logger->Info("[UserLeft] user={}", bc->username()->c_str());
         break;
     }
 
     case MessageType::B_ChatMessage: {
-        auto* bc = packet->payload_as_messages_ChatMessageBroadcast();
-        uint32_t senderId = bc->sender_id();
-        logger->Info("[Chat] {}: {}",
-                     senderId,
+        const ChatMessageBroadcast* bc = packet->payload_as_messages_ChatMessageBroadcast();
+        logger->Info("[Chat] {}[{}]: {}",
+                     bc->sender_id(),
+                     bc->username()->c_str(),
                      bc->message()->c_str());
         break;
     }
 
     case MessageType::SC_Error: {
-        auto* err = packet->payload_as_ErrorResponse();
+        const ErrorResponse* err = packet->payload_as_ErrorResponse();
         if (!err) break;
         logger->Error("[ServerError] code={}, message={}",
                       EnumNameErrorCode(err->error_code()),

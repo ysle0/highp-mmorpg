@@ -3,6 +3,7 @@
 #include "acceptor/IocpAcceptor.h"
 
 #include "memory/HybridObjectPool.hpp"
+#include "scope/DeferContext.hpp"
 #include "socket/SocketOptionBuilder.h"
 
 namespace highp::net::internal {
@@ -41,6 +42,10 @@ namespace highp::net::internal {
 
         _logger->Debug("IocpAcceptor initialized. listen socket associated with IOCP.");
         return Res::Ok();
+    }
+
+    void IocpAcceptor::UseCallbacks(EventCallbacks callbacks) noexcept {
+        _callbacks = std::move(callbacks);
     }
 
     IocpAcceptor::Res IocpAcceptor::LoadAcceptExFunctions() {
@@ -94,8 +99,16 @@ namespace highp::net::internal {
             WSA_FLAG_OVERLAPPED);
         if (acceptSocket == InvalidSocket) {
             _logger->Error("Failed to create accept socket. error: {}", WSAGetLastError());
+            if (_callbacks.onAcceptPostFailed) {
+                _callbacks.onAcceptPostFailed();
+            }
             return Res::Err(err::ENetworkError::SocketCreateFailed);
         }
+        highp::scope::DeferContext<SocketHandle> acceptSocketCleanup(&acceptSocket, [](SocketHandle* socket) {
+            if (*socket != InvalidSocket) {
+                closesocket(*socket);
+            }
+        });
 
         auto overlappedItem = mem::HybridObjectPool<AcceptOverlapped>::Get();
         auto* acceptOverlapped = overlappedItem.Get();
@@ -119,13 +132,20 @@ namespace highp::net::internal {
             reinterpret_cast<LPOVERLAPPED>(acceptOverlapped));
         if (result == FALSE) {
             if (DWORD err = WSAGetLastError(); err != ERROR_IO_PENDING) {
-                closesocket(acceptSocket);
                 _logger->Error("AcceptEx failed. error: {}", err);
+                if (_callbacks.onAcceptPostFailed) {
+                    _callbacks.onAcceptPostFailed();
+                }
                 return Res::Err(err::ENetworkError::SocketPostAcceptFailed);
             }
         }
 
+        if (_callbacks.onAcceptPosted) {
+            _callbacks.onAcceptPosted();
+        }
+
         // 성공/IO_PENDING: holder로 소유권 이전
+        acceptSocket = InvalidSocket;
         _acceptOverlappedHolder.Hold(std::move(overlappedItem));
         // _logger->Debug("Posted AcceptEx request.");
         return Res::Ok();
@@ -145,6 +165,9 @@ namespace highp::net::internal {
     IocpAcceptor::Res IocpAcceptor::OnAcceptComplete(AcceptOverlapped* overlapped, DWORD bytesTransferred) {
         if (overlapped == nullptr || overlapped->ioType != EIoType::Accept) {
             _logger->Error("Invalid AcceptEx overlapped. expected: Accept.");
+            if (_callbacks.onAcceptCompletionFailed) {
+                _callbacks.onAcceptCompletionFailed();
+            }
             return Res::Err(err::ENetworkError::SocketAcceptFailed);
         }
 
@@ -152,16 +175,26 @@ namespace highp::net::internal {
         const auto overlappedItem = _acceptOverlappedHolder.Release(overlapped);
         if (!overlappedItem) {
             _logger->Error("AcceptOverlapped not found in holder.");
+            if (_callbacks.onAcceptCompletionFailed) {
+                _callbacks.onAcceptCompletionFailed();
+            }
             return Res::Err(err::ENetworkError::SocketAcceptFailed);
         }
 
         const bool result = _socketOptionBuilder->SetUpdateAcceptContext(
             overlapped->clientSocket,
             _listenSocket);
+        highp::scope::DeferContext<SocketHandle> clientSocketCleanup(&overlapped->clientSocket, [](SocketHandle* socket) {
+            if (*socket != InvalidSocket) {
+                closesocket(*socket);
+            }
+        });
 
         if (!result) {
             _logger->Error("SO_UPDATE_ACCEPT_CONTEXT failed. error: {}", WSAGetLastError());
-            closesocket(overlapped->clientSocket);
+            if (_callbacks.onAcceptCompletionFailed) {
+                _callbacks.onAcceptCompletionFailed();
+            }
             return Res::Err(err::ENetworkError::SocketAcceptFailed);
         }
 
@@ -189,6 +222,11 @@ namespace highp::net::internal {
                 .remoteAddr = remoteAddr ? *remoteAddr : SOCKADDR_IN{}
             };
             _acceptCallback(ctx);
+        }
+        overlapped->clientSocket = InvalidSocket;
+
+        if (_callbacks.onAcceptCompleted) {
+            _callbacks.onAcceptCompleted();
         }
 
         if (const Res postAcceptRes = PostAccept();

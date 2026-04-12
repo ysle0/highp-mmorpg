@@ -35,6 +35,10 @@ namespace highp::net::internal {
         return Res::Ok();
     }
 
+    void IocpIoMultiplexer::UseCallbacks(EventCallbacks callbacks) noexcept {
+        _callbacks = std::move(callbacks);
+    }
+
     void IocpIoMultiplexer::Shutdown() {
         if (!_isRunning.exchange(false)) {
             return;
@@ -124,6 +128,20 @@ namespace highp::net::internal {
             if (overlapped != nullptr) {
                 const auto* ext = reinterpret_cast<OverlappedBase*>(overlapped);
                 event.ioType = ext->ioType;
+            }
+
+            struct DispatchScope {
+                const EventCallbacks* callbacks = nullptr;
+                ~DispatchScope() {
+                    if (callbacks != nullptr && callbacks->onWorkerDispatchEnd) {
+                        callbacks->onWorkerDispatchEnd();
+                    }
+                }
+            };
+
+            DispatchScope dispatchScope{ &_callbacks };
+            if (_callbacks.onWorkerDispatchBegin) {
+                _callbacks.onWorkerDispatchBegin();
             }
 
             if (_completionHandler) {

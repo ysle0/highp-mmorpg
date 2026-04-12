@@ -16,5 +16,6 @@ table LeaveRoomRequest {
 // 메시지 전송
 table SendMessageRequest {
     room_id: uint32;
+    username: string (required);
     message: string (required);
 }

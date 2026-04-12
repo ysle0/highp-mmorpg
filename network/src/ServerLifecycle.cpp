@@ -16,6 +16,61 @@ namespace highp::net {
 
     ServerLifeCycle::~ServerLifeCycle() noexcept { Stop(); }
 
+    Client::EventCallbacks ServerLifeCycle::BuildClientCallbacks() {
+        return Client::EventCallbacks{
+            .onConnected = [this] {
+                _connectedClientCount.fetch_add(1, std::memory_order_relaxed);
+                if (_callbacks.client.onConnected) {
+                    _callbacks.client.onConnected();
+                }
+            },
+            .onDisconnected = [this] {
+                if (auto count = _connectedClientCount.load(); count > 0) {
+                    _connectedClientCount.fetch_sub(1, std::memory_order_relaxed);
+                }
+                if (_callbacks.client.onDisconnected) {
+                    _callbacks.client.onDisconnected();
+                }
+            },
+            .onRecvPosted = [this] {
+                if (_callbacks.client.onRecvPosted) {
+                    _callbacks.client.onRecvPosted();
+                }
+            },
+            .onRecvPostFailed = [this] {
+                if (_callbacks.client.onRecvPostFailed) {
+                    _callbacks.client.onRecvPostFailed();
+                }
+            },
+            .onSendPosted = [this] {
+                if (_callbacks.client.onSendPosted) {
+                    _callbacks.client.onSendPosted();
+                }
+            },
+            .onSendPostFailed = [this] {
+                if (_callbacks.client.onSendPostFailed) {
+                    _callbacks.client.onSendPostFailed();
+                }
+            },
+        };
+    }
+
+    void ServerLifeCycle::UseCallbacks(EventCallbacks callbacks) noexcept {
+        _callbacks = std::move(callbacks);
+        if (_iocp) {
+            _iocp->UseCallbacks(_callbacks.iocp);
+        }
+        if (_acceptor) {
+            _acceptor->UseCallbacks(_callbacks.acceptor);
+        }
+        const auto effectiveCallbacks = BuildClientCallbacks();
+        for (auto& client : _clientPool) {
+            if (client) {
+                client->UseCallbacks(effectiveCallbacks);
+            }
+        }
+    }
+
     ServerLifeCycle::Res ServerLifeCycle::Start(
         std::shared_ptr<ISocket> listenSocket,
         const NetworkCfg& config
@@ -27,6 +82,7 @@ namespace highp::net {
             _logger,
             std::bind_front(&ServerLifeCycle::OnCompletion, this)
         );
+        _iocp->UseCallbacks(_callbacks.iocp);
 
         const auto workerCount = std::thread::hardware_concurrency() *
             _config.thread.maxWorkerThreadMultiplier;
@@ -42,6 +98,7 @@ namespace highp::net {
             _socketOptionBuilder,
             std::bind_front(&ServerLifeCycle::SetupClient, this)
         );
+        _acceptor->UseCallbacks(_callbacks.acceptor);
 
         if (const internal::IocpAcceptor::Res acceptorInitRes =
             _acceptor->Initialize(listenSocket->GetSocketHandle(), _iocp->GetHandle());
@@ -53,6 +110,7 @@ namespace highp::net {
         _clientPool.reserve(_config.server.maxClients);
         for (int i = 0; i < _config.server.maxClients; ++i) {
             _clientPool.emplace_back(std::make_shared<Client>());
+            _clientPool.back()->UseCallbacks(BuildClientCallbacks());
         }
 
         // Accept 요청 등록
@@ -83,7 +141,6 @@ namespace highp::net {
     void ServerLifeCycle::CloseClient(std::shared_ptr<Client> client, bool force) {
         if (client && client->socket != INVALID_SOCKET) {
             client->Close(force);
-            --_connectedClientCount;
         }
     }
 
@@ -143,7 +200,7 @@ namespace highp::net {
             return;
         }
 
-        ++_connectedClientCount;
+        client->MarkConnectionEstablished();
 
         char clientIp[Const::Buffer::clientIpBufferSize]{};
         inet_ntop(AF_INET, &ctx.remoteAddr.sin_addr, clientIp, sizeof(clientIp));
@@ -162,6 +219,9 @@ namespace highp::net {
             return;
 
         auto clientPtr = client->shared_from_this();
+        if (_callbacks.onRecvCompleted) {
+            _callbacks.onRecvCompleted(event.bytesTransferred, event.success && event.bytesTransferred > 0);
+        }
 
         // 연결 종료 감지
         if (!event.success || event.bytesTransferred == 0) {
@@ -195,6 +255,9 @@ namespace highp::net {
             return;
 
         auto clientPtr = client->shared_from_this();
+        if (_callbacks.onSendCompleted) {
+            _callbacks.onSendCompleted(event.bytesTransferred, event.success && event.bytesTransferred > 0);
+        }
 
         // 앱 레이어에 통지
         if (_handler) {
