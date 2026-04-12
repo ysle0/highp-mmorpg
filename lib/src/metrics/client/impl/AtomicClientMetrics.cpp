@@ -76,14 +76,14 @@ namespace highp::metrics {
 
     void AtomicClientMetrics::OnConnected() {
         const uint64_t nowNs = NowSteadyNanoseconds();
-        _connected.store(1, std::memory_order_relaxed);
+        _connectedCount.fetch_add(1, std::memory_order_relaxed);
         _sessionStartedAtNs.store(nowNs, std::memory_order_relaxed);
         _lastRecvAtNs.store(nowNs, std::memory_order_relaxed);
     }
 
     void AtomicClientMetrics::OnDisconnected(ClientDisconnectReason reason) {
         const uint64_t nowNs = NowSteadyNanoseconds();
-        _connected.store(0, std::memory_order_relaxed);
+        _connectedCount.fetch_sub(1, std::memory_order_relaxed);
         _disconnectTotal.fetch_add(1, std::memory_order_relaxed);
         _lastDisconnectReason.store(static_cast<uint8_t>(reason), std::memory_order_relaxed);
         ObserveDisconnectReason(reason);
@@ -207,7 +207,7 @@ namespace highp::metrics {
         snapshot.disconnectRecvFailTotal = _disconnectRecvFailTotal.load(std::memory_order_relaxed);
         snapshot.disconnectLocalCloseTotal = _disconnectLocalCloseTotal.load(std::memory_order_relaxed);
 
-        snapshot.connected = _connected.load(std::memory_order_relaxed);
+        snapshot.connected = _connectedCount.load(std::memory_order_relaxed);
         snapshot.lastConnectLatencyMs =
             static_cast<double>(_lastConnectLatencyNs.load(std::memory_order_relaxed)) / 1'000'000.0;
         snapshot.lastSessionUptimeMs =
