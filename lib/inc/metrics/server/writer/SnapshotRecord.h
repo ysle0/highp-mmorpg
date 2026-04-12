@@ -6,6 +6,7 @@
 namespace highp::metrics {
     struct SnapshotRecord {
         std::chrono::system_clock::time_point capturedAt{};
+        std::chrono::steady_clock::time_point capturedAtSteady{};
         uint64_t acceptTotal = 0;
         uint64_t disconnectTotal = 0;
         uint64_t recvPacketsTotal = 0;

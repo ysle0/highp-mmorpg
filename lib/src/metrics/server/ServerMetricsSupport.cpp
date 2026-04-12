@@ -262,4 +262,21 @@ namespace highp::metrics::internal {
     double TimingMaxMs(const TimingWindow& window) {
         return window.MaxMilliseconds();
     }
+
+    double ToPerSecond(
+        uint64_t delta,
+        std::chrono::nanoseconds elapsed) noexcept {
+        const double seconds = std::chrono::duration<double>(elapsed).count();
+        if (seconds <= 0.0) {
+            return 0.0;
+        }
+        return static_cast<double>(delta) / seconds;
+    }
+
+    double ComputeRate(
+        uint64_t current,
+        uint64_t prior,
+        std::chrono::nanoseconds elapsed) noexcept {
+        return ToPerSecond(current >= prior ? current - prior : 0, elapsed);
+    }
 } // namespace highp::metrics::internal
