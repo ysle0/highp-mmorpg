@@ -37,8 +37,6 @@ namespace highp::metrics {
             return true;
         }
 
-        _previousRecord = {};
-        _hasPreviousRecord = false;
         _summary.Reset();
         _runtimeSampler.Reset();
         _manifest.startedAt.reset();
@@ -72,7 +70,7 @@ namespace highp::metrics {
             return false;
         }
 
-        if (!CaptureAndWriteSnapshot(false)) {
+        if (!CaptureAndWriteSnapshot()) {
             return false;
         }
 
@@ -112,8 +110,8 @@ namespace highp::metrics {
                 _manifest.finishedAt = std::chrono::system_clock::now();
             }
 
-            const bool finalSnapshotWritten = CaptureAndWriteSnapshot(true);
-            const bool manifestWritten = WriteManifest();
+            CaptureAndWriteSnapshot();
+            WriteManifest();
 
             std::ofstream summary(_summaryPath, std::ios::out | std::ios::trunc);
             if (summary.is_open()) {
@@ -145,7 +143,7 @@ namespace highp::metrics {
                 break;
             }
 
-            if (!CaptureAndWriteSnapshot(false)) {
+            if (!CaptureAndWriteSnapshot()) {
                 break;
             }
         }
@@ -185,7 +183,7 @@ namespace highp::metrics {
         return true;
     }
 
-    bool ServerMetricsWriter::CaptureAndWriteSnapshot(bool finalSnapshot) {
+    bool ServerMetricsWriter::CaptureAndWriteSnapshot() {
         const ServerMetricsSnapshot snapshot = _metrics->TakeSnapshot();
 
         SnapshotRecord record{};
@@ -219,34 +217,20 @@ namespace highp::metrics {
         record.logicThreadCpuPercent = runtime.logicThreadCpuPercent;
         record.threadCount = runtime.threadCount;
 
-        if (!_hasPreviousRecord) {
-            _previousRecord = record;
-            _hasPreviousRecord = true;
-            if (!finalSnapshot) {
-                return true;
-            }
-        }
-
         std::ofstream out(_snapshotPath, std::ios::out | std::ios::app);
         if (!out.is_open()) {
             _lastError = "failed to open metrics snapshot file";
             return false;
         }
 
-        const SnapshotRecord* previous = _hasPreviousRecord ? &_previousRecord : nullptr;
-        if (previous != nullptr && previous == &record) {
-            previous = nullptr;
-        }
-
-        out << BuildSnapshotJson(&record, previous) << '\n';
+        out << BuildSnapshotJson(&record, &_previousRecord) << '\n';
         if (!out.good()) {
             _lastError = "failed to write metrics snapshot";
             return false;
         }
 
-        _summary.Observe(&record, previous);
+        _summary.Observe(&record, &_previousRecord);
         _previousRecord = record;
-        _hasPreviousRecord = true;
         return true;
     }
 

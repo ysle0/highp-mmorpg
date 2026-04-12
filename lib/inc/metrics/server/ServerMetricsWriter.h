@@ -42,7 +42,7 @@ namespace highp::metrics {
         void ThreadMain(const std::stop_token& st);
         bool InitializeArtifacts();
         bool WriteManifest();
-        bool CaptureAndWriteSnapshot(bool finalSnapshot);
+        bool CaptureAndWriteSnapshot();
         std::string BuildSnapshotJson(
             const SnapshotRecord* record,
             const SnapshotRecord* previous) const;
@@ -60,8 +60,7 @@ namespace highp::metrics {
 
         RuntimeSampler _runtimeSampler;
         SummaryAccumulator _summary;
-        SnapshotRecord _previousRecord{};
-        bool _hasPreviousRecord = false;
+        SnapshotRecord _previousRecord;
 
         std::filesystem::path _outputDirectory;
         std::filesystem::path _manifestPath;
