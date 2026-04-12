@@ -1,0 +1,23 @@
+[scenario]
+name = "baseline-idle"
+description = "서버 기본 기준선 확보: 200 클라이언트 idle 상태 안정성 확인"
+target_host = "127.0.0.1"
+target_port = 8080
+
+[clients]
+count = 200
+nickname_prefix = "load"
+
+[phase_0]
+type = "connect"
+ramp_delay_ms = 10
+
+[phase_1]
+type = "join"
+
+[phase_2]
+type = "hold"
+duration_sec = 180
+
+[phase_3]
+type = "disconnect"

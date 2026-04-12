@@ -49,6 +49,8 @@ public:
 
     void StartRecvLoop(RecvCallback callback);
 
+    [[nodiscard]] bool IsConnected() const noexcept { return _isConnected.load(); }
+
 private:
     std::shared_ptr<highp::log::Logger> _logger;
     std::shared_ptr<highp::metrics::IClientMetrics> _metrics;
@@ -64,5 +66,5 @@ private:
     std::jthread _recvThread;
 
     std::atomic_bool _isConnected = false;
-    std::atomic_uint32_t _nextSequence{1};
+    static std::atomic_uint32_t _nextSequence;
 };

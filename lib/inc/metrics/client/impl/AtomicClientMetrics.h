@@ -71,7 +71,7 @@ namespace highp::metrics {
         std::atomic<uint64_t> _disconnectRecvFailTotal{0};
         std::atomic<uint64_t> _disconnectLocalCloseTotal{0};
 
-        std::atomic<int64_t> _connected{0};
+        std::atomic<int64_t> _connectedCount{0};
         std::atomic<uint64_t> _lastConnectLatencyNs{0};
         std::atomic<uint64_t> _sessionStartedAtNs{0};
         std::atomic<uint64_t> _lastSessionUptimeNs{0};

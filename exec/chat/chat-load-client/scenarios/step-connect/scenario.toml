@@ -1,0 +1,39 @@
+[scenario]
+name = "step-connect"
+description = "단계별 접속 부하: 50 -> 500 -> 1000 클라이언트 순차 접속 후 안정성 확인"
+target_host = "127.0.0.1"
+target_port = 8080
+
+[clients]
+count = 1000
+nickname_prefix = "load"
+
+[phase_0]
+type = "connect"
+target_count = 50
+ramp_delay_ms = 10
+
+[phase_1]
+type = "hold"
+duration_sec = 30
+
+[phase_2]
+type = "connect"
+target_count = 500
+ramp_delay_ms = 10
+
+[phase_3]
+type = "hold"
+duration_sec = 30
+
+[phase_4]
+type = "connect"
+target_count = 1000
+ramp_delay_ms = 10
+
+[phase_5]
+type = "hold"
+duration_sec = 30
+
+[phase_6]
+type = "disconnect"
