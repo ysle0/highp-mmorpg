@@ -1,0 +1,26 @@
+[scenario]
+name = "broadcast-fanout"
+description = "브로드캐스트 팬아웃: 10명 sender가 990명 receiver에게 전파, 서버 send backlog 테스트"
+target_host = "127.0.0.1"
+target_port = 8080
+
+[clients]
+count = 1000
+nickname_prefix = "fan"
+
+[phase_0]
+type = "connect"
+ramp_delay_ms = 10
+
+[phase_1]
+type = "join"
+
+[phase_2]
+type = "role_send"
+duration_sec = 300
+send_interval_ms = 100
+message_size_bytes = 256
+sender_count = 10
+
+[phase_3]
+type = "disconnect"
