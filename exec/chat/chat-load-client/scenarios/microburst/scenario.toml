@@ -1,0 +1,26 @@
+[scenario]
+name = "microburst"
+description = "순간 폭주: 1000 클라이언트가 동시에 burst 전송 후 idle, 반복하여 큐 병목 테스트"
+target_host = "127.0.0.1"
+target_port = 8080
+
+[clients]
+count = 1000
+nickname_prefix = "burst"
+
+[phase_0]
+type = "connect"
+ramp_delay_ms = 10
+
+[phase_1]
+type = "join"
+
+[phase_2]
+type = "burst_send"
+burst_count = 10
+burst_messages = 5
+idle_window_ms = 3000
+message_size_bytes = 128
+
+[phase_3]
+type = "disconnect"
