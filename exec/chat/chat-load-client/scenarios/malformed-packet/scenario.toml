@@ -1,0 +1,26 @@
+[scenario]
+name = "malformed-packet"
+description = "비정상 패킷: 정상 트래픽에 30% 비율로 malformed 패킷 혼합하여 프로토콜 방어력 테스트"
+target_host = "127.0.0.1"
+target_port = 8080
+
+[clients]
+count = 200
+nickname_prefix = "malform"
+
+[phase_0]
+type = "connect"
+ramp_delay_ms = 10
+
+[phase_1]
+type = "join"
+
+[phase_2]
+type = "malformed_send"
+duration_sec = 300
+send_interval_ms = 500
+message_size_bytes = 128
+malformed_percent = 30
+
+[phase_3]
+type = "disconnect"
