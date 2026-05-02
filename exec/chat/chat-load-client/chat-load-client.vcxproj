@@ -131,28 +131,20 @@
     <ItemGroup>
         <ClCompile Include="..\chat-client\Client.cpp"/>
         <ClCompile Include="..\chat-client\PacketSender.cpp"/>
-        <ClCompile Include="ScenarioConfig.cpp"/>
         <ClCompile Include="ClientSession.cpp"/>
         <ClCompile Include="IScenario.cpp"/>
-        <ClCompile Include="ResultCollector.cpp"/>
         <ClCompile Include="ResultCollector.cpp" />
         <ClCompile Include="ScenarioConfig.cpp" />
         <ClCompile Include="scenarios\baseline-idle\BaselineIdle.cpp"/>
+        <ClCompile Include="scenarios\broadcast-fanout\BroadcastFanout.cpp"/>
+        <ClCompile Include="scenarios\malformed-packet\MalformedPacket.cpp"/>
+        <ClCompile Include="scenarios\microburst\Microburst.cpp"/>
+        <ClCompile Include="scenarios\reconnect-storm\ReconnectStorm.cpp"/>
         <ClCompile Include="scenarios\step-connect\StepConnect.cpp"/>
         <ClCompile Include="scenarios\steady-small-traffic\SteadySmallTraffic.cpp"/>
         <ClCompile Include="main.cpp"/>
     </ItemGroup>
     <ItemGroup>
-        <ClInclude Include="..\chat-client\Client.h"/>
-        <ClInclude Include="..\chat-client\PacketSender.h"/>
-        <ClInclude Include="ScenarioConfig.h"/>
-        <ClInclude Include="ClientSession.h"/>
-        <ClInclude Include="IScenario.h"/>
-        <ClInclude Include="PrefixedLogger.h"/>
-        <ClInclude Include="ResultCollector.h"/>
-        <ClInclude Include="scenarios\baseline-idle\BaselineIdle.h"/>
-        <ClInclude Include="scenarios\step-connect\StepConnect.h"/>
-        <ClInclude Include="scenarios\steady-small-traffic\SteadySmallTraffic.h"/>
         <ClInclude Include="..\chat-client\Client.h" />
         <ClInclude Include="..\chat-client\PacketSender.h" />
         <ClInclude Include="ClientSession.h" />
@@ -161,6 +153,10 @@
         <ClInclude Include="ResultCollector.h" />
         <ClInclude Include="ScenarioConfig.h" />
         <ClInclude Include="scenarios\baseline-idle\BaselineIdle.h" />
+        <ClInclude Include="scenarios\broadcast-fanout\BroadcastFanout.h" />
+        <ClInclude Include="scenarios\malformed-packet\MalformedPacket.h" />
+        <ClInclude Include="scenarios\microburst\Microburst.h" />
+        <ClInclude Include="scenarios\reconnect-storm\ReconnectStorm.h" />
         <ClInclude Include="scenarios\step-connect\StepConnect.h" />
         <ClInclude Include="scenarios\steady-small-traffic\SteadySmallTraffic.h" />
     </ItemGroup>
