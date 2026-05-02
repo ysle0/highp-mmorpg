@@ -1,6 +1,7 @@
 #pragma once
 
 #include "IScenario.h"
+#include "util/ScenarioConfig.h"
 
 class BaselineIdle final : public IScenario {
 public:

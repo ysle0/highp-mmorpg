@@ -135,6 +135,8 @@
         <ClCompile Include="ClientSession.cpp"/>
         <ClCompile Include="IScenario.cpp"/>
         <ClCompile Include="ResultCollector.cpp"/>
+        <ClCompile Include="ResultCollector.cpp" />
+        <ClCompile Include="ScenarioConfig.cpp" />
         <ClCompile Include="scenarios\baseline-idle\BaselineIdle.cpp"/>
         <ClCompile Include="scenarios\step-connect\StepConnect.cpp"/>
         <ClCompile Include="scenarios\steady-small-traffic\SteadySmallTraffic.cpp"/>
@@ -151,6 +153,16 @@
         <ClInclude Include="scenarios\baseline-idle\BaselineIdle.h"/>
         <ClInclude Include="scenarios\step-connect\StepConnect.h"/>
         <ClInclude Include="scenarios\steady-small-traffic\SteadySmallTraffic.h"/>
+        <ClInclude Include="..\chat-client\Client.h" />
+        <ClInclude Include="..\chat-client\PacketSender.h" />
+        <ClInclude Include="ClientSession.h" />
+        <ClInclude Include="IScenario.h" />
+        <ClInclude Include="PrefixedLogger.h" />
+        <ClInclude Include="ResultCollector.h" />
+        <ClInclude Include="ScenarioConfig.h" />
+        <ClInclude Include="scenarios\baseline-idle\BaselineIdle.h" />
+        <ClInclude Include="scenarios\step-connect\StepConnect.h" />
+        <ClInclude Include="scenarios\steady-small-traffic\SteadySmallTraffic.h" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\..\..\lib\lib.vcxproj">

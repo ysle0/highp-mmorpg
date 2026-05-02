@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ScenarioConfig.h"
+#include "util/ScenarioConfig.h"
 #include "ClientSession.h"
 
 #include "logger/Logger.hpp"
@@ -21,7 +21,7 @@ public:
     [[nodiscard]] virtual const std::string& Description() const = 0;
 
 protected:
-    void ConnectClients(
+    static void ConnectClients(
         std::vector<std::unique_ptr<ClientSession>>& sessions,
         const ScenarioConfig& config,
         int targetCount,
@@ -40,12 +40,45 @@ protected:
 
     static void SteadySend(
         std::vector<std::unique_ptr<ClientSession>>& sessions,
-        int durationSec,
+        int sendDurationSec,
         int sendIntervalMs,
         int messageSizeBytes,
         const std::shared_ptr<highp::log::Logger>& logger);
 
     static void DisconnectAll(
         std::vector<std::unique_ptr<ClientSession>>& sessions,
+        const std::shared_ptr<highp::log::Logger>& logger);
+
+    static void BurstSend(
+        std::vector<std::unique_ptr<ClientSession>>& sessions,
+        int burstCount,
+        int burstMessages,
+        int idleWindowMs,
+        int messageSizeBytes,
+        const std::shared_ptr<highp::log::Logger>& logger);
+
+    static void ReconnectWave(
+        std::vector<std::unique_ptr<ClientSession>>& sessions,
+        const ScenarioConfig& config,
+        int waveCount,
+        int holdBetweenWaveSec,
+        const std::shared_ptr<highp::log::Logger>& logger,
+        const std::shared_ptr<highp::log::ILogger>& innerLogger,
+        const std::shared_ptr<highp::metrics::IClientMetrics>& metrics);
+
+    static void MalformedSend(
+        std::vector<std::unique_ptr<ClientSession>>& sessions,
+        int durationSec,
+        int sendIntervalMs,
+        int messageSizeBytes,
+        int malformedPercent,
+        const std::shared_ptr<highp::log::Logger>& logger);
+
+    static void RoleSend(
+        std::vector<std::unique_ptr<ClientSession>>& sessions,
+        int senderCount,
+        int durationSec,
+        int sendIntervalMs,
+        int messageSizeBytes,
         const std::shared_ptr<highp::log::Logger>& logger);
 };

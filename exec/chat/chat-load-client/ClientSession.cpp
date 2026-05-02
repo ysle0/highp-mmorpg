@@ -1,6 +1,6 @@
 #include "ClientSession.h"
 #include "PacketSender.h"
-#include "PrefixedLogger.h"
+#include "util/PrefixedLogger.h"
 
 #include <format>
 
@@ -29,6 +29,10 @@ void ClientSession::JoinRoom() {
 
 void ClientSession::SendMessage(std::string_view message) {
     sendMessage(&_client, _nickname, message);
+}
+
+void ClientSession::SendRawBytes(std::span<const uint8_t> data) {
+    _client.SendRawFrame(data);
 }
 
 void ClientSession::Disconnect() {

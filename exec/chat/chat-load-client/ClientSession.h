@@ -3,7 +3,9 @@
 #include "Client.h"
 #include "logger/ILogger.h"
 
+#include <cstdint>
 #include <memory>
+#include <span>
 #include <string>
 
 class ClientSession {
@@ -17,6 +19,7 @@ public:
     [[nodiscard]] bool Connect(std::string_view host, unsigned short port);
     void JoinRoom();
     void SendMessage(std::string_view message);
+    void SendRawBytes(std::span<const uint8_t> data);
     void Disconnect();
     void StartRecv();
 

@@ -1,6 +1,7 @@
-#include "ScenarioConfig.h"
+#include "util/ScenarioConfig.h"
+#include "util/ResultCollector.h"
+
 #include "IScenario.h"
-#include "ResultCollector.h"
 
 #include "scenarios/baseline-idle/BaselineIdle.h"
 #include "scenarios/step-connect/StepConnect.h"
@@ -90,10 +91,26 @@ static std::unique_ptr<IScenario> CreateScenario(
     const std::string& name = config.name;
 
     if (name == "baseline-idle") {
-        return std::make_unique<BaselineIdle>(std::move(config), std::move(logger), std::move(innerLogger), std::move(metrics));
+        return std::make_unique<BaselineIdle>(
+            std::move(config),
+            std::move(logger),
+            std::move(innerLogger),
+            std::move(metrics));
     }
     if (name == "step-connect") {
-        return std::make_unique<StepConnect>(std::move(config), std::move(logger), std::move(innerLogger), std::move(metrics));
+        return std::make_unique<StepConnect>(
+            std::move(config),
+            std::move(logger),
+            std::move(innerLogger),
+            std::move(metrics));
+    }
+    if (name == "steady-small-traffic" || name == "soak-30m") {
+        return std::make_unique<SteadySmallTraffic>(
+            std::move(config),
+            std::move(logger),
+            std::move(innerLogger),
+            std::move(metrics));
+    }
     }
     if (name == "steady-small-traffic") {
         return std::make_unique<SteadySmallTraffic>(std::move(config), std::move(logger), std::move(innerLogger), std::move(metrics));

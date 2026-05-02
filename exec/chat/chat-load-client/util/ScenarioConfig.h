@@ -12,13 +12,19 @@ enum class PhaseType {
     Disconnect,
 };
 
+struct ConnectPhase       { int target_count; int ramp_delay_ms; };
+struct HoldPhase          { int duration_sec; };
+struct SteadySendPhase    { int duration_sec; int send_interval_ms; int message_size_bytes; };
+
 struct PhaseConfig {
-    PhaseType type = PhaseType::Hold;
-    int duration_sec = 0;
-    int ramp_delay_ms = 100;
-    int send_interval_ms = 1000;
-    int message_size_bytes = 64;
-    int target_count = 0;       // 0 = use clients.count
+    PhaseType type;
+    union {
+        ConnectPhase       connect;
+        HoldPhase          hold;
+        SteadySendPhase    steady_send;
+    };
+
+    PhaseConfig() : type(PhaseType::Hold), hold{} {}
 };
 
 struct ScenarioConfig {
