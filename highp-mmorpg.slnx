@@ -8,6 +8,8 @@
     </Folder>
     <Folder Name="/exec/chat/">
         <Project Path="exec/chat/chat-client/chat-client.vcxproj" Id="bf4008a1-5fb9-4b4a-897a-183a0b83d112"/>
+        <Project Path="exec/chat/chat-load-client/chat-load-client.vcxproj"
+                 Id="bbcbd32e-47ef-4883-995b-52edfea49d13"/>
         <Project Path="exec/chat/chat-server/chat-server/chat-server.vcxproj"
                  Id="4aa277d1-5677-4849-b4de-72ed81bb3779"/>
     </Folder>

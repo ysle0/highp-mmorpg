@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <ItemGroup>
+        <Filter Include="Source Files">
+            <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+            <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+        </Filter>
+        <Filter Include="Header Files">
+            <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+            <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+        </Filter>
+        <Filter Include="Shared Source">
+            <UniqueIdentifier>{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}</UniqueIdentifier>
+        </Filter>
+        <Filter Include="Scenarios">
+            <UniqueIdentifier>{B2C3D4E5-F6A7-8901-BCDE-F12345678901}</UniqueIdentifier>
+        </Filter>
+        <Filter Include="Scenarios\baseline-idle">
+            <UniqueIdentifier>{C3D4E5F6-A7B8-9012-CDEF-123456789012}</UniqueIdentifier>
+        </Filter>
+        <Filter Include="Scenarios\step-connect">
+            <UniqueIdentifier>{D4E5F6A7-B8C9-0123-DEFA-234567890123}</UniqueIdentifier>
+        </Filter>
+        <Filter Include="Scenarios\steady-small-traffic">
+            <UniqueIdentifier>{E5F6A7B8-C9D0-1234-EFAB-345678901234}</UniqueIdentifier>
+        </Filter>
+    </ItemGroup>
+    <ItemGroup>
+        <ClCompile Include="main.cpp">
+            <Filter>Source Files</Filter>
+        </ClCompile>
+        <ClCompile Include="ScenarioConfig.cpp">
+            <Filter>Source Files</Filter>
+        </ClCompile>
+        <ClCompile Include="ClientSession.cpp">
+            <Filter>Source Files</Filter>
+        </ClCompile>
+        <ClCompile Include="IScenario.cpp">
+            <Filter>Source Files</Filter>
+        </ClCompile>
+        <ClCompile Include="ResultCollector.cpp">
+            <Filter>Source Files</Filter>
+        </ClCompile>
+        <ClCompile Include="..\chat-client\Client.cpp">
+            <Filter>Shared Source</Filter>
+        </ClCompile>
+        <ClCompile Include="..\chat-client\PacketSender.cpp">
+            <Filter>Shared Source</Filter>
+        </ClCompile>
+        <ClCompile Include="scenarios\baseline-idle\BaselineIdle.cpp">
+            <Filter>Scenarios\baseline-idle</Filter>
+        </ClCompile>
+        <ClCompile Include="scenarios\step-connect\StepConnect.cpp">
+            <Filter>Scenarios\step-connect</Filter>
+        </ClCompile>
+        <ClCompile Include="scenarios\steady-small-traffic\SteadySmallTraffic.cpp">
+            <Filter>Scenarios\steady-small-traffic</Filter>
+        </ClCompile>
+    </ItemGroup>
+    <ItemGroup>
+        <ClInclude Include="ScenarioConfig.h">
+            <Filter>Header Files</Filter>
+        </ClInclude>
+        <ClInclude Include="ClientSession.h">
+            <Filter>Header Files</Filter>
+        </ClInclude>
+        <ClInclude Include="IScenario.h">
+            <Filter>Header Files</Filter>
+        </ClInclude>
+        <ClInclude Include="ResultCollector.h">
+            <Filter>Header Files</Filter>
+        </ClInclude>
+        <ClInclude Include="..\chat-client\Client.h">
+            <Filter>Shared Source</Filter>
+        </ClInclude>
+        <ClInclude Include="..\chat-client\PacketSender.h">
+            <Filter>Shared Source</Filter>
+        </ClInclude>
+        <ClInclude Include="scenarios\baseline-idle\BaselineIdle.h">
+            <Filter>Scenarios\baseline-idle</Filter>
+        </ClInclude>
+        <ClInclude Include="scenarios\step-connect\StepConnect.h">
+            <Filter>Scenarios\step-connect</Filter>
+        </ClInclude>
+        <ClInclude Include="scenarios\steady-small-traffic\SteadySmallTraffic.h">
+            <Filter>Scenarios\steady-small-traffic</Filter>
+        </ClInclude>
+    </ItemGroup>
+</Project>

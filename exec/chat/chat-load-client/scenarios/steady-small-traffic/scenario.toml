@@ -1,0 +1,25 @@
+[scenario]
+name = "steady-small-traffic"
+description = "정상 트래픽: 1000 클라이언트가 1msg/sec 전송하며 300초간 안정성 확인"
+target_host = "127.0.0.1"
+target_port = 8080
+
+[clients]
+count = 1000
+nickname_prefix = "load"
+
+[phase_0]
+type = "connect"
+ramp_delay_ms = 10
+
+[phase_1]
+type = "join"
+
+[phase_2]
+type = "steady_send"
+duration_sec = 300
+send_interval_ms = 1000
+message_size_bytes = 64
+
+[phase_3]
+type = "disconnect"
