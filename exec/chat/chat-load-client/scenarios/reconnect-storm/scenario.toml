@@ -1,0 +1,24 @@
+[scenario]
+name = "reconnect-storm"
+description = "재접속 폭풍: 500 클라이언트가 접속-유지-해제를 10회 반복하여 연결 수명주기 안정성 테스트"
+target_host = "127.0.0.1"
+target_port = 8080
+
+[clients]
+count = 500
+nickname_prefix = "reconn"
+
+[phase_0]
+type = "connect"
+ramp_delay_ms = 5
+
+[phase_1]
+type = "join"
+
+[phase_2]
+type = "reconnect_wave"
+wave_count = 10
+hold_between_wave_sec = 5
+
+[phase_3]
+type = "disconnect"
