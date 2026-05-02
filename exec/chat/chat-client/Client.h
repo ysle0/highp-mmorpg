@@ -4,6 +4,7 @@
 #include <chrono>
 #include <functional>
 #include <memory>
+#include <span>
 #include <string_view>
 #include <thread>
 
@@ -46,6 +47,8 @@ public:
     void Send(
         const flatbuffers::FlatBufferBuilder& builder,
         RequestTracking tracking = {});
+
+    void SendRawFrame(std::span<const uint8_t> rawPayload);
 
     void StartRecvLoop(RecvCallback callback);
 
