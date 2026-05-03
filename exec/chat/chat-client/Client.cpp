@@ -140,6 +140,25 @@ void Client::Send(const flatbuffers::FlatBufferBuilder& builder, RequestTracking
     }
 }
 
+void Client::SendRawFrame(std::span<const uint8_t> rawPayload) {
+    if (!_tcpClientSocket || !_packetStream || !_tcpClientSocket->IsConnected()) {
+        _logger->Error("Not connected to server.");
+        return;
+    }
+
+    if (!_packetStream->SendFrame(rawPayload)) {
+        if (_metrics) {
+            _metrics->OnSendFailed();
+        }
+        _logger->Error("SendRawFrame failed.");
+        return;
+    }
+
+    if (_metrics) {
+        _metrics->OnSendCompleted(rawPayload.size());
+    }
+}
+
 void Client::StartRecvLoop(RecvCallback callback) {
     _recvThread = std::jthread([this, cb = std::move(callback)](const std::stop_token& st) {
         std::vector<uint8_t> recvBuffer;

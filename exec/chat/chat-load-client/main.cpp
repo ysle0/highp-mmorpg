@@ -4,6 +4,10 @@
 #include "IScenario.h"
 
 #include "scenarios/baseline-idle/BaselineIdle.h"
+#include "scenarios/broadcast-fanout/BroadcastFanout.h"
+#include "scenarios/malformed-packet/MalformedPacket.h"
+#include "scenarios/microburst/Microburst.h"
+#include "scenarios/reconnect-storm/ReconnectStorm.h"
 #include "scenarios/step-connect/StepConnect.h"
 #include "scenarios/steady-small-traffic/SteadySmallTraffic.h"
 
@@ -111,9 +115,33 @@ static std::unique_ptr<IScenario> CreateScenario(
             std::move(innerLogger),
             std::move(metrics));
     }
+    if (name == "microburst") {
+        return std::make_unique<Microburst>(
+            std::move(config),
+            std::move(logger),
+            std::move(innerLogger),
+            std::move(metrics));
     }
-    if (name == "steady-small-traffic") {
-        return std::make_unique<SteadySmallTraffic>(std::move(config), std::move(logger), std::move(innerLogger), std::move(metrics));
+    if (name == "reconnect-storm") {
+        return std::make_unique<ReconnectStorm>(
+            std::move(config),
+            std::move(logger),
+            std::move(innerLogger),
+            std::move(metrics));
+    }
+    if (name == "malformed-packet") {
+        return std::make_unique<MalformedPacket>(
+            std::move(config),
+            std::move(logger),
+            std::move(innerLogger),
+            std::move(metrics));
+    }
+    if (name == "broadcast-fanout") {
+        return std::make_unique<BroadcastFanout>(
+            std::move(config),
+            std::move(logger),
+            std::move(innerLogger),
+            std::move(metrics));
     }
 
     return nullptr;

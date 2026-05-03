@@ -10,11 +10,19 @@ enum class PhaseType {
     Hold,
     SteadySend,
     Disconnect,
+    BurstSend,
+    ReconnectWave,
+    MalformedSend,
+    RoleSend,
 };
 
 struct ConnectPhase       { int target_count; int ramp_delay_ms; };
 struct HoldPhase          { int duration_sec; };
 struct SteadySendPhase    { int duration_sec; int send_interval_ms; int message_size_bytes; };
+struct BurstSendPhase     { int burst_count; int burst_messages; int idle_window_ms; int message_size_bytes; };
+struct ReconnectWavePhase { int wave_count; int hold_between_wave_sec; };
+struct MalformedSendPhase { int duration_sec; int send_interval_ms; int message_size_bytes; int malformed_percent; };
+struct RoleSendPhase      { int duration_sec; int send_interval_ms; int message_size_bytes; int sender_count; };
 
 struct PhaseConfig {
     PhaseType type;
@@ -22,6 +30,10 @@ struct PhaseConfig {
         ConnectPhase       connect;
         HoldPhase          hold;
         SteadySendPhase    steady_send;
+        BurstSendPhase     burst_send;
+        ReconnectWavePhase reconnect_wave;
+        MalformedSendPhase malformed_send;
+        RoleSendPhase      role_send;
     };
 
     PhaseConfig() : type(PhaseType::Hold), hold{} {}
